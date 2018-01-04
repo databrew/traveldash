@@ -4,11 +4,14 @@ library(sparkline)
 library(jsonlite)
 library(dplyr)
 
+# Header
 header <- dashboardHeader(title="Databrew app")
+
+# Sidebar
 sidebar <- dashboardSidebar(
   sidebarMenu(
     menuItem(
-      text="Main",
+      text="Dashboard",
       tabName="main",
       icon=icon("eye")),
     menuItem(
@@ -18,6 +21,7 @@ sidebar <- dashboardSidebar(
   )
 )
 
+# UI body
 body <- dashboardBody(
   tags$head(
     tags$link(rel = "stylesheet", type = "text/css", href = "custom.css")
@@ -27,10 +31,13 @@ body <- dashboardBody(
       tabName="main",
       fluidPage(
         fluidRow(
-          a(href="http://databrew.cc",
-            target="_blank", uiOutput("box1")),
-          a(href="http://databrew.cc",
-            target="_blank", uiOutput("box2"))
+          p('Some text'),
+          column(3,
+                 dateInput('date',
+                           label = 'Date',
+                           value = NULL)),
+          column(9,
+                 plotOutput('fake_plot'))
         )
       )
     ),
@@ -39,18 +46,18 @@ body <- dashboardBody(
       fluidPage(
         fluidRow(
           div(img(src='logo_clear.png', align = "center"), style="text-align: center;"),
-                 h4('Built in partnership with ',
-                   a(href = 'http://databrew.cc',
-                     target='_blank', 'Databrew'),
-                   align = 'center'),
+          h4('Built in partnership with ',
+             a(href = 'http://databrew.cc',
+               target='_blank', 'Databrew'),
+             align = 'center'),
           p('Empowering research and analysis through collaborative data science.', align = 'center'),
           div(a(actionButton(inputId = "email", label = "info@databrew.cc", 
                              icon = icon("envelope", lib = "font-awesome")),
                 href="mailto:info@databrew.cc",
                 align = 'center')), 
           style = 'text-align:center;'
-          )
         )
+      )
     )
   )
 )
@@ -60,18 +67,10 @@ ui <- dashboardPage(header, sidebar, body, skin="blue")
 
 # Server
 server <- function(input, output) {
-  
-  output$box1 <- renderUI({
-    valueBox(
-      "12345", "Some information 1", icon = icon("bullseye"),
-      color = 'blue'
-    )})
-  
-  output$box2 <- renderUI({
-    valueBox(
-      5, "Some information 2", icon = icon("tachometer"),
-      color = 'orange'
-    )})
+
+  output$fake_plot <- renderPlot({
+    barplot(1:10)
+  })
 }
 
 shinyApp(ui, server)
