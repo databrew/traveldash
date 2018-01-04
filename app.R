@@ -38,11 +38,14 @@ body <- dashboardBody(
       fluidPage(
         fluidRow(
           column(5,
-                 uiOutput("choose.date"),
-                 fluidRow(
-                          column(6, uiOutput("pre.week.btn")),
-                          column(6, uiOutput("next.week.btn"))),
-                 helpText(textOutput('date_text'))
+                 sliderValues(
+                   inputId = "dates", label = "Month", width = "100%",
+                   values = choices_month, 
+                   from = choices_month[2], to = choices_month[6],
+                   grid = FALSE, animate = animationOptions(interval = 1500)
+                 ),
+                 verbatimTextOutput("res")
+                 # helpText(textOutput('date_text'))
           ),
           column(7,
                  leafletOutput('leafy'))),
@@ -70,9 +73,11 @@ server <- function(input, output, session) {
   
   # Reactive dataframe for the filtered table
   filtered_events <- reactive({
+    # x <- filter_events(events = events)
+    fd <- filter_dates()
     x <- filter_events(events = events,
-                       visit_start = input$dates[1],
-                       visit_end = input$dates[2])
+                       visit_start = fd[1],
+                       visit_end = fd[2])
     # Jitter if necessary
     if(any(duplicated(events$Lat)) |
        any(duplicated(events$Long))){
@@ -138,6 +143,10 @@ server <- function(input, output, session) {
     }
   })
   
+  filter_dates <- reactive({
+    as.Date(paste("01", unlist(strsplit(input$dates, ";")), sep="-"), format="%d-%B-%Y")
+  })
+  
   output$visit_info_table <- DT::renderDataTable({
     x <- filtered_events()
     # DT::datatable(x,options = list(dom = 't',
@@ -157,44 +166,10 @@ server <- function(input, output, session) {
              download_options = TRUE)
   })
   
-  
-  # ------- Date Range Input + previous/next week buttons---------------
-  output$choose.date <- renderUI({
-    dateRangeInput("dates", 
-                   label = h3(HTML("<i class='glyphicon glyphicon-calendar'></i> Date Range")), 
-                   start = "2017-01-01", end='2017-01-07', 
-                   min = date.range[1], max = date.range[2])
-  }) 
-  
-  output$pre.week.btn <- renderUI({
-    actionButton("pre.week", 
-                 label = HTML("<span class='small'><i class='glyphicon glyphicon-arrow-left'></i> Back</span>"))
+  output$res <- renderPrint({
+    print(input$dates) # you have to split manually the result by ";"
+    print(filter_dates())
   })
-  output$next.week.btn <- renderUI({
-    actionButton("next.week", 
-                 label = HTML("<span class='small'>Next <i class='glyphicon glyphicon-arrow-right'></i></span>"))
-  })
-  
-  date.gap <- reactive({input$dates[2]-input$dates[1]+1})
-  observeEvent(input$pre.week, {
-    if(input$dates[1]-date.gap() < date.range[1]){
-      if(input$dates[2]-date.gap() < date.range[1]){
-        updateDateRangeInput(session, "dates", start = date.range[1], end = date.range[1])
-      }else{updateDateRangeInput(session, "dates", start = date.range[1], end = input$dates[2]-date.gap())}
-      #if those two dates inputs equal to each other, use 7 as the gap by default
-    }else{if(input$dates[1] == input$dates[2]){updateDateRangeInput(session, "dates", start = input$dates[1]-7, end = input$dates[2])
-    }else{updateDateRangeInput(session, "dates", start = input$dates[1]-date.gap(), end = input$dates[2]-date.gap())}
-    }})
-  observeEvent(input$next.week, {
-    if(input$dates[2]+date.gap() > date.range[2]){
-      if(input$dates[1]+date.gap() > date.range[2]){
-        updateDateRangeInput(session, "dates", start = date.range[2], end = date.range[2])
-      }else{updateDateRangeInput(session, "dates", start = input$dates[1]+date.gap(), end = date.range[2])}
-    }else{if(input$dates[1] == input$dates[2]){updateDateRangeInput(session, "dates", start = input$dates[1], end = input$dates[2]+7)
-    }else{updateDateRangeInput(session, "dates", start = input$dates[1]+date.gap(), end = input$dates[2]+date.gap())}
-    }})
-  
-  output$dates.input <- renderPrint({input$dates})
 }
 
 shinyApp(ui, server)
