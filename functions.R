@@ -77,24 +77,16 @@ prettify <- function (the_table, remove_underscores_columns = TRUE, cap_columns 
   return(the_table)
 }
 
-make_sank <- function(){
-  olek <- read_excel('data/Random Sankey Data.xlsx') %>%
-    arrange(Country,
-            Client,
-            Actors,
-            Study)
-  olek$Client <- gsub('Cleint', 'Client', olek$Client)
-  
-  x <- olek %>% group_by(Country, Client) %>%
+make_sank <- function(events){
+  x <- events %>% group_by(Person, Counterpart) %>%
     tally %>%
     ungroup %>%
-    mutate(Country = as.numeric(factor(Country)),
-           Client = as.numeric(factor(Client)))
+    mutate(Person = as.numeric(factor(Person)),
+           Counterpart = as.numeric(factor(Counterpart)))
   nodes = data.frame("name" = 
-                       c(sort(unique(olek$Country)),
-                         sort(unique(olek$Client)),
-                         sort(unique(olek$Actors)),
-                         sort(unique(olek$Study))))# Node 3
+                       c(sort(unique(events$Person)),
+                         sort(unique(events$Counterpart))))
+  
   # Replacer
   replacer <- function(x){
     out <- data.frame(x = nodes$name, y = (1:nrow(nodes))-1)
@@ -103,38 +95,64 @@ make_sank <- function(){
     return(out$y)
   }
   links = bind_rows(
-    # Country to client
-    olek %>% group_by(Country, Client) %>%
+    # Person to counterpart
+    events %>% group_by(Person, Counterpart) %>%
       tally %>%
       ungroup %>%
-      mutate(Country = replacer(Country),
-             Client = replacer(Client)) %>%
-      rename(a = Country,
-             b = Client),
-    # Client to actors
-    olek %>% group_by(Client, Actors) %>%
-      tally %>%
-      ungroup %>%
-      mutate(Client = replacer(Client),
-             Actors = replacer(Actors)) %>%
-      rename(a = Client,
-             b = Actors),
-    # Actors to study
-    olek %>% group_by(Actors, Study) %>%
-      tally %>%
-      ungroup %>%
-      mutate(Actors = replacer(Actors),
-             Study = replacer(Study)) %>%
-      rename(a = Actors,
-             b = Study)
+      mutate(Person = replacer(Person),
+             Counterpart = replacer(Counterpart)) %>%
+      rename(a = Person,
+             b = Counterpart)
   )
   
   # Each row represents a link. The first number represents the node being conntected from. 
-  # the second number represents the node connected to.
+  # The second number represents the node connected to.
   # The third number is the value of the node
   names(links) = c("source", "target", "value")
   sankeyNetwork(Links = links, Nodes = nodes,
                 Source = "source", Target = "target",
                 Value = "value", NodeID = "name",
                 fontSize= 8, nodeWidth = 30)
+}
+
+# Define function for filtering events
+filter_events <- function(events,
+                          person = NULL,
+                          organization = NULL,
+                          city = NULL,
+                          country = NULL,
+                          counterpart = NULL,
+                          visit_start = NULL,
+                          visit_end = NULL){
+  x <- events
+  
+  # filter for person
+  if(!is.null(person)){
+    x <- x %>% filter(Person %in% person)
+  }
+  # filter for organization
+  if(!is.null(organization)){
+    x <- x %>% filter(Organization %in% organization)
+  }
+  # filter for city
+  if(!is.null(city)){
+    x <- x %>% filter(`City of visit` %in% city)
+  }
+  # filter for country
+  if(!is.null(country)){
+    x <- x %>% filter(`Country of visit` %in% country)
+  }
+  # filter for counterpart
+  if(!is.null(counterpart)){
+    x <- x %>% filter(Counterpart %in% counterpart)
+  }
+  # filter for visit start
+  if(!is.null(visit_start)){
+    x <- x %>% filter(`Visit start` >= visit_start)
+  }
+  # filter for visit end
+  if(!is.null(visit_end)){
+    x <- x %>% filter(`Visit end`<= visit_end)
+  }
+  return(x)
 }

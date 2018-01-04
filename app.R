@@ -40,18 +40,32 @@ body <- dashboardBody(
       fluidPage(
         fluidRow(
           
-          column(3,
-                 h3('Calendar filters'),
-                 dateInput('date',
+          column(5,
+                 dateRangeInput('date',
                            label = 'Date',
-                           value = NULL),
-                 selectInput('country',
-                             label = 'Country',
-                             choices = countries),
+                           start = '2017-01-01',
+                           end = '2017-12-31'),
+                 selectInput('organization',
+                             label = 'Organization',
+                             choices = organizations,
+                             multiple = TRUE),
                  selectInput('person',
                              label = 'Person',
-                             choices = people)),
-          column(9,
+                             choices = people,
+                             multiple = TRUE),
+                 selectInput('city',
+                             label = 'City',
+                             choices = cities,
+                             multiple = TRUE),
+                 selectInput('country',
+                             label = 'Country',
+                             choices = countries,
+                             multiple = TRUE),
+                 selectInput('counterpart',
+                             label = 'Counterpart',
+                             choices = counterparts,
+                             multiple = TRUE)),
+          column(7,
                  leafletOutput('leafy')
                  )
         ),
@@ -61,7 +75,7 @@ body <- dashboardBody(
                  column(6,
                         h3('Detailed visit information',
                            align = 'center'),
-                        dataTableOutput('visit_info_table')))
+                        DT::dataTableOutput('visit_info_table')))
       )
     ),
     tabItem(
@@ -90,27 +104,52 @@ ui <- dashboardPage(header, sidebar, body, skin="blue")
 
 # Server
 server <- function(input, output) {
+  
+  # Reactive dataframe for the filtered table
+  filtered_events <- reactive({
+    x <- filter_events(events = events,
+                       person = input$person,
+                       organization = input$organization,
+                       city = input$city,
+                       country = input$country,
+                       counterpart = input$counterpart,
+                       visit_start = input$date[1],
+                       visit_end = input$date[2])
+  })
 
   output$leafy <- renderLeaflet({
-    leaflet() %>% addTiles()
+    places <- filtered_events()
+    # icons <- awesomeIcons(
+    #   icon = 'ios-close',
+    #   iconColor = 'black',
+    #   library = 'ion',
+    #   markerColor = getColor(df.20)
+    # )
+    icons <- icons(
+      iconUrl = paste0('www/', places$file),
+      iconWidth = 20, iconHeight = 28
+    )
+    popups <- places$Person
+    
+    leaflet() %>% 
+      addProviderTiles("Esri.WorldGrayCanvas", options = tileOptions(
+        minZoom=0, 
+        maxZoom=16)) %>%
+      addMarkers(data = places, lng =~Long, lat = ~Lat,
+                       icon = icons,
+                 popup = popups)
   })
   
   output$sank <- renderSankeyNetwork({
-    make_sank()
+    make_sank(events = filtered_events())
   })
   
-  output$visit_info_table <- renderDataTable({
-    x <- data.frame(Person = letters[1:5],
-                    Organization = letters[6:10],
-                    Counterpart = letters[11:15],
-                    Country = letters[16:20],
-                    City = letters[21:25],
-                    Date = as.Date(Sys.Date():(Sys.Date() +4), 
-                                   origin = '1970-01-01'))
+  output$visit_info_table <- DT::renderDataTable({
+    x <- filtered_events()
     DT::datatable(x,options = list(dom = 't',
-                                   scrollY = '300px', 
+                                   scrollY = '300px',
                                    paging = FALSE,
-                                   scrollX = TRUE), 
+                                   scrollX = TRUE),
                   rownames = FALSE)
   })
 }
