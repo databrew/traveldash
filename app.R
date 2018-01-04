@@ -3,9 +3,17 @@ library(shinydashboard)
 library(sparkline)
 library(jsonlite)
 library(dplyr)
+library(leaflet)
+library(networkD3)
+library(readxl)
+library(tidyverse)
+
+# Preparation
+source('functions.R')
+source('global.R')
 
 # Header
-header <- dashboardHeader(title="Databrew app")
+header <- dashboardHeader(title="Travel event dashboard")
 
 # Sidebar
 sidebar <- dashboardSidebar(
@@ -31,14 +39,29 @@ body <- dashboardBody(
       tabName="main",
       fluidPage(
         fluidRow(
-          p('Some text'),
+          
           column(3,
+                 h3('Calendar filters'),
                  dateInput('date',
                            label = 'Date',
-                           value = NULL)),
+                           value = NULL),
+                 selectInput('country',
+                             label = 'Country',
+                             choices = countries),
+                 selectInput('person',
+                             label = 'Person',
+                             choices = people)),
           column(9,
-                 plotOutput('fake_plot'))
-        )
+                 leafletOutput('leafy')
+                 )
+        ),
+        fluidRow(column(6,
+                        sankeyNetworkOutput('sank')),
+                        # tags$iframe(src='sankey_network.html', height=500, width=750)),
+                 column(6,
+                        h3('Detailed visit information',
+                           align = 'center'),
+                        dataTableOutput('visit_info_table')))
       )
     ),
     tabItem(
@@ -68,8 +91,27 @@ ui <- dashboardPage(header, sidebar, body, skin="blue")
 # Server
 server <- function(input, output) {
 
-  output$fake_plot <- renderPlot({
-    barplot(1:10)
+  output$leafy <- renderLeaflet({
+    leaflet() %>% addTiles()
+  })
+  
+  output$sank <- renderSankeyNetwork({
+    make_sank()
+  })
+  
+  output$visit_info_table <- renderDataTable({
+    x <- data.frame(Person = letters[1:5],
+                    Organization = letters[6:10],
+                    Counterpart = letters[11:15],
+                    Country = letters[16:20],
+                    City = letters[21:25],
+                    Date = as.Date(Sys.Date():(Sys.Date() +4), 
+                                   origin = '1970-01-01'))
+    DT::datatable(x,options = list(dom = 't',
+                                   scrollY = '300px', 
+                                   paging = FALSE,
+                                   scrollX = TRUE), 
+                  rownames = FALSE)
   })
 }
 
