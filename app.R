@@ -58,44 +58,33 @@ body <- dashboardBody(
                              label = 'Counterpart',
                              choices = counterparts,
                              multiple = TRUE),
-                 selectInput('month',
-                             label = 'Month',
-                             choices = months,
-                             selected = months,
-                             multiple = TRUE)
-                 # shiny::dateInput('date',
-                 #           label = 'Date',
-                 #           min = as.Date('2017-01-01'),
-                 #           max(as.Date('2017-12-31')),
-                 #           # value = Sys.Date(),
-                 #           startview = 'month'
-                 # ),
-                 # sliderInput('date_cushion',
-                 #             label = 'Date cushion',
-                 #             min = 0,
-                 #             max = 185,
-                 #             value = 185),
-                 # helpText('Examining travel for the period from ', textOutput('date_text'))
+                 shiny::dateInput('date',
+                           label = 'Date',
+                           min = as.Date('2017-01-01'),
+                           max(as.Date('2017-12-31')),
+                           # value = Sys.Date(),
+                           startview = 'month'
                  ),
+                 sliderInput('date_cushion',
+                             label = 'Date cushion',
+                             min = 0,
+                             max = 185,
+                             value = 185),
+                 helpText('Examining travel for the period from ', textOutput('date_text'))
+          ),
           column(7,
-                 tabsetPanel(
-                   tabPanel('Map',
-                            leafletOutput('leafy')),
-                   tabPanel('Visualization',
-                            sankeyNetworkOutput('sank'))
-                 )
-                 
-                 )
-        ),
-        fluidRow(column(12,
-                        h3('Detailed visit information',
-                           align = 'center'),
-                        DT::dataTableOutput('visit_info_table')))
+                 leafletOutput('leafy'))),
+        fluidRow(
+          column(5,
+                 sankeyNetworkOutput('sank')),
+          column(7,
+                 h3('Detailed visit information',
+                    align = 'center'),
+                 DT::dataTableOutput('visit_info_table')))
       )
     )
-  )
-)
-
+    
+  ))
 # UI
 ui <- dashboardPage(header, sidebar, body, skin="blue")
 
@@ -113,9 +102,8 @@ server <- function(input, output, session) {
                        city = input$city,
                        country = input$country,
                        counterpart = input$counterpart,
-                       # visit_start = input$date - input$date_cushion,
-                       # visit_end = input$date + input$date_cushion,
-                       month = input$month) 
+                       visit_start = input$date - input$date_cushion,
+                       visit_end = input$date + input$date_cushion)
     # Jitter if necessary
     if(any(duplicated(events$Lat)) |
        any(duplicated(events$Long))){
@@ -124,20 +112,20 @@ server <- function(input, output, session) {
                Lat = jitter(Lat, factor = 0.5))
     }
     return(x)
-      
+    
   })
   
-  # output$date_text <- renderText({
-  #   if(is.null(input$date)){
-  #     return(NULL)
-  #   } else {
-  #     visit_start <- input$date - input$date_cushion
-  #     visit_end <- input$date + input$date_cushion
-  #     ff <- function(x){format(x, '%B %d, %Y')}
-  #     paste0(ff(visit_start), ' through ', ff(visit_end)) 
-  #   }
-  # })
-
+  output$date_text <- renderText({
+    if(is.null(input$date)){
+      return(NULL)
+    } else {
+      visit_start <- input$date - input$date_cushion
+      visit_end <- input$date + input$date_cushion
+      ff <- function(x){format(x, '%B %d, %Y')}
+      paste0(ff(visit_start), ' through ', ff(visit_end))
+    }
+  })
+  
   output$leafy <- renderLeaflet({
     places <- filtered_events()
     # icons <- awesomeIcons(
@@ -157,7 +145,7 @@ server <- function(input, output, session) {
       addMarkers(data = places, lng =~Long, lat = ~Lat,
                  icon = icons,
                  popup = popups)
-      
+    
     if(length(unique(places$Lat)) == 1){
       l <- l %>%
         setView(lng = places$Long[1], lat = places$Lat[1], zoom = 3)
