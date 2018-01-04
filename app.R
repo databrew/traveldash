@@ -38,45 +38,19 @@ body <- dashboardBody(
       fluidPage(
         fluidRow(
           column(5,
-                 selectInput('organization',
-                             label = 'Organization',
-                             choices = organizations,
-                             multiple = TRUE),
-                 selectInput('person',
-                             label = 'Person',
-                             choices = people,
-                             multiple = TRUE),
-                 selectInput('city',
-                             label = 'City',
-                             choices = cities,
-                             multiple = TRUE),
-                 selectInput('country',
-                             label = 'Country',
-                             choices = countries,
-                             multiple = TRUE),
-                 selectInput('counterpart',
-                             label = 'Counterpart',
-                             choices = counterparts,
-                             multiple = TRUE),
-                 shiny::dateInput('date',
-                           label = 'Date',
-                           min = as.Date('2017-01-01'),
-                           max(as.Date('2017-12-31')),
-                           # value = Sys.Date(),
-                           startview = 'month'
-                 ),
-                 sliderInput('date_cushion',
-                             label = 'Date cushion',
-                             min = 0,
-                             max = 185,
-                             value = 185),
-                 helpText('Examining travel for the period from ', textOutput('date_text'))
+                 uiOutput("choose.date"),
+                 fluidRow(
+                          column(6, uiOutput("pre.week.btn")),
+                          column(6, uiOutput("next.week.btn"))),
+                 helpText(textOutput('date_text'))
           ),
           column(7,
                  leafletOutput('leafy'))),
         fluidRow(
           column(5,
-                 sankeyNetworkOutput('sank')),
+                 # tags$iframe(src='sankey_network.html', height=500, width=750)
+                 sankeyNetworkOutput('sank')
+                 ),
           column(7,
                  h3('Detailed visit information',
                     align = 'center'),
@@ -97,13 +71,8 @@ server <- function(input, output, session) {
   # Reactive dataframe for the filtered table
   filtered_events <- reactive({
     x <- filter_events(events = events,
-                       person = input$person,
-                       organization = input$organization,
-                       city = input$city,
-                       country = input$country,
-                       counterpart = input$counterpart,
-                       visit_start = input$date - input$date_cushion,
-                       visit_end = input$date + input$date_cushion)
+                       visit_start = input$dates[1],
+                       visit_end = input$dates[2])
     # Jitter if necessary
     if(any(duplicated(events$Lat)) |
        any(duplicated(events$Long))){
@@ -116,11 +85,11 @@ server <- function(input, output, session) {
   })
   
   output$date_text <- renderText({
-    if(is.null(input$date)){
+    if(is.null(input$dates)){
       return(NULL)
     } else {
-      visit_start <- input$date - input$date_cushion
-      visit_end <- input$date + input$date_cushion
+      visit_start <- input$dates[1]
+      visit_end <- input$dates[2]
       ff <- function(x){format(x, '%B %d, %Y')}
       paste0(ff(visit_start), ' through ', ff(visit_end))
     }
@@ -187,6 +156,45 @@ server <- function(input, output, session) {
     prettify(x,
              download_options = TRUE)
   })
+  
+  
+  # ------- Date Range Input + previous/next week buttons---------------
+  output$choose.date <- renderUI({
+    dateRangeInput("dates", 
+                   label = h3(HTML("<i class='glyphicon glyphicon-calendar'></i> Date Range")), 
+                   start = "2017-01-01", end='2017-01-07', 
+                   min = date.range[1], max = date.range[2])
+  }) 
+  
+  output$pre.week.btn <- renderUI({
+    actionButton("pre.week", 
+                 label = HTML("<span class='small'><i class='glyphicon glyphicon-arrow-left'></i> Back</span>"))
+  })
+  output$next.week.btn <- renderUI({
+    actionButton("next.week", 
+                 label = HTML("<span class='small'>Next <i class='glyphicon glyphicon-arrow-right'></i></span>"))
+  })
+  
+  date.gap <- reactive({input$dates[2]-input$dates[1]+1})
+  observeEvent(input$pre.week, {
+    if(input$dates[1]-date.gap() < date.range[1]){
+      if(input$dates[2]-date.gap() < date.range[1]){
+        updateDateRangeInput(session, "dates", start = date.range[1], end = date.range[1])
+      }else{updateDateRangeInput(session, "dates", start = date.range[1], end = input$dates[2]-date.gap())}
+      #if those two dates inputs equal to each other, use 7 as the gap by default
+    }else{if(input$dates[1] == input$dates[2]){updateDateRangeInput(session, "dates", start = input$dates[1]-7, end = input$dates[2])
+    }else{updateDateRangeInput(session, "dates", start = input$dates[1]-date.gap(), end = input$dates[2]-date.gap())}
+    }})
+  observeEvent(input$next.week, {
+    if(input$dates[2]+date.gap() > date.range[2]){
+      if(input$dates[1]+date.gap() > date.range[2]){
+        updateDateRangeInput(session, "dates", start = date.range[2], end = date.range[2])
+      }else{updateDateRangeInput(session, "dates", start = input$dates[1]+date.gap(), end = date.range[2])}
+    }else{if(input$dates[1] == input$dates[2]){updateDateRangeInput(session, "dates", start = input$dates[1], end = input$dates[2]+7)
+    }else{updateDateRangeInput(session, "dates", start = input$dates[1]+date.gap(), end = input$dates[2]+date.gap())}
+    }})
+  
+  output$dates.input <- renderPrint({input$dates})
 }
 
 shinyApp(ui, server)
