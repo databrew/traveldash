@@ -1,3 +1,4 @@
+library(shinyjs)
 library(shiny)
 library(shinydashboard)
 library(sparkline)
@@ -21,30 +22,22 @@ sidebar <- dashboardSidebar(
     menuItem(
       text="Dashboard",
       tabName="main",
-      icon=icon("eye")),
-    menuItem(
-      text = 'About',
-      tabName = 'about',
-      icon = icon("cog", lib = "glyphicon"))
+      icon=icon("eye"))
   )
 )
 
 # UI body
 body <- dashboardBody(
-  tags$head(
-    tags$link(rel = "stylesheet", type = "text/css", href = "custom.css")
-  ),
+  useShinyjs(), # for hiding sidebar
+  # tags$head(
+  #   tags$link(rel = "stylesheet", type = "text/css", href = "custom.css")
+  # ),
   tabItems(
     tabItem(
       tabName="main",
       fluidPage(
         fluidRow(
-          
           column(5,
-                 dateRangeInput('date',
-                           label = 'Date',
-                           start = '2017-01-01',
-                           end = '2017-12-31'),
                  selectInput('organization',
                              label = 'Organization',
                              choices = organizations,
@@ -64,36 +57,40 @@ body <- dashboardBody(
                  selectInput('counterpart',
                              label = 'Counterpart',
                              choices = counterparts,
-                             multiple = TRUE)),
+                             multiple = TRUE),
+                 selectInput('month',
+                             label = 'Month',
+                             choices = months,
+                             selected = months,
+                             multiple = TRUE)
+                 # shiny::dateInput('date',
+                 #           label = 'Date',
+                 #           min = as.Date('2017-01-01'),
+                 #           max(as.Date('2017-12-31')),
+                 #           # value = Sys.Date(),
+                 #           startview = 'month'
+                 # ),
+                 # sliderInput('date_cushion',
+                 #             label = 'Date cushion',
+                 #             min = 0,
+                 #             max = 185,
+                 #             value = 185),
+                 # helpText('Examining travel for the period from ', textOutput('date_text'))
+                 ),
           column(7,
-                 leafletOutput('leafy')
+                 tabsetPanel(
+                   tabPanel('Map',
+                            leafletOutput('leafy')),
+                   tabPanel('Visualization',
+                            sankeyNetworkOutput('sank'))
+                 )
+                 
                  )
         ),
-        fluidRow(column(6,
-                        sankeyNetworkOutput('sank')),
-                        # tags$iframe(src='sankey_network.html', height=500, width=750)),
-                 column(6,
+        fluidRow(column(12,
                         h3('Detailed visit information',
                            align = 'center'),
                         DT::dataTableOutput('visit_info_table')))
-      )
-    ),
-    tabItem(
-      tabName = 'about',
-      fluidPage(
-        fluidRow(
-          div(img(src='logo_clear.png', align = "center"), style="text-align: center;"),
-          h4('Built in partnership with ',
-             a(href = 'http://databrew.cc',
-               target='_blank', 'Databrew'),
-             align = 'center'),
-          p('Empowering research and analysis through collaborative data science.', align = 'center'),
-          div(a(actionButton(inputId = "email", label = "info@databrew.cc", 
-                             icon = icon("envelope", lib = "font-awesome")),
-                href="mailto:info@databrew.cc",
-                align = 'center')), 
-          style = 'text-align:center;'
-        )
       )
     )
   )
@@ -103,7 +100,10 @@ body <- dashboardBody(
 ui <- dashboardPage(header, sidebar, body, skin="blue")
 
 # Server
-server <- function(input, output) {
+server <- function(input, output, session) {
+  
+  # hide sidebar by default
+  addClass(selector = "body", class = "sidebar-collapse")
   
   # Reactive dataframe for the filtered table
   filtered_events <- reactive({
@@ -113,9 +113,30 @@ server <- function(input, output) {
                        city = input$city,
                        country = input$country,
                        counterpart = input$counterpart,
-                       visit_start = input$date[1],
-                       visit_end = input$date[2])
+                       # visit_start = input$date - input$date_cushion,
+                       # visit_end = input$date + input$date_cushion,
+                       month = input$month) 
+    # Jitter if necessary
+    if(any(duplicated(events$Lat)) |
+       any(duplicated(events$Long))){
+      x <- x %>%
+        mutate(Long = jitter(Long, factor = 0.5),
+               Lat = jitter(Lat, factor = 0.5))
+    }
+    return(x)
+      
   })
+  
+  # output$date_text <- renderText({
+  #   if(is.null(input$date)){
+  #     return(NULL)
+  #   } else {
+  #     visit_start <- input$date - input$date_cushion
+  #     visit_end <- input$date + input$date_cushion
+  #     ff <- function(x){format(x, '%B %d, %Y')}
+  #     paste0(ff(visit_start), ' through ', ff(visit_end)) 
+  #   }
+  # })
 
   output$leafy <- renderLeaflet({
     places <- filtered_events()
@@ -127,30 +148,56 @@ server <- function(input, output) {
     # )
     icons <- icons(
       iconUrl = paste0('www/', places$file),
-      iconWidth = 20, iconHeight = 28
+      iconWidth = 28, iconHeight = 28
     )
     popups <- places$Person
     
-    leaflet() %>% 
-      addProviderTiles("Esri.WorldGrayCanvas", options = tileOptions(
-        minZoom=0, 
-        maxZoom=16)) %>%
+    l <- leaflet() %>%
+      addProviderTiles("Esri.WorldStreetMap") %>%
       addMarkers(data = places, lng =~Long, lat = ~Lat,
-                       icon = icons,
+                 icon = icons,
                  popup = popups)
+      
+    if(length(unique(places$Lat)) == 1){
+      l <- l %>%
+        setView(lng = places$Long[1], lat = places$Lat[1], zoom = 3)
+    } 
+    l
   })
   
   output$sank <- renderSankeyNetwork({
-    make_sank(events = filtered_events())
+    x <- filtered_events()
+    show_sankey <- FALSE
+    if(!is.null(x)){
+      if(nrow(x) > 0){
+        show_sankey <- TRUE
+      }
+    }
+    # return(NULL)
+    if(show_sankey){
+      make_sank(events = x)
+    } else {
+      return(NULL)
+    }
   })
   
   output$visit_info_table <- DT::renderDataTable({
     x <- filtered_events()
-    DT::datatable(x,options = list(dom = 't',
-                                   scrollY = '300px',
-                                   paging = FALSE,
-                                   scrollX = TRUE),
-                  rownames = FALSE)
+    # DT::datatable(x,options = list(dom = 't',
+    #                                scrollY = '300px',
+    #                                paging = FALSE,
+    #                                scrollX = TRUE),
+    #               rownames = FALSE)
+    x <- x %>%
+      dplyr::select(Person,
+                    Organization,
+                    `City of visit`,
+                    `Country of visit`,
+                    Counterpart,
+                    `Visit start`,
+                    `Visit end`)
+    prettify(x,
+             download_options = TRUE)
   })
 }
 

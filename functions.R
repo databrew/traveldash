@@ -112,7 +112,7 @@ make_sank <- function(events){
   sankeyNetwork(Links = links, Nodes = nodes,
                 Source = "source", Target = "target",
                 Value = "value", NodeID = "name",
-                fontSize= 8, nodeWidth = 30)
+                fontSize= 14, nodeWidth = 30)
 }
 
 # Define function for filtering events
@@ -123,7 +123,8 @@ filter_events <- function(events,
                           country = NULL,
                           counterpart = NULL,
                           visit_start = NULL,
-                          visit_end = NULL){
+                          visit_end = NULL,
+                          month = NULL){
   x <- events
   
   # filter for person
@@ -153,6 +154,11 @@ filter_events <- function(events,
   # filter for visit end
   if(!is.null(visit_end)){
     x <- x %>% filter(`Visit end`<= visit_end)
+  }
+  # filter for month
+  if(!is.null(month)){
+    x <- x %>% filter(format(`Visit end`, '%B') %in% month |
+                        format(`Visit start`, '%B') %in% month)
   }
   return(x)
 }
