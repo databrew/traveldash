@@ -86,5 +86,9 @@ cities <- sort(unique(events$`City of visit`))
 counterparts <- sort(unique(events$Counterpart))
 countries <- sort(unique(events$`Country of visit`))
 months <- unique(format(seq(as.Date('2017-01-01'), as.Date('2017-12-31'), 1), '%B'))
-choices_month <- format(seq.Date(from = as.Date("2017-01-01"), by = "month", length.out = 12), "%B-%Y")
-
+# choices_month <- format(seq.Date(from = as.Date("2017-01-01"), 
+#                                  by = "month", 
+#                                  length.out = 12), "%B-%Y")
+choices_month <- seq(as.Date('2017-01-01'),
+                     as.Date('2017-12-31'),
+                     1)

@@ -39,10 +39,14 @@ body <- dashboardBody(
         fluidRow(
           column(5,
                  sliderValues(
-                   inputId = "dates", label = "Month", width = "100%",
+                   inputId = "dates", 
+                   label = "Date range", 
+                   width = "100%",
                    values = choices_month, 
-                   from = choices_month[2], to = choices_month[6],
-                   grid = FALSE, animate = animationOptions(interval = 1500)
+                   from = choices_month[1], 
+                   to = choices_month[7],
+                   grid = FALSE, 
+                   animate = animationOptions(interval = 500)
                  ),
                  verbatimTextOutput("res")
                  # helpText(textOutput('date_text'))
@@ -101,21 +105,18 @@ server <- function(input, output, session) {
   })
   
   output$leafy <- renderLeaflet({
+    
+    l <- leaflet() %>%
+      addProviderTiles("Esri.WorldStreetMap")
+    
     places <- filtered_events()
-    # icons <- awesomeIcons(
-    #   icon = 'ios-close',
-    #   iconColor = 'black',
-    #   library = 'ion',
-    #   markerColor = getColor(df.20)
-    # )
     icons <- icons(
       iconUrl = paste0('www/', places$file),
       iconWidth = 28, iconHeight = 28
     )
     popups <- places$Person
     
-    l <- leaflet() %>%
-      addProviderTiles("Esri.WorldStreetMap") %>%
+    l <- l %>%
       addMarkers(data = places, lng =~Long, lat = ~Lat,
                  icon = icons,
                  popup = popups)
@@ -144,7 +145,23 @@ server <- function(input, output, session) {
   })
   
   filter_dates <- reactive({
-    as.Date(paste("01", unlist(strsplit(input$dates, ";")), sep="-"), format="%d-%B-%Y")
+    good_input <- FALSE
+    if(!is.null(input$dates)){
+      if(!any(is.na(input$dates))){
+        if(!any(grepl('null|na', tolower(input$dates)))){
+          good_input <- TRUE
+        }
+      }
+    }
+    if(!good_input){
+      return(NULL)
+      # as.Date(c('2017-01-01',
+      #           '2017-01-07'))
+    } else {
+      as.Date(unlist(strsplit(input$dates, ";")))
+    }
+    
+    # as.Date(paste("01", unlist(strsplit(input$dates, ";")), sep="-"), format="%d-%B-%Y")
   })
   
   output$visit_info_table <- DT::renderDataTable({

@@ -163,7 +163,8 @@ filter_events <- function(events,
   return(x)
 }
 
-# Slider date range input https://stackoverflow.com/questions/40392676/r-shiny-date-slider-animation-by-month-currently-by-day
+# Slider date range input 
+# got some info from https://stackoverflow.com/questions/40392676/r-shiny-date-slider-animation-by-month-currently-by-day
 sliderValues <- function (inputId,
                           label,
                           values,
