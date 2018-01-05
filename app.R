@@ -44,7 +44,7 @@ body <- dashboardBody(
                    h4('Date range'),
                    column(1,
                           actionButton("action_back", "Back", icon = icon('arrow-circle-left'))),
-                   column(6, NULL),
+                   column(4, NULL),
                    column(1,
                           actionButton("action_forward", "Forward", icon=icon("arrow-circle-right")))
                  ),
