@@ -100,3 +100,5 @@ date_dictionary <-
                         1)) 
 date_dictionary <- date_dictionary %>%
   mutate(day_number = 1:nrow(date_dictionary))
+
+

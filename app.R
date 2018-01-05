@@ -9,6 +9,8 @@ library(networkD3)
 library(readxl)
 library(tidyverse)
 library(ggcal) #devtools::install_github('jayjacobs/ggcal')
+library(googleVis)
+
 # Preparation
 source('functions.R')
 source('global.R')
@@ -44,8 +46,9 @@ body <- dashboardBody(
                              max = date_dictionary$date[length(date_dictionary$date)], 
                              value = date_dictionary$date[c(1,7)],
                              animate = TRUE),
-                 plotOutput('calendar_plot',
-                            height = '200px'),
+                 htmlOutput('g_calendar'),
+                 # plotOutput('calendar_plot',
+                 #            height = '200px'),
                  # uiOutput('date_mirror') # currently only using for display
                  textInput('search',
                            'Filter for people, places, organizations, etc.')
@@ -221,6 +224,34 @@ server <- function(input, output, session) {
           theme(legend.position = 'none')
       }
     })
+  
+  output$g_calendar <- renderGvis({
+    
+    fd <- filter_dates()
+    if(is.null(fd)){
+      return(NULL)
+    } else {
+      fills <- ifelse(date_dictionary$date >= fd[1] &
+                        date_dictionary$date <= fd[2],
+                      1,
+                      0)
+      dd <- date_dictionary %>%
+        mutate(num = fills)
+      gvisCalendar(data = dd, 
+                   datevar = 'date',
+                   numvar = 'num',
+                   options=list(
+                     width=300,
+                     height = 100,
+                     calendar="{yearLabel: { fontName: 'Helvetica',
+                               fontSize: 20, color: '#1A8763', bold: false},
+                               cellSize: 5,
+                               cellColor: { stroke: 'black', strokeOpacity: 0.2 },
+                               focusedCellColor: {stroke:'red'}}"))
+
+
+    }
+  })
 }
 
 shinyApp(ui, server)
