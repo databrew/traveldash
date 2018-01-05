@@ -42,6 +42,7 @@ body <- dashboardBody(
           column(4,
                  fluidRow(
                    h4('Date range'),
+                   uiOutput('datey'),
                    column(1,
                           actionButton("action_back", "Back", icon = icon('arrow-circle-left'))),
                    column(4, NULL),
@@ -99,6 +100,10 @@ server <- function(input, output, session) {
       starter(starter() - 1)
     }
   })
+  observeEvent(input$date_range, {
+    starter(input$date_range[1])
+  })
+  
   seld <- reactive({
     x <- starter()
     x <- as.Date(x, 
@@ -106,6 +111,39 @@ server <- function(input, output, session) {
     x <- as.character(x)
     x
   })
+  
+  output$datey <- renderUI({
+    seldy <- seld()
+    have_selection <- FALSE
+    if(exists('seldy')){
+      if(!is.null(seldy)){
+        have_selection <- TRUE
+      }
+    }
+    if(!have_selection){
+      x <- input$date
+      if(is.null(x)){
+        starty <- date_dictionary$date[1]
+      } else {
+        starty <- x[1]
+      }
+      
+    } else {
+      starty <- as.Date(seldy)
+    }
+    
+    dw <- date_width()
+    if(is.null(dw)){
+      endy <- starty + 14
+    } else {
+      endy <- starty + dw
+    }
+    dateRangeInput('date_range',
+                   '',
+                   start = starty,
+                   end = endy)
+  })
+  
   output$starter_text <- renderText({
     x <- seld()
     x
@@ -241,23 +279,6 @@ server <- function(input, output, session) {
       DT::formatStyle(columns = colnames(.), fontSize = '50%')
   })
   
-  output$date_mirror <- renderUI({
-    fd <- filter_dates()
-    ok <- FALSE
-    if(!is.null(fd)){
-      if(length(fd) == 2){
-        ok <- TRUE
-      }
-    }
-    if(ok){
-      dateRangeInput('date_mirror',
-                     label = '',
-                     start = fd[1],
-                     end = fd[2])
-    } else {
-      return(NULL)
-    }
-  })
   
   # output$calendar_plot <-
   #   renderPlot({
