@@ -8,7 +8,7 @@ library(leaflet)
 library(networkD3)
 library(readxl)
 library(tidyverse)
-
+library(ggcal) #devtools::install_github('jayjacobs/ggcal')
 # Preparation
 source('functions.R')
 source('global.R')
@@ -37,28 +37,27 @@ body <- dashboardBody(
       tabName="main",
       fluidPage(
         fluidRow(
-          column(5,
-                 sliderValues(
-                   inputId = "dates", 
-                   label = "Date range", 
-                   width = "100%",
-                   values = choices_month, 
-                   from = choices_month[1], 
-                   to = choices_month[7],
-                   grid = FALSE, 
-                   animate = animationOptions(interval = 500)
-                 ),
-                 verbatimTextOutput("res")
-                 # helpText(textOutput('date_text'))
+          column(4,
+                 sliderInput("dates",
+                             "Date range",
+                             min = date_dictionary$date[1], 
+                             max = date_dictionary$date[length(date_dictionary$date)], 
+                             value = date_dictionary$date[c(1,7)],
+                             animate = TRUE),
+                 plotOutput('calendar_plot',
+                            height = '200px'),
+                 # uiOutput('date_mirror') # currently only using for display
+                 textInput('search',
+                           'Filter for people, places, organizations, etc.')
           ),
-          column(7,
+          column(8,
                  leafletOutput('leafy'))),
         fluidRow(
-          column(5,
+          column(4,
                  # tags$iframe(src='sankey_network.html', height=500, width=750)
                  sankeyNetworkOutput('sank')
                  ),
-          column(7,
+          column(8,
                  h3('Detailed visit information',
                     align = 'center'),
                  DT::dataTableOutput('visit_info_table')))
@@ -81,7 +80,8 @@ server <- function(input, output, session) {
     fd <- filter_dates()
     x <- filter_events(events = events,
                        visit_start = fd[1],
-                       visit_end = fd[2])
+                       visit_end = fd[2],
+                       search = input$search)
     # Jitter if necessary
     if(any(duplicated(events$Lat)) |
        any(duplicated(events$Long))){
@@ -92,23 +92,16 @@ server <- function(input, output, session) {
     return(x)
     
   })
-  
-  output$date_text <- renderText({
-    if(is.null(input$dates)){
-      return(NULL)
-    } else {
-      visit_start <- input$dates[1]
-      visit_end <- input$dates[2]
-      ff <- function(x){format(x, '%B %d, %Y')}
-      paste0(ff(visit_start), ' through ', ff(visit_end))
-    }
+
+  output$leafy <- renderLeaflet({
+    l <- leaflet() %>%
+      addProviderTiles("Esri.WorldStreetMap") %>%
+      setView(lng = mean(events$Long) - 5, lat = mean(events$Lat), zoom = 1)
+    l
   })
   
-  output$leafy <- renderLeaflet({
-    
-    l <- leaflet() %>%
-      addProviderTiles("Esri.WorldStreetMap")
-    
+  # Leaflet proxy for the points
+  observeEvent(filtered_events(), {
     places <- filtered_events()
     icons <- icons(
       iconUrl = paste0('www/', places$file),
@@ -116,16 +109,12 @@ server <- function(input, output, session) {
     )
     popups <- places$Person
     
-    l <- l %>%
+    ## plot the subsetted ata
+    leafletProxy("leafy") %>%
+      clearMarkers() %>%
       addMarkers(data = places, lng =~Long, lat = ~Lat,
                  icon = icons,
                  popup = popups)
-    
-    if(length(unique(places$Lat)) == 1){
-      l <- l %>%
-        setView(lng = places$Long[1], lat = places$Lat[1], zoom = 3)
-    } 
-    l
   })
   
   output$sank <- renderSankeyNetwork({
@@ -148,9 +137,9 @@ server <- function(input, output, session) {
     good_input <- FALSE
     if(!is.null(input$dates)){
       if(!any(is.na(input$dates))){
-        if(!any(grepl('null|na', tolower(input$dates)))){
+        # if(!any(grepl('null|na', tolower(input$dates)))){
           good_input <- TRUE
-        }
+        # }
       }
     }
     if(!good_input){
@@ -158,7 +147,8 @@ server <- function(input, output, session) {
       # as.Date(c('2017-01-01',
       #           '2017-01-07'))
     } else {
-      as.Date(unlist(strsplit(input$dates, ";")))
+      out <- as.Date(input$dates)
+      return(out)
     }
     
     # as.Date(paste("01", unlist(strsplit(input$dates, ";")), sep="-"), format="%d-%B-%Y")
@@ -172,21 +162,65 @@ server <- function(input, output, session) {
     #                                scrollX = TRUE),
     #               rownames = FALSE)
     x <- x %>%
+      mutate(Location = paste0(`City of visit`,
+                               ', ',
+                               toupper(substr(`Country of visit`, 1, 3)))) %>%
       dplyr::select(Person,
                     Organization,
-                    `City of visit`,
-                    `Country of visit`,
+                    Location,
+                    # `City of visit`,
+                    # `Country of visit`,
                     Counterpart,
                     `Visit start`,
                     `Visit end`)
     prettify(x,
-             download_options = TRUE)
+             download_options = TRUE) %>%
+      DT::formatStyle(columns = colnames(.), fontSize = '50%')
   })
   
-  output$res <- renderPrint({
-    print(input$dates) # you have to split manually the result by ";"
-    print(filter_dates())
+  # output$res <- renderPrint({
+  #   print(input$dates) # you have to split manually the result by ";"
+  #   print(filter_dates())
+  # })
+  
+
+  output$date_mirror <- renderUI({
+    fd <- filter_dates()
+    ok <- FALSE
+    if(!is.null(fd)){
+      if(length(fd) == 2){
+        ok <- TRUE
+      }
+    }
+    if(ok){
+      dateRangeInput('date_mirror',
+                     label = '',
+                     start = fd[1],
+                     end = fd[2])
+    } else {
+      return(NULL)
+    }
   })
+  
+  output$calendar_plot <-
+    renderPlot({
+      fd <- filter_dates()
+      if(is.null(fd)){
+        return(NULL)
+      } else {
+        fills <- ifelse(date_dictionary$date >= fd[1] &
+                          date_dictionary$date <= fd[2],
+                        'Selected',
+                        'Not selected')
+          date_dictionary$date[date_dictionary$date >= fd[1] &
+                                      date_dictionary$date <= fd[2]]
+          col_vec <- c('darkorange', 'lightblue')
+        gg_cal(date_dictionary$date, fills) +
+          scale_fill_manual(name = '',
+                             values = col_vec) +
+          theme(legend.position = 'none')
+      }
+    })
 }
 
 shinyApp(ui, server)

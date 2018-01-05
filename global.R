@@ -92,3 +92,11 @@ months <- unique(format(seq(as.Date('2017-01-01'), as.Date('2017-12-31'), 1), '%
 choices_month <- seq(as.Date('2017-01-01'),
                      as.Date('2017-12-31'),
                      1)
+
+# Create a dataframe for dicting day numbers to dates
+date_dictionary <-
+  data_frame(date = seq(as.Date('2017-01-01'),
+                        as.Date('2017-12-31'),
+                        1)) 
+date_dictionary <- date_dictionary %>%
+  mutate(day_number = 1:nrow(date_dictionary))
