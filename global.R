@@ -52,7 +52,7 @@ if('events.RData' %in% dir()){
   new_rows <- bind_rows(new_rows)
   events <- bind_rows(events, new_rows)
   # For now, just add the same file for every photo
-  events$file <- paste0('headshots/', events$Person, '.png')
+  events$file <- paste0('headshots/circles/', events$Person, '.png')
   save(events, file = 'events.RData')
 }
 # events <- events %>%
