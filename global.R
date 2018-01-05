@@ -22,26 +22,29 @@ if('events.RData' %in% dir()){
   cities <- read_csv('spatial/simplemaps-worldcities-basic.csv') %>%
     dplyr::rename(Long = lng,
                   Lat = lat) %>%
-    filter(country %in% africa@data$COUNTRY) %>%
+    mutate(weight = ifelse(country %in% africa@data$COUNTRY, 
+                           3, 
+                           1)) %>%
+    # filter(country %in% africa@data$COUNTRY) %>%
     dplyr::mutate(`City of visit` = city,
                   `Country of visit` = country,
                   Organization = base::sample(c('IFC', 'World Bank', 'ILO'),
                                               size = length(Lat),
                                               replace = TRUE,
                                               prob = c(0.2, 0.7, 0.1)))
-  # Add 50 rows
-  n <- 50
+  # Add n rows
+  n <- 400
   new_rows <- list()
   for(i in 1:n){
     new_row <- events %>% dplyr::sample_n(1) %>%
       dplyr::select(Person, Organization)
-    new_loc <- cities %>% dplyr::sample_n(1) %>%
+    new_loc <- cities %>% dplyr::sample_n(1, weight = cities$weight) %>%
       dplyr::select(`City of visit`, `Country of visit`, Lat, Long)
     new_row <- cbind(new_row, new_loc)
     new_row <- new_row %>%
       dplyr::mutate(Counterpart = sample(events$Counterpart, 1)) %>%
       dplyr::mutate(`Visit start` = sample(seq(as.Date('2017-01-01'),
-                                               as.Date('2017-12-31'),
+                                               Sys.Date(),
                                                1),
                                            1)) %>%
       mutate(`Visit end` = `Visit start` + sample(1:20, 1),
@@ -85,18 +88,12 @@ organizations <- sort(unique(events$Organization))
 cities <- sort(unique(events$`City of visit`))
 counterparts <- sort(unique(events$Counterpart))
 countries <- sort(unique(events$`Country of visit`))
-months <- unique(format(seq(as.Date('2017-01-01'), as.Date('2017-12-31'), 1), '%B'))
-# choices_month <- format(seq.Date(from = as.Date("2017-01-01"), 
-#                                  by = "month", 
-#                                  length.out = 12), "%B-%Y")
-choices_month <- seq(as.Date('2017-01-01'),
-                     as.Date('2017-12-31'),
-                     1)
+
 
 # Create a dataframe for dicting day numbers to dates
 date_dictionary <-
   data_frame(date = seq(as.Date('2017-01-01'),
-                        as.Date('2017-12-31'),
+                        as.Date('2018-12-31'),
                         1)) 
 date_dictionary <- date_dictionary %>%
   mutate(day_number = 1:nrow(date_dictionary))

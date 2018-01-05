@@ -40,9 +40,18 @@ body <- dashboardBody(
       fluidPage(
         fluidRow(
           column(4,
+                 fluidRow(
+                   h4('Date range'),
+                   column(1,
+                          actionButton("action_back", "Back", icon = icon('arrow-circle-left'))),
+                   column(6, NULL),
+                   column(1,
+                          actionButton("action_forward", "Forward", icon=icon("arrow-circle-right")))
+                 ),
+                 # textOutput('starter_text'),
                  uiOutput('dater'),
                  htmlOutput('g_calendar'),
-                 textOutput('the_date'),
+                 # textOutput('the_date'),
                  # plotOutput('calendar_plot',
                  #            height = '200px'),
                  # uiOutput('date_mirror') # currently only using for display
@@ -73,35 +82,77 @@ server <- function(input, output, session) {
   # hide sidebar by default
   addClass(selector = "body", class = "sidebar-collapse")
   
+  starter <- reactiveVal(value = as.numeric(Sys.Date()))
+  observeEvent(input$dates, {
+    starter(as.Date(input$dates[1]))
+  })
+  observeEvent(input$selected_date, {
+    starter(as.Date(selected_date()))
+  })
+  observeEvent(input$action_forward, {
+    dw <- date_width()
+    if(!is.null(dw)){
+      starter(starter() + dw)
+    } else {
+      starter(starter() + 1)
+    }
+  })
+  observeEvent(input$action_back, {
+    dw <- date_width()
+    if(!is.null(dw)){
+      starter(starter() - dw)
+    } else {
+      starter(starter() - 1)
+    }
+  })
+  seld <- reactive({
+    x <- starter()
+    x <- as.Date(x, 
+            origin = '1970-01-01')
+    x <- as.character(x)
+    x
+    })
+  output$starter_text <- renderText({
+    x <- seld()
+    x
+  })
+  
   # Date input
   output$dater <- renderUI({
-    seld <- selected_date()
+    seldy <- seld()
     have_selection <- FALSE
-    if(exists('seld')){
-      if(!is.null(seld)){
+    if(exists('seldy')){
+      if(!is.null(seldy)){
         have_selection <- TRUE
       }
     }
     if(!have_selection){
-      starter <- date_dictionary$date[1]
+      x <- input$date
+      if(is.null(x)){
+        starty <- date_dictionary$date[1]
+      } else {
+        starty <- x[1]
+      }
+      
     } else {
-      starter <- as.Date(seld)
+      starty <- as.Date(seldy)
     }
     
     dw <- date_width()
     if(is.null(dw)){
-      ender <- starter + 7
+      endy <- starty + 14
     } else {
-      ender <- starter + dw
+      endy <- starty + dw
     }
     
     
     sliderInput("dates",
-                "Date range",
+                "",
                 min = date_dictionary$date[1], 
                 max = date_dictionary$date[length(date_dictionary$date)], 
-                value = c(starter, ender),
-                animate = animationOptions(interval = 1000))
+                value = c(starty, endy)#,
+                # animate = animationOptions(interval = 1000)
+                )
     
   })
   
@@ -138,7 +189,8 @@ server <- function(input, output, session) {
       iconUrl = paste0('www/', places$file),
       iconWidth = 28, iconHeight = 28
     )
-    popups <- places$Person
+    popups <- paste0(places$Person, ' of the ', places$Organization, ' meeting with ', places$Counterpart, ' in ',
+                     places$`City of visit`, ' on ', format(places$`Visit start`, '%B %d, %Y'))
     
     ## plot the subsetted ata
     leafletProxy("leafy") %>%
@@ -270,9 +322,9 @@ server <- function(input, output, session) {
                    numvar = 'num',
                    options=list(
                      width=300,
-                     height = 100,
+                     height = 160,
                      calendar="{yearLabel: { fontName: 'Helvetica',
-                               fontSize: 20, color: '#1A8763', bold: false},
+                               fontSize: 14, color: '#1A8763', bold: false},
                                cellSize: 5,
                                cellColor: { stroke: 'black', strokeOpacity: 0.2 },
                                focusedCellColor: {stroke:'red'}}",
@@ -289,17 +341,18 @@ server <- function(input, output, session) {
   date_width <- reactive({
     fd <- filter_dates()
     if(is.null(fd)){
-      7
+      14
     } else {
       as.numeric(fd[2] - fd[1])
     }
   })
-  selected_date <- reactive({
-    input$selected_date
-  })
-  output$the_date <- renderText({
-    paste0('Selected date is ', selected_date(), ' and date_width() is', date_width())
-  })
+
+  selected_date <- reactive({input$selected_date})
+
+  
+  # output$the_date <- renderText({
+  #   paste0('Selected date is ', selected_date(), ' and date_width() is', date_width(), ' and seld is ', seld())
+  # })
 }
 
 shinyApp(ui, server)
