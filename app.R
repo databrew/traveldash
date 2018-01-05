@@ -48,13 +48,8 @@ body <- dashboardBody(
                    column(1,
                           actionButton("action_forward", "Forward", icon=icon("arrow-circle-right")))
                  ),
-                 # textOutput('starter_text'),
                  uiOutput('dater'),
                  htmlOutput('g_calendar'),
-                 # textOutput('the_date'),
-                 # plotOutput('calendar_plot',
-                 #            height = '200px'),
-                 # uiOutput('date_mirror') # currently only using for display
                  textInput('search',
                            'Filter for people, places, organizations, etc.')
           ),
@@ -62,14 +57,13 @@ body <- dashboardBody(
                  leafletOutput('leafy'))),
         fluidRow(
           column(4,
-                 # tags$iframe(src='sankey_network.html', height=500, width=750)
                  sankeyNetworkOutput('sank')
                  ),
           column(8,
                  h3('Detailed visit information',
                     align = 'center'),
                  DT::dataTableOutput('visit_info_table')))
-      )
+        )
     )
     
   ))
@@ -108,10 +102,10 @@ server <- function(input, output, session) {
   seld <- reactive({
     x <- starter()
     x <- as.Date(x, 
-            origin = '1970-01-01')
+                 origin = '1970-01-01')
     x <- as.character(x)
     x
-    })
+  })
   output$starter_text <- renderText({
     x <- seld()
     x
@@ -145,20 +139,17 @@ server <- function(input, output, session) {
       endy <- starty + dw
     }
     
-    
     sliderInput("dates",
                 "",
                 min = date_dictionary$date[1], 
                 max = date_dictionary$date[length(date_dictionary$date)], 
-                value = c(starty, endy)#,
-                # animate = animationOptions(interval = 1000)
-                )
+                value = c(starty, endy)
+    )
     
   })
   
   # Reactive dataframe for the filtered table
   filtered_events <- reactive({
-    # x <- filter_events(events = events)
     fd <- filter_dates()
     x <- filter_events(events = events,
                        visit_start = fd[1],
@@ -174,7 +165,7 @@ server <- function(input, output, session) {
     return(x)
     
   })
-
+  
   output$leafy <- renderLeaflet({
     l <- leaflet() %>%
       addProviderTiles("Esri.WorldStreetMap") %>%
@@ -199,7 +190,7 @@ server <- function(input, output, session) {
                  icon = icons,
                  popup = popups)
   })
-  
+
   output$sank <- renderSankeyNetwork({
     x <- filtered_events()
     show_sankey <- FALSE
@@ -208,42 +199,31 @@ server <- function(input, output, session) {
         show_sankey <- TRUE
       }
     }
-    # return(NULL)
     if(show_sankey){
       make_sank(events = x)
     } else {
       return(NULL)
     }
   })
-  
+
   filter_dates <- reactive({
     good_input <- FALSE
     if(!is.null(input$dates)){
       if(!any(is.na(input$dates))){
-        # if(!any(grepl('null|na', tolower(input$dates)))){
-          good_input <- TRUE
-        # }
+        good_input <- TRUE
       }
     }
     if(!good_input){
       return(NULL)
-      # as.Date(c('2017-01-01',
-      #           '2017-01-07'))
     } else {
       out <- as.Date(input$dates)
       return(out)
     }
     
-    # as.Date(paste("01", unlist(strsplit(input$dates, ";")), sep="-"), format="%d-%B-%Y")
   })
   
   output$visit_info_table <- DT::renderDataTable({
     x <- filtered_events()
-    # DT::datatable(x,options = list(dom = 't',
-    #                                scrollY = '300px',
-    #                                paging = FALSE,
-    #                                scrollX = TRUE),
-    #               rownames = FALSE)
     x <- x %>%
       mutate(Location = paste0(`City of visit`,
                                ', ',
@@ -261,12 +241,6 @@ server <- function(input, output, session) {
       DT::formatStyle(columns = colnames(.), fontSize = '50%')
   })
   
-  # output$res <- renderPrint({
-  #   print(input$dates) # you have to split manually the result by ";"
-  #   print(filter_dates())
-  # })
-  
-
   output$date_mirror <- renderUI({
     fd <- filter_dates()
     ok <- FALSE
@@ -323,18 +297,21 @@ server <- function(input, output, session) {
                    options=list(
                      width=300,
                      height = 160,
+                     # legendPosition = 'bottom',
+                     # legendPosition = 'none',
+                     # legend = "{position:'none'}",
                      calendar="{yearLabel: { fontName: 'Helvetica',
-                               fontSize: 14, color: '#1A8763', bold: false},
-                               cellSize: 5,
-                               cellColor: { stroke: 'black', strokeOpacity: 0.2 },
-                               focusedCellColor: {stroke:'red'}}",
+                     fontSize: 14, color: 'black', bold: false},
+                     cellSize: 5,
+                     cellColor: { stroke: 'black', strokeOpacity: 0.2 },
+                     focusedCellColor: {stroke:'red'}}",
                      gvis.listener.jscode = "
-                                     var selected_date = data.getValue(chart.getSelection()[0].row,0);
-                                     var parsed_date = selected_date.getFullYear()+'-'+(selected_date.getMonth()+1)+'-'+selected_date.getDate();
-                                     Shiny.onInputChange('selected_date',parsed_date)"))
-
-
-    }
+                     var selected_date = data.getValue(chart.getSelection()[0].row,0);
+                     var parsed_date = selected_date.getFullYear()+'-'+(selected_date.getMonth()+1)+'-'+selected_date.getDate();
+                     Shiny.onInputChange('selected_date',parsed_date)"))
+      
+      
+      }
   })
   
   # Create reactive object for width of dates
@@ -346,13 +323,9 @@ server <- function(input, output, session) {
       as.numeric(fd[2] - fd[1])
     }
   })
-
-  selected_date <- reactive({input$selected_date})
-
   
-  # output$the_date <- renderText({
-  #   paste0('Selected date is ', selected_date(), ' and date_width() is', date_width(), ' and seld is ', seld())
-  # })
-}
+  selected_date <- reactive({input$selected_date})
+  
+  }
 
 shinyApp(ui, server)
