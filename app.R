@@ -40,13 +40,9 @@ body <- dashboardBody(
       fluidPage(
         fluidRow(
           column(4,
-                 sliderInput("dates",
-                             "Date range",
-                             min = date_dictionary$date[1], 
-                             max = date_dictionary$date[length(date_dictionary$date)], 
-                             value = date_dictionary$date[c(1,7)],
-                             animate = TRUE),
+                 uiOutput('dater'),
                  htmlOutput('g_calendar'),
+                 textOutput('the_date'),
                  # plotOutput('calendar_plot',
                  #            height = '200px'),
                  # uiOutput('date_mirror') # currently only using for display
@@ -76,6 +72,38 @@ server <- function(input, output, session) {
   
   # hide sidebar by default
   addClass(selector = "body", class = "sidebar-collapse")
+  
+  # Date input
+  output$dater <- renderUI({
+    seld <- selected_date()
+    have_selection <- FALSE
+    if(exists('seld')){
+      if(!is.null(seld)){
+        have_selection <- TRUE
+      }
+    }
+    if(!have_selection){
+      starter <- date_dictionary$date[1]
+    } else {
+      starter <- as.Date(seld)
+    }
+    
+    dw <- date_width()
+    if(is.null(dw)){
+      ender <- starter + 7
+    } else {
+      ender <- starter + dw
+    }
+    
+    
+    sliderInput("dates",
+                "Date range",
+                min = date_dictionary$date[1], 
+                max = date_dictionary$date[length(date_dictionary$date)], 
+                value = c(starter, ender),
+                animate = animationOptions(interval = 1000))
+    
+  })
   
   # Reactive dataframe for the filtered table
   filtered_events <- reactive({
@@ -205,25 +233,25 @@ server <- function(input, output, session) {
     }
   })
   
-  output$calendar_plot <-
-    renderPlot({
-      fd <- filter_dates()
-      if(is.null(fd)){
-        return(NULL)
-      } else {
-        fills <- ifelse(date_dictionary$date >= fd[1] &
-                          date_dictionary$date <= fd[2],
-                        'Selected',
-                        'Not selected')
-          date_dictionary$date[date_dictionary$date >= fd[1] &
-                                      date_dictionary$date <= fd[2]]
-          col_vec <- c('darkorange', 'lightblue')
-        gg_cal(date_dictionary$date, fills) +
-          scale_fill_manual(name = '',
-                             values = col_vec) +
-          theme(legend.position = 'none')
-      }
-    })
+  # output$calendar_plot <-
+  #   renderPlot({
+  #     fd <- filter_dates()
+  #     if(is.null(fd)){
+  #       return(NULL)
+  #     } else {
+  #       fills <- ifelse(date_dictionary$date >= fd[1] &
+  #                         date_dictionary$date <= fd[2],
+  #                       'Selected',
+  #                       'Not selected')
+  #         date_dictionary$date[date_dictionary$date >= fd[1] &
+  #                                     date_dictionary$date <= fd[2]]
+  #         col_vec <- c('darkorange', 'lightblue')
+  #       gg_cal(date_dictionary$date, fills) +
+  #         scale_fill_manual(name = '',
+  #                            values = col_vec) +
+  #         theme(legend.position = 'none')
+  #     }
+  #   })
   
   output$g_calendar <- renderGvis({
     
@@ -247,10 +275,30 @@ server <- function(input, output, session) {
                                fontSize: 20, color: '#1A8763', bold: false},
                                cellSize: 5,
                                cellColor: { stroke: 'black', strokeOpacity: 0.2 },
-                               focusedCellColor: {stroke:'red'}}"))
+                               focusedCellColor: {stroke:'red'}}",
+                     gvis.listener.jscode = "
+                                     var selected_date = data.getValue(chart.getSelection()[0].row,0);
+                                     var parsed_date = selected_date.getFullYear()+'-'+(selected_date.getMonth()+1)+'-'+selected_date.getDate();
+                                     Shiny.onInputChange('selected_date',parsed_date)"))
 
 
     }
+  })
+  
+  # Create reactive object for width of dates
+  date_width <- reactive({
+    fd <- filter_dates()
+    if(is.null(fd)){
+      7
+    } else {
+      as.numeric(fd[2] - fd[1])
+    }
+  })
+  selected_date <- reactive({
+    input$selected_date
+  })
+  output$the_date <- renderText({
+    paste0('Selected date is ', selected_date(), ' and date_width() is', date_width())
   })
 }
 
