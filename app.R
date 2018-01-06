@@ -71,37 +71,37 @@ body <- dashboardBody(
         fluidRow(
           column(4,
                  sankeyNetworkOutput('sank')
-                 ),
+          ),
           column(8,
                  h3('Detailed visit information',
                     align = 'center'),
                  DT::dataTableOutput('visit_info_table')))
-        )
+      )
     ),
     tabItem(
       tabName = 'about',
       fluidPage(
         fluidRow(h4("The dashboard was developed as a part of activities under the ", 
-                   a(href = 'http://www.ifc.org/wps/wcm/connect/region__ext_content/ifc_external_corporate_site/sub-saharan+africa/priorities/financial+inclusion/za_ifc_partnership_financial_inclusion',
-                     target='_blank',
-                     "Partnership for Financial Inclusion"),
-                   " (a $37.4 million joint initiative of the ",
-                   a(href = "http://www.ifc.org/wps/wcm/connect/corp_ext_content/ifc_external_corporate_site/home",
-                     target='_blank',
-                     'IFC'),
-                   " and the ",
-                   a(href = "http://www.mastercardfdn.org/",
-                     target='_blank',
-                     'MasterCard Foundation'),
-                   " to expand microfinance and advance digital financial services in Sub-Saharan Africa) by the FIG Africa Digital Financial Services unit (the MEL team).")),
+                    a(href = 'http://www.ifc.org/wps/wcm/connect/region__ext_content/ifc_external_corporate_site/sub-saharan+africa/priorities/financial+inclusion/za_ifc_partnership_financial_inclusion',
+                      target='_blank',
+                      "Partnership for Financial Inclusion"),
+                    " (a $37.4 million joint initiative of the ",
+                    a(href = "http://www.ifc.org/wps/wcm/connect/corp_ext_content/ifc_external_corporate_site/home",
+                      target='_blank',
+                      'IFC'),
+                    " and the ",
+                    a(href = "http://www.mastercardfdn.org/",
+                      target='_blank',
+                      'MasterCard Foundation'),
+                    " to expand microfinance and advance digital financial services in Sub-Saharan Africa) by the FIG Africa Digital Financial Services unit (the MEL team).")),
         br(),
         fluidRow(div(img(src='partnership logo.bmp', align = "center"), style="text-align: center;"),
                  br(),
-          div(a(actionButton(inputId = "email", label = "Contact", 
-                             icon = icon("envelope", lib = "font-awesome")),
-                href="mailto:sheitmann@ifc.org",
-                align = 'center')), 
-          style = 'text-align:center;'
+                 div(a(actionButton(inputId = "email", label = "Contact", 
+                                    icon = icon("envelope", lib = "font-awesome")),
+                       href="mailto:sheitmann@ifc.org",
+                       align = 'center')), 
+                 style = 'text-align:center;'
         )
       )
     ),
@@ -241,7 +241,7 @@ server <- function(input, output, session) {
                  icon = icons,
                  popup = popups)
   })
-
+  
   output$sank <- renderSankeyNetwork({
     x <- filtered_events()
     show_sankey <- FALSE
@@ -256,7 +256,7 @@ server <- function(input, output, session) {
       return(NULL)
     }
   })
-
+  
   filter_dates <- reactive({
     good_input <- FALSE
     if(!is.null(input$dates)){
@@ -344,8 +344,8 @@ server <- function(input, output, session) {
                      Shiny.onInputChange('selected_date',parsed_date)"))
       
       
-      }
-  })
+}
+})
   
   # Create reactive object for width of dates
   date_width <- reactive({
@@ -386,7 +386,7 @@ server <- function(input, output, session) {
       tags$script("$(document).on('click', '#Main_table button', function () {
                   Shiny.onInputChange('lastClickId',this.id);
                   Shiny.onInputChange('lastClick', Math.random())
-});")
+                  });")
 
       )
       )
@@ -415,15 +415,15 @@ server <- function(input, output, session) {
     new_row=data_frame(
       Person = 'Jane Doe',
       Organization = 'Organization',
-      `City of visit` = 'New York',
-      `Country of visit` = 'United States',
-      Counterpart = 'Somebody',
+      `City of visit` = 'Bermuda Triangle',
+      `Country of visit` = 'International Waters',
+      Counterpart = 'Jack Sparrow',
       `Visit start` = Sys.Date() - 3,
       `Visit end` = Sys.Date())
     new_row <- new_row %>%
       mutate(`Visit month` = format(`Visit start`, '%B')) %>%
-      mutate(Long = -74.00597,
-             Lat = 40.71278)
+      mutate(Long = -65,
+             Lat = 31)
     # # place <- paste0(new_row$`City of visit`, ', ', new_row$`Country of visit`)
     # # ll <- ggmap::geocode(location = place, output = 'latlon')
     # # new_row$Long <- ll$lon
@@ -437,7 +437,7 @@ server <- function(input, output, session) {
     row_to_del=as.numeric(gsub("Row","",input$checked_rows))
     vals$Data=vals$Data[-row_to_del,]}
   )
-
+  
   ##Managing in row deletion
   # modal_modify <- modalDialog(h3('Test'))
   modal_modify<-modalDialog(
@@ -446,24 +446,24 @@ server <- function(input, output, session) {
       hr(),
       dataTableOutput('row_modif'),
       actionButton("save_changes","Save changes"),
-
+      
       tags$script(HTML("$(document).on('click', '#save_changes', function () {
                        var list_value=[]
                        for (i = 0; i < $( '.new_input' ).length; i++)
                        {
                        list_value.push($( '.new_input' )[i].value)
-
-
-
+                       
+                       
+                       
                        }
-
+                       
                        Shiny.onInputChange('newValue', list_value)
                        });"))
     ),
     size="l"
       )
-
-
+  
+  
   observeEvent(input$lastClick,
                {
                  if (input$lastClickId%like%"delete")
@@ -499,7 +499,7 @@ server <- function(input, output, session) {
     
     row_change=list()
     for (i in colnames(old_row)){
-        if (is.numeric(vals$Data[[i]]))
+      if (is.numeric(vals$Data[[i]]))
       {
         row_change[[i]]<-paste0('<input class="new_input" value="',
                                 copycat[1,i],
