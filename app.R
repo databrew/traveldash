@@ -5,7 +5,7 @@ library(sparkline)
 library(jsonlite)
 library(dplyr)
 library(leaflet)
-library(networkD3) # locally modified version
+library(nd3)
 # library(networkD3) # use dev version: christophergandrud/networkD3 due to this issue: https://stackoverflow.com/questions/46252133/shiny-app-showmodal-does-not-pop-up-with-rendersankeynetwork
 library(readxl)
 library(tidyverse)
