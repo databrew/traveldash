@@ -97,7 +97,7 @@ body <- dashboardBody(
   ))
 # UI
 ui <- dashboardPage(header, sidebar, body, skin="blue")
-
+print('Done defining UI')
 # Server
 server <- function(input, output, session) {
   
@@ -438,10 +438,6 @@ server <- function(input, output, session) {
       mutate(`Visit month` = format(`Visit start`, '%B')) %>%
       mutate(Long = -65,
              Lat = 31)
-    # # place <- paste0(new_row$`City of visit`, ', ', new_row$`Country of visit`)
-    # # ll <- ggmap::geocode(location = place, output = 'latlon')
-    # # new_row$Long <- ll$lon
-    # # new_row$Lat <- ll$lat
     new_row$file <- paste0('headshots/circles/new',
                            sample(1:4, 1),
                            '.png')
@@ -581,5 +577,5 @@ server <- function(input, output, session) {
   
   
   }
-
+print('Done defining server')
 shinyApp(ui, server)
