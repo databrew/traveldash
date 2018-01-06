@@ -5,8 +5,8 @@ library(sparkline)
 library(jsonlite)
 library(dplyr)
 library(leaflet)
-library(nd3)
-# library(networkD3) # use dev version: christophergandrud/networkD3 due to this issue: https://stackoverflow.com/questions/46252133/shiny-app-showmodal-does-not-pop-up-with-rendersankeynetwork
+library(nd3) # devtools::install_github('databrew/nd3)
+# use dev version: christophergandrud/networkD3 due to this issue: https://stackoverflow.com/questions/46252133/shiny-app-showmodal-does-not-pop-up-with-rendersankeynetwork
 library(readxl)
 library(tidyverse)
 library(ggcal) #devtools::install_github('jayjacobs/ggcal')
@@ -61,6 +61,7 @@ body <- dashboardBody(
                    column(1,
                           actionButton("action_forward", "Forward", icon=icon("arrow-circle-right")))
                  ),
+                 uiOutput('datey'),
                  uiOutput('dater'),
                  htmlOutput('g_calendar'),
                  textInput('search',
@@ -120,28 +121,55 @@ server <- function(input, output, session) {
   addClass(selector = "body", class = "sidebar-collapse")
   
   starter <- reactiveVal(value = as.numeric(Sys.Date()))
+  ender <- reactiveVal(value = as.numeric(Sys.Date())+ 7)
+  the_dates <- reactive(
+    c(starter(),
+      ender())
+  )
+
+  date_width <- reactive({
+    fd <- the_dates()
+    if(is.null(fd)){
+      14
+    } else {
+      as.numeric(fd[2] - fd[1])
+    }
+  })  
   observeEvent(input$dates, {
     starter(as.Date(input$dates[1]))
+    ender(as.Date(input$dates[2]))
+  })
+  observeEvent(input$date_range, {
+    starter(as.Date(input$date_range[1]))
+    ender(as.Date(input$date_range[2]))
   })
   observeEvent(input$selected_date, {
+    dw <- date_width()
     starter(as.Date(selected_date()))
+    ender(as.Date(starter() + dw))
   })
   observeEvent(input$action_forward, {
     dw <- date_width()
     if(!is.null(dw)){
       starter(starter() + dw)
+      ender(ender() + dw)
     } else {
       starter(starter() + 1)
+      ender(ender() + 1)
     }
   })
   observeEvent(input$action_back, {
     dw <- date_width()
     if(!is.null(dw)){
       starter(starter() - dw)
+      ender(ender() - dw)
     } else {
       starter(starter() - 1)
+      ender(ender() - 1)
     }
   })
+  
+  selected_date <- reactive({input$selected_date})
   seld <- reactive({
     x <- starter()
     x <- as.Date(x, 
@@ -149,9 +177,37 @@ server <- function(input, output, session) {
     x <- as.character(x)
     x
   })
-  output$starter_text <- renderText({
-    x <- seld()
-    x
+
+  output$datey <- renderUI({
+    seldy <- seld()
+    have_selection <- FALSE
+    if(exists('seldy')){
+      if(!is.null(seldy)){
+        have_selection <- TRUE
+      }
+    }
+    if(!have_selection){
+      x <- input$date
+      if(is.null(x)){
+        starty <- date_dictionary$date[1]
+      } else {
+        starty <- x[1]
+      }
+      
+    } else {
+      starty <- as.Date(seldy)
+    }
+    
+    dw <- date_width()
+    if(is.null(dw)){
+      endy <- starty + 14
+    } else {
+      endy <- starty + dw
+    }
+    dateRangeInput('date_range',
+                   '',
+                   start = starty,
+                   end = endy)
   })
   
   # Date input
@@ -201,7 +257,7 @@ server <- function(input, output, session) {
   })
   filtered_events <- reactive({
     # x <- vals$Data
-    fd <- filter_dates()
+    fd <- the_dates()
     x <- filter_events(events = vals$Data,
                        visit_start = fd[1],
                        visit_end = fd[2],
@@ -257,21 +313,7 @@ server <- function(input, output, session) {
     }
   })
   
-  filter_dates <- reactive({
-    good_input <- FALSE
-    if(!is.null(input$dates)){
-      if(!any(is.na(input$dates))){
-        good_input <- TRUE
-      }
-    }
-    if(!good_input){
-      return(NULL)
-    } else {
-      out <- as.Date(input$dates)
-      return(out)
-    }
-    
-  })
+  
   
   output$visit_info_table <- DT::renderDataTable({
     x <- filtered_events()
@@ -294,7 +336,7 @@ server <- function(input, output, session) {
   
   # output$calendar_plot <-
   #   renderPlot({
-  #     fd <- filter_dates()
+  #     fd <- the_dates()
   #     if(is.null(fd)){
   #       return(NULL)
   #     } else {
@@ -314,7 +356,7 @@ server <- function(input, output, session) {
   
   output$g_calendar <- renderGvis({
     
-    fd <- filter_dates()
+    fd <- the_dates()
     if(is.null(fd)){
       return(NULL)
     } else {
@@ -346,19 +388,7 @@ server <- function(input, output, session) {
       
 }
 })
-  
-  # Create reactive object for width of dates
-  date_width <- reactive({
-    fd <- filter_dates()
-    if(is.null(fd)){
-      14
-    } else {
-      as.numeric(fd[2] - fd[1])
-    }
-  })
-  
-  selected_date <- reactive({input$selected_date})
-  
+
   output$MainBody<-renderUI({
     fluidPage(
       box(width=12,
