@@ -458,7 +458,9 @@ server <- function(input, output, session) {
     # # ll <- ggmap::geocode(location = place, output = 'latlon')
     # # new_row$Long <- ll$lon
     # # new_row$Lat <- ll$lat
-    new_row$file <- 'headshots/circles/new.png'
+    new_row$file <- paste0('headshots/circles/new',
+                           sample(1:4, 1),
+                           '.png')
     vals$Data<-bind_rows(new_row,vals$Data)
   })
   

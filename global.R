@@ -33,7 +33,7 @@ if('events.RData' %in% dir()){
                                               replace = TRUE,
                                               prob = c(0.2, 0.7, 0.1)))
   # Add n rows
-  n <- 400
+  n <- 60
   new_rows <- list()
   for(i in 1:n){
     new_row <- events %>% dplyr::sample_n(1) %>%
