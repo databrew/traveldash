@@ -375,7 +375,7 @@ server <- function(input, output, session) {
 
   output$MainBody<-renderUI({
     fluidPage(
-      box(width=12,
+      shinydashboard::box(width=12,
           h3(strong("Create, modify, and delete travel events"),align="center"),
           hr(),
           column(6,offset = 6,
