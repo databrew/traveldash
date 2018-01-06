@@ -1,6 +1,21 @@
 library(maps)
 library(tidyverse)
 library(sp)
+library(shinyjs)
+library(shiny)
+library(shinydashboard)
+library(sparkline)
+library(jsonlite)
+library(dplyr)
+library(leaflet)
+library(nd3) # devtools::install_github('databrew/nd3)
+# use dev version: christophergandrud/networkD3 due to this issue: https://stackoverflow.com/questions/46252133/shiny-app-showmodal-does-not-pop-up-with-rendersankeynetwork
+library(readxl)
+library(tidyverse)
+library(ggcal) #devtools::install_github('jayjacobs/ggcal')
+library(googleVis)
+library(DT)
+library(data.table)
 
 # Save events as a binary for faster loading
 if('events.RData' %in% dir()){
