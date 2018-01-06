@@ -26,6 +26,10 @@ sidebar <- dashboardSidebar(
       tabName="main",
       icon=icon("eye")),
     menuItem(
+      text="Edit data",
+      tabName="edit_data",
+      icon=icon("edit")),
+    menuItem(
       text = 'About',
       tabName = 'about',
       icon = icon("cog", lib = "glyphicon"))
@@ -95,7 +99,11 @@ body <- dashboardBody(
           style = 'text-align:center;'
         )
       )
-    )
+    ),
+    tabItem(
+      tabName = 'edit_data',
+      fluidPage(
+      ))
     
   ))
 # UI
@@ -180,6 +188,22 @@ server <- function(input, output, session) {
   })
   
   # Reactive dataframe for the filtered table
+  vals <- reactiveValues()
+  vals$Data<-filter_events(events = events,
+                           visit_start = min(date_dictionary$date),
+                           visit_end = max(date_dictionary$date))
+  observeEvent(filter_dates(),{
+    fd <- filter_dates()
+    ev <- vals$Data
+    vals$Data <- filter_events(events = ev,
+                               visit_start = fd[1],
+                               visit_end = fd[2])
+  })
+  observeEvent(input$search, {
+    ev <- vals$Data
+    vals$Data <- filter_events(events = ev,
+                               search = input$search)
+  })
   filtered_events <- reactive({
     fd <- filter_dates()
     x <- filter_events(events = events,
