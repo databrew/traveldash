@@ -542,7 +542,7 @@ server <- function(input, output, session) {
                  for(j in 1:length(values)){
                    this_class <- classes[j]
                    if(this_class == 'Date'){
-                     hh[1,j] <- as.Date(as.numeric(values[j]), origin = '1970-01-01')
+                     hh[1,j] <- as.Date(values[j])
                    } else if(names(hh)[j] %in% c('Lat', 'Long')){
                      hh[1,j] <- as.numeric(values[j])
                    } else {
@@ -558,8 +558,6 @@ server <- function(input, output, session) {
                    DF$Long <- 0
                  }
                  new_classes <- lapply(vals$Data, class)
-                 print(new_classes)
-                 # colnames(DF)=colnames(vals$Data)
                  vals$Data[as.numeric(gsub("modify_","",input$lastClickId)),]<-DF
                  
                }
