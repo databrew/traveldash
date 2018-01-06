@@ -104,8 +104,8 @@ server <- function(input, output, session) {
   # hide sidebar by default
   addClass(selector = "body", class = "sidebar-collapse")
   
-  starter <- reactiveVal(value = as.numeric(Sys.Date()))
-  ender <- reactiveVal(value = as.numeric(Sys.Date())+ 7)
+  starter <- reactiveVal(value = as.numeric(Sys.Date() - 30))
+  ender <- reactiveVal(value = as.numeric(Sys.Date()))
   the_dates <- reactive(
     c(starter(),
       ender())

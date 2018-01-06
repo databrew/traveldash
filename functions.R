@@ -109,7 +109,7 @@ make_sank <- function(events){
   # The second number represents the node connected to.
   # The third number is the value of the node
   names(links) = c("source", "target", "value")
-  sankeyNetwork(Links = links, Nodes = nodes,
+  nd3::sankeyNetwork(Links = links, Nodes = nodes,
                 Source = "source", Target = "target",
                 Value = "value", NodeID = "name",
                 fontSize= 12, nodeWidth = 30)
