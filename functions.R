@@ -375,3 +375,4 @@ gg_cal <- function(dates, fills) {
           axis.text.y = element_blank(),
           strip.placement = "outsite")
 }
+

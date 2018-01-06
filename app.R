@@ -5,11 +5,15 @@ library(sparkline)
 library(jsonlite)
 library(dplyr)
 library(leaflet)
-library(networkD3)
+library(networkD3) # locally modified version
+# library(networkD3) # use dev version: christophergandrud/networkD3 due to this issue: https://stackoverflow.com/questions/46252133/shiny-app-showmodal-does-not-pop-up-with-rendersankeynetwork
 library(readxl)
 library(tidyverse)
 library(ggcal) #devtools::install_github('jayjacobs/ggcal')
 library(googleVis)
+library(DT)
+library(data.table)
+# library(shinyalert)
 
 # Preparation
 source('functions.R')
@@ -39,6 +43,7 @@ sidebar <- dashboardSidebar(
 # UI body
 body <- dashboardBody(
   useShinyjs(), # for hiding sidebar
+  # useShinyalert(),
   # tags$head(
   #   tags$link(rel = "stylesheet", type = "text/css", href = "custom.css")
   # ),
@@ -310,24 +315,6 @@ server <- function(input, output, session) {
       DT::formatStyle(columns = colnames(.), fontSize = '50%')
   })
   
-  output$date_mirror <- renderUI({
-    fd <- filter_dates()
-    ok <- FALSE
-    if(!is.null(fd)){
-      if(length(fd) == 2){
-        ok <- TRUE
-      }
-    }
-    if(ok){
-      dateRangeInput('date_mirror',
-                     label = '',
-                     start = fd[1],
-                     end = fd[2])
-    } else {
-      return(NULL)
-    }
-  })
-  
   # output$calendar_plot <-
   #   renderPlot({
   #     fd <- filter_dates()
@@ -446,63 +433,60 @@ server <- function(input, output, session) {
       )
   
   observeEvent(input$Add_row_head,{
-    new_row=data_frame(
-      Person = 'Jane Doe',
-      Organization = 'World Bank',
-      `City of visit` = 'New York',
-      `Country of visit` = 'United States',
-      Counterpart = 'Donald Trump',
-      `Visit start` = Sys.Date() - 3,
-      `Visit end` = Sys.Date())
-    new_row <- new_row %>%
-      mutate(`Visit month` = format(`Visit start`, '%B')) %>%
-      mutate(Lon = -74.00597,
-             Lat = 40.71278)
-    # place <- paste0(new_row$`City of visit`, ', ', new_row$`Country of visit`)
-    # ll <- ggmap::geocode(location = place, output = 'latlon')
-    # new_row$Long <- ll$lon
-    # new_row$Lat <- ll$lat
-    new_row$file <- 'headshots/circles/new.png'
+    new_row <-
+      events[1,]
+    # new_row=data_frame(
+    #   Person = 'Jane Doe',
+    #   Organization = 'World Bank',
+    #   `City of visit` = 'New York',
+    #   `Country of visit` = 'United States',
+    #   Counterpart = 'Donald Trump',
+    #   `Visit start` = Sys.Date() - 3,
+    #   `Visit end` = Sys.Date())
+    # new_row <- new_row %>%
+    #   mutate(`Visit month` = format(`Visit start`, '%B')) %>%
+    #   mutate(Lon = -74.00597,
+    #          Lat = 40.71278)
+    # # place <- paste0(new_row$`City of visit`, ', ', new_row$`Country of visit`)
+    # # ll <- ggmap::geocode(location = place, output = 'latlon')
+    # # new_row$Long <- ll$lon
+    # # new_row$Lat <- ll$lat
+    # new_row$file <- 'headshots/circles/new.png'
     vals$Data<-bind_rows(new_row,vals$Data)
   })
   
   
   observeEvent(input$Del_row_head,{
     row_to_del=as.numeric(gsub("Row","",input$checked_rows))
-    
     vals$Data=vals$Data[-row_to_del,]}
   )
 
-  output$sales_plot<-renderPlot({
-    require(ggplot2)
-    ggplot(vals$fake_sales,aes(x=month,y=sales,color=Brands))+geom_line()
-  })
-  
   ##Managing in row deletion
+  # modal_modify <- modalDialog(h3('Test'))
   modal_modify<-modalDialog(
     fluidPage(
       h3(strong("Row modification"),align="center"),
       hr(),
       dataTableOutput('row_modif'),
       actionButton("save_changes","Save changes"),
-      
+
       tags$script(HTML("$(document).on('click', '#save_changes', function () {
                        var list_value=[]
                        for (i = 0; i < $( '.new_input' ).length; i++)
                        {
                        list_value.push($( '.new_input' )[i].value)
-                       
-                       
-                       
+
+
+
                        }
-                       
+
                        Shiny.onInputChange('newValue', list_value)
                        });"))
     ),
     size="l"
       )
-  
-  
+
+
   observeEvent(input$lastClick,
                {
                  if (input$lastClickId%like%"delete")
@@ -559,7 +543,8 @@ server <- function(input, output, session) {
     
     DT
     
-  },escape=F,options=list(dom='t',ordering=F),selection="none"
+  },escape=F,options=list(dom='t',ordering=F)#,
+  # selection="none"
   )
   
   
