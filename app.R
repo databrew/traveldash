@@ -433,20 +433,20 @@ server <- function(input, output, session) {
       )
   
   observeEvent(input$Add_row_head,{
-    new_row <-
-      events[1,]
-    # new_row=data_frame(
-    #   Person = 'Jane Doe',
-    #   Organization = 'World Bank',
-    #   `City of visit` = 'New York',
-    #   `Country of visit` = 'United States',
-    #   Counterpart = 'Donald Trump',
-    #   `Visit start` = Sys.Date() - 3,
-    #   `Visit end` = Sys.Date())
-    # new_row <- new_row %>%
-    #   mutate(`Visit month` = format(`Visit start`, '%B')) %>%
-    #   mutate(Lon = -74.00597,
-    #          Lat = 40.71278)
+    # new_row <-
+    #   events[1,]
+    new_row=data_frame(
+      Person = 'Jane Doe',
+      Organization = 'Organization',
+      `City of visit` = 'New York',
+      `Country of visit` = 'United States',
+      Counterpart = 'Somebody',
+      `Visit start` = Sys.Date() - 3,
+      `Visit end` = Sys.Date())
+    new_row <- new_row %>%
+      mutate(`Visit month` = format(`Visit start`, '%B')) %>%
+      mutate(Long = -74.00597,
+             Lat = 40.71278)
     # # place <- paste0(new_row$`City of visit`, ', ', new_row$`Country of visit`)
     # # ll <- ggmap::geocode(location = place, output = 'latlon')
     # # new_row$Long <- ll$lon
@@ -512,39 +512,37 @@ server <- function(input, output, session) {
         the_nums[j] <- TRUE
       }
     }
+    copycat <- old_row
+    for(j in which(the_dates)){
+      copycat[,j] <- as.character(as.Date(copycat[,j] %>% as.numeric, origin = '1970-01-01'))
+    }
+    for(j in which(the_nums)){
+      copycat[,j] <- as.character(copycat[,j])
+    }
+    
     row_change=list()
     for (i in colnames(old_row)){
-      # if(class(vals$Data[[i]])[1] == 'Date'){
-      #   row_change[[i]]<-paste0('<input class="new_input" type="date" id=new_',i,'><br>')
-      # } else 
         if (is.numeric(vals$Data[[i]]))
       {
-        row_change[[i]]<-paste0('<input class="new_input" type="number" id=new_',i,'><br>')
+        row_change[[i]]<-paste0('<input class="new_input" value="',
+                                copycat[1,i],
+                                '" type="number" id=new_',i,'>')
       }
       else
-        row_change[[i]]<-paste0('<input class="new_input" type="text" id=new_',i,'><br>')
+        row_change[[i]]<-paste0('<input class="new_input" value="',
+                                copycat[1,i],
+                                '" type="text" id=new_',i,'>')
     }
-    row_change=as.data.table(row_change)
+    row_change = bind_rows(row_change)
     setnames(row_change,colnames(old_row))
-    for(j in which(the_dates)){
-      old_row[,j] <- as.character(old_row[,j])
-    }
-    for(j in which(the_nums)){
-      old_row[,j] <- as.character(old_row[,j])
-    }
-    DT=bind_rows(old_row,row_change)
-    rownames(DT)<-c("Current values","New values")
-    for(j in which(the_dates)){
-      old_row[,j] <- as.Date(as.numeric(old_row[,j]), origin = '1970-01-01')
-    }
-    for(j in which(the_nums)){
-      old_row[,j] <- as.numeric(old_row[,j])
-    }
+    DT=bind_rows(copycat,row_change)
+    DT <- t(DT)
+    DT <- as.data.frame(DT)
     
+    names(DT) <- c('Old', 'New')
     DT
-    
-  },escape=F,options=list(dom='t',ordering=F)#,
-  # selection="none"
+  },escape=F,options=list(dom='t',ordering=F),
+  selection="none"
   )
   
   
@@ -557,7 +555,18 @@ server <- function(input, output, session) {
                      col
                    }
                  })
-                 DF=data_frame(lapply(newValue, function(x) t(data_frame(x))))
+                 print(newValue)
+                 values = unlist(newValue)
+                 # DF=data_frame(lapply(newValue, function(x) t(data.frame(x))))
+                 hh <- events %>% sample_n(0)
+                 hh[1,] <- NA
+                 for(j in 1:length(values)){
+                   try({
+                     hh[1,j] <- values[j]
+                   })
+                 }
+                 DF <- hh
+                 print(DF)
                  colnames(DF)=colnames(vals$Data)
                  vals$Data[as.numeric(gsub("modify_","",input$lastClickId))]<-DF
                  
