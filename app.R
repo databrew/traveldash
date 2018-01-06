@@ -199,29 +199,6 @@ server <- function(input, output, session) {
   observeEvent(input$Del_row_head, {
     vals$Data <- vals$Data
   })
-
-  # # observeEvent(filter_dates(),{
-  # #   fd <- filter_dates()
-  # #   print(fd)
-  # #   ev <- vals$Data
-  # #   print(head(ev))
-  # #   # ev
-  # #   vals$Data <- filter_events(events = ev,
-  # #                              visit_start = fd[1],
-  # #                              visit_end = fd[2])
-  # #   print(head(vals$Data))
-  # # })
-  # observeEvent({input$search
-  #   # filter_dates()
-  #   }, {
-  #   # fd <- filter_dates()
-  #   message(fd)
-  #   ev <- vals$Data
-  #   vals$Data <- filter_events(events = ev,
-  #                              # visit_start = fd[1],
-  #                              # visit_end = fd[2],
-  #                              search = input$search)
-  # })
   filtered_events <- reactive({
     # x <- vals$Data
     fd <- filter_dates()
@@ -451,7 +428,7 @@ server <- function(input, output, session) {
     # # ll <- ggmap::geocode(location = place, output = 'latlon')
     # # new_row$Long <- ll$lon
     # # new_row$Lat <- ll$lat
-    # new_row$file <- 'headshots/circles/new.png'
+    new_row$file <- 'headshots/circles/new.png'
     vals$Data<-bind_rows(new_row,vals$Data)
   })
   
@@ -557,18 +534,33 @@ server <- function(input, output, session) {
                  })
                  print(newValue)
                  values = unlist(newValue)
+                 values <- c(values, 'headshots/circles/new.png')
                  # DF=data_frame(lapply(newValue, function(x) t(data.frame(x))))
                  hh <- events %>% sample_n(0)
                  hh[1,] <- NA
+                 classes <- unlist(lapply(hh, class))
                  for(j in 1:length(values)){
-                   try({
+                   this_class <- classes[j]
+                   if(this_class == 'Date'){
+                     hh[1,j] <- as.Date(as.numeric(values[j]), origin = '1970-01-01')
+                   } else if(names(hh)[j] %in% c('Lat', 'Long')){
+                     hh[1,j] <- as.numeric(values[j])
+                   } else {
                      hh[1,j] <- values[j]
-                   })
+                   }
                  }
                  DF <- hh
-                 print(DF)
-                 colnames(DF)=colnames(vals$Data)
-                 vals$Data[as.numeric(gsub("modify_","",input$lastClickId))]<-DF
+                 # Give lat lon if not aa
+                 if(is.na(DF$Lat)){
+                   DF$Lat <- 0
+                 }
+                 if(is.na(DF$Long)){
+                   DF$Long <- 0
+                 }
+                 new_classes <- lapply(vals$Data, class)
+                 print(new_classes)
+                 # colnames(DF)=colnames(vals$Data)
+                 vals$Data[as.numeric(gsub("modify_","",input$lastClickId)),]<-DF
                  
                }
   )
