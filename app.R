@@ -24,7 +24,11 @@ sidebar <- dashboardSidebar(
     menuItem(
       text="Dashboard",
       tabName="main",
-      icon=icon("eye"))
+      icon=icon("eye")),
+    menuItem(
+      text = 'About',
+      tabName = 'about',
+      icon = icon("cog", lib = "glyphicon"))
   )
 )
 
@@ -64,6 +68,33 @@ body <- dashboardBody(
                     align = 'center'),
                  DT::dataTableOutput('visit_info_table')))
         )
+    ),
+    tabItem(
+      tabName = 'about',
+      fluidPage(
+        fluidRow(h4("The dashboard was developed as a part of activities under the ", 
+                   a(href = 'http://www.ifc.org/wps/wcm/connect/region__ext_content/ifc_external_corporate_site/sub-saharan+africa/priorities/financial+inclusion/za_ifc_partnership_financial_inclusion',
+                     target='_blank',
+                     "Partnership for Financial Inclusion"),
+                   " (a $37.4 million joint initiative of the ",
+                   a(href = "http://www.ifc.org/wps/wcm/connect/corp_ext_content/ifc_external_corporate_site/home",
+                     target='_blank',
+                     'IFC'),
+                   " and the ",
+                   a(href = "http://www.mastercardfdn.org/",
+                     target='_blank',
+                     'MasterCard Foundation'),
+                   " to expand microfinance and advance digital financial services in Sub-Saharan Africa) by the FIG Africa Digital Financial Services unit (the MEL team).")),
+        br(),
+        fluidRow(div(img(src='partnership logo.bmp', align = "center"), style="text-align: center;"),
+                 br(),
+          div(a(actionButton(inputId = "email", label = "Contact", 
+                             icon = icon("envelope", lib = "font-awesome")),
+                href="mailto:sheitmann@ifc.org",
+                align = 'center')), 
+          style = 'text-align:center;'
+        )
+      )
     )
     
   ))
