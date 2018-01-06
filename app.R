@@ -39,14 +39,14 @@ body <- dashboardBody(
           column(4,
                  fluidRow(
                    h4('Date range'),
+                   uiOutput('datey'),
+                   uiOutput('dater'),
                    column(1,
                           actionButton("action_back", "Back", icon = icon('arrow-circle-left'))),
                    column(4, NULL),
                    column(1,
                           actionButton("action_forward", "Forward", icon=icon("arrow-circle-right")))
                  ),
-                 uiOutput('datey'),
-                 uiOutput('dater'),
                  htmlOutput('g_calendar'),
                  textInput('search',
                            'Filter for people, places, organizations, etc.')
