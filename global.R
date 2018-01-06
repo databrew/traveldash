@@ -15,9 +15,9 @@ library(data.table)
 
 print('Done with package loading')
 # Save events as a binary for faster loading
-# if('events.RData' %in% dir()){
-#   load('events.RData')
-# } else {
+if('events.RData' %in% dir()){
+  load('events.RData')
+} else {
 # Read data from oleksiy
 events <- read_csv('from_oleksiy/Fake events data1.csv') %>%
   arrange(Person,
@@ -70,8 +70,8 @@ new_rows <- bind_rows(new_rows)
 events <- bind_rows(events, new_rows)
 # For now, just add the same file for every photo
 events$file <- paste0('headshots/circles/', events$Person, '.png')
-#   save(events, file = 'events.RData')
-# }
+  save(events, file = 'events.RData')
+}
 
 print('Done with events modifications')
 
