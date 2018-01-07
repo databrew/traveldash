@@ -3,11 +3,15 @@
 source('functions.R')
 source('global.R')
 
+the_width <- 270
+
 # Header
-header <- dashboardHeader(title="Travel event dashboard")
+header <- dashboardHeader(title="Travel event dashboard",
+                          titleWidth = the_width)
 
 # Sidebar
 sidebar <- dashboardSidebar(
+  width = the_width,
   sidebarMenu(
     menuItem(
       text="Dashboard",
@@ -20,7 +24,21 @@ sidebar <- dashboardSidebar(
     menuItem(
       text = 'About',
       tabName = 'about',
-      icon = icon("cog", lib = "glyphicon"))
+      icon = icon("cog", lib = "glyphicon")),
+    br(), br(), br(),br(), br(), br(),br(), br(), 
+    fluidPage(
+      h4('Details', align = 'center', style = 'text-align: center;'),
+      h5('Built by:'),
+      helpText('FIG Africa Digital Financial Services unit'),
+      h5('With help from:'),
+      helpText('The Partnership for Financial Inclusion'),
+      helpText('The MasterCard Foundation'),
+      br(),
+      fluidRow(div(img(src='partnership logo.bmp', align = "center", width = '100px'), style="text-align: center;"),
+             br()
+    ))
+    
+    
   )
 )
 
