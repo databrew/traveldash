@@ -326,6 +326,7 @@ server <- function(input, output, session) {
       dplyr::select(Person,
                     Organization,
                     Location,
+                    Event,
                     # `City of visit`,
                     # `Country of visit`,
                     Counterpart,
