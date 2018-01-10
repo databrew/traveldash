@@ -18,10 +18,6 @@ sidebar <- dashboardSidebar(
       tabName="main",
       icon=icon("eye")),
     menuItem(
-      text="Network analysis",
-      tabName="network_analysis",
-      icon=icon("eye")),
-    menuItem(
       text="Edit data",
       tabName="edit_data",
       icon=icon("edit")),
@@ -69,41 +65,29 @@ body <- dashboardBody(
                    column(1,
                           actionButton("action_forward", "Forward", icon=icon("arrow-circle-right")))
                  ),
-                 htmlOutput('g_calendar'),
-                 textInput('search',
-                           'Filter for people, places, organizations, etc.')
+                 htmlOutput('g_calendar')
           ),
           column(8,
                  leafletOutput('leafy'))),
+
+        fluidRow(column(6,
+                        selectInput('sank_or_graph',
+                                    'Chart type',
+                                    choices = c('Sankey',
+                                                'Network graph'),
+                                    selected = 'Network graph')),
+                 column(6,
+                        textInput('search',
+                                  'Filter for people, places, organizations, etc.',
+                                  width = '100%'))),
         fluidRow(
           column(4,
-                 sankeyNetworkOutput('sank')
-          ),
+                 uiOutput('sank_ui')),
           column(8,
                  h3('Detailed visit information',
                     align = 'center'),
-                 DT::dataTableOutput('visit_info_table')))
-      )
-    ),
-    tabItem(
-      tabName = 'network_analysis',
-      fluidPage(
-        fluidRow(),
-        fluidRow(
-          shinydashboard::box(
-            tags$p(style = "font-size: 20px;",
-                   'The below chart shows connections during the time period selected'),
-            title = 'Network graph analysis',
-            status = 'warning',
-            solidHeader = TRUE,
-            collapsible = TRUE,
-            collapsed = TRUE,
-            width = 12
-          )
-        ),
-        fluidRow(
-          column(12,
-                 forceNetworkOutput('graph')))
+                 DT::dataTableOutput('visit_info_table'))
+        )
       )
     ),
     tabItem(
@@ -145,7 +129,7 @@ print('Done defining UI')
 server <- function(input, output, session) {
   
   # hide sidebar by default
-  addClass(selector = "body", class = "sidebar-collapse")
+  # addClass(selector = "body", class = "sidebar-collapse")
   
   starter <- reactiveVal(value = as.numeric(Sys.Date() - 30))
   ender <- reactiveVal(value = as.numeric(Sys.Date()))
@@ -355,7 +339,14 @@ server <- function(input, output, session) {
     }
   })
   
-  
+  output$sank_ui <- renderUI({
+    if(input$sank_or_graph == 'Sankey'){
+      sankeyNetworkOutput('sank')
+    } else {
+      forceNetworkOutput('graph')
+    }
+    
+  })
   
   output$visit_info_table <- DT::renderDataTable({
     x <- filtered_events()

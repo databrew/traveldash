@@ -118,7 +118,7 @@ make_graph <- function(events){
                Source = "source", Target = "target",
                Value = "value", NodeID = "name",
                Group = "group", opacity = 0.8,
-               fontSize= 12)
+               fontSize= 20)
 }
 
 make_sank <- function(events){
