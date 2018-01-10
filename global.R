@@ -12,7 +12,7 @@ library(tidyverse)
 library(googleVis)
 library(DT)
 library(data.table)
-library(tidygraph) # must use dev version: install_github('thomasp85/tidygraph')
+# library(tidygraph) # must use dev version: install_github('thomasp85/tidygraph')
 
 print('Done with package loading')
 # Save events as a binary for faster loading
