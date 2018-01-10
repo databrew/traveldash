@@ -18,6 +18,10 @@ sidebar <- dashboardSidebar(
       tabName="main",
       icon=icon("eye")),
     menuItem(
+      text="Network analysis",
+      tabName="network_analysis",
+      icon=icon("eye")),
+    menuItem(
       text="Edit data",
       tabName="edit_data",
       icon=icon("edit")),
@@ -79,6 +83,27 @@ body <- dashboardBody(
                  h3('Detailed visit information',
                     align = 'center'),
                  DT::dataTableOutput('visit_info_table')))
+      )
+    ),
+    tabItem(
+      tabName = 'network_analysis',
+      fluidPage(
+        fluidRow(),
+        fluidRow(
+          shinydashboard::box(
+            tags$p(style = "font-size: 20px;",
+                   'The below chart shows connections during the time period selected'),
+            title = 'Network graph analysis',
+            status = 'warning',
+            solidHeader = TRUE,
+            collapsible = TRUE,
+            collapsed = TRUE,
+            width = 12
+          )
+        ),
+        fluidRow(
+          column(12,
+                 forceNetworkOutput('graph')))
       )
     ),
     tabItem(
@@ -310,6 +335,21 @@ server <- function(input, output, session) {
     }
     if(show_sankey){
       make_sank(events = x)
+    } else {
+      return(NULL)
+    }
+  })
+  
+  output$graph <- renderForceNetwork({
+    x <- filtered_events()
+    show_graph <- FALSE
+    if(!is.null(x)){
+      if(nrow(x) > 0){
+        show_graph <- TRUE
+      }
+    }
+    if(show_graph){
+      make_graph(events = x)
     } else {
       return(NULL)
     }

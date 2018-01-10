@@ -77,6 +77,50 @@ prettify <- function (the_table, remove_underscores_columns = TRUE, cap_columns 
   return(the_table)
 }
 
+make_graph <- function(events){
+  # Replacer
+  replacer <- function(x){
+    out <- data.frame(x = nodes$name, y = (1:nrow(nodes))-1)
+    x <- data.frame(x = x)
+    out <- left_join(x, out)
+    return(out$y)
+  }
+  x <- events %>% group_by(Person, Counterpart) %>%
+    tally %>%
+    ungroup %>%
+    mutate(Person = as.numeric(factor(Person)),
+           Counterpart = as.numeric(factor(Counterpart)))
+  nodes = data.frame("name" = 
+                       c(sort(unique(events$Person)),
+                         sort(unique(events$Counterpart))))
+  nodes$group <-replacer(nodes$name)
+  noder <- events %>% group_by(x = Person) %>% tally
+  noderb <- events %>% group_by(x = Counterpart) %>% tally
+  noder<- bind_rows(noder, noderb) %>%
+    group_by(name = x) %>% summarise(size = sum(n))
+  nodes <- left_join(nodes, noder, by = 'name')
+  links = bind_rows(
+    # Person to counterpart
+    events %>% group_by(Person, Counterpart) %>%
+      tally %>%
+      ungroup %>%
+      mutate(Person = replacer(Person),
+             Counterpart = replacer(Counterpart)) %>%
+      rename(a = Person,
+             b = Counterpart)
+  )
+
+  nodes$size <- 1
+  names(links) = c("source", "target", "value")
+  
+  # Plot
+  forceNetwork(Links = links, Nodes = nodes,
+               Source = "source", Target = "target",
+               Value = "value", NodeID = "name",
+               Group = "group", opacity = 0.8,
+               fontSize= 12)
+}
+
 make_sank <- function(events){
   x <- events %>% group_by(Person, Counterpart) %>%
     tally %>%
@@ -110,10 +154,11 @@ make_sank <- function(events){
   # The third number is the value of the node
   names(links) = c("source", "target", "value")
   nd3::sankeyNetwork(Links = links, Nodes = nodes,
-                Source = "source", Target = "target",
-                Value = "value", NodeID = "name",
-                fontSize= 12, nodeWidth = 30)
+                     Source = "source", Target = "target",
+                     Value = "value", NodeID = "name",
+                     fontSize= 12, nodeWidth = 30)
 }
+
 
 # Define function for filtering events
 filter_events <- function(events,
