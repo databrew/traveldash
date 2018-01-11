@@ -117,8 +117,8 @@ make_graph <- function(events){
                NodeID = "name", Group = "group",
                Nodesize="size",                                                    # column names that gives the size of nodes
                radiusCalculation = JS(" d.nodesize^2+10"),                         # How to use this column to calculate radius of nodes? (Java script expression)
-               opacity = 0.6,                                                      # Opacity of nodes when you hover it
-               opacityNoHover = 0.6,                                               # Opacity of nodes you do not hover
+               opacity = 1,                                                      # Opacity of nodes when you hover it
+               opacityNoHover = 0.8,                                               # Opacity of nodes you do not hover
                colourScale = JS("d3.scaleOrdinal(d3.schemeCategory10);"),          # Javascript expression, schemeCategory10 and schemeCategory20 work
                fontSize = 17,                                                      # Font size of labels
                # fontFamily = "serif",                                               # Font family for labels
