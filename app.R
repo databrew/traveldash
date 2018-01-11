@@ -223,13 +223,15 @@ server <- function(input, output, session) {
         )
       }
     })
-  
+
   output$downloadData <- downloadHandler(
     filename = function() {
-      'example-upload-data.csv'
+      'example-data.csv'
     },
     content = function(file) {
-      write_csv(example_upload_data, file, row.names = FALSE)
+      write.csv(example_upload_data, 
+                file, 
+                row.names = FALSE)
     }
   )
   
