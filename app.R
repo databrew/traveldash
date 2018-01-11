@@ -38,9 +38,10 @@ sidebar <- dashboardSidebar(
       helpText('The Partnership for Financial Inclusion'),
       helpText('The MasterCard Foundation'),
       br(),
-      fluidRow(div(img(src='partnership logo.bmp', align = "center", width = '100px'), style="text-align: center;"),
+      fluidRow(div(img(src='partnershiplogo.png', align = "center", width = '100px'), style="text-align: center;"),
              br()
-    ))
+    )
+    )
     
     
   )
@@ -103,7 +104,7 @@ body <- dashboardBody(
                       'MasterCard Foundation'),
                     " to expand microfinance and advance digital financial services in Sub-Saharan Africa) by the FIG Africa Digital Financial Services unit (the MEL team).")),
         br(),
-        fluidRow(div(img(src='partnership logo.bmp', align = "center"), style="text-align: center;"),
+        fluidRow(div(img(src='partnershiplogo.png', align = "center"), style="text-align: center;"),
                  br(),
                  div(a(actionButton(inputId = "email", label = "Contact", 
                                     icon = icon("envelope", lib = "font-awesome")),
