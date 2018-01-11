@@ -3,7 +3,19 @@ A travel dashboard for the IFC / World Bank
 
 # Developer's instructions
 
-- This package requires a non-standard installation of `networkD3`. Prior to running the application, install `nd3` by running `devtools::install_github('databrew/nd3').
+- This package requires a non-standard installation of `networkD3`. Prior to running the application, install `nd3` by running:
+
+```
+remove.packages('networkD3)
+remove.packages('nd3')
+devtools::install_github('databrew/nd3')
+```
+
+- Confirm that you have all other required packages by running the app locally.
+- Once confirmed, the app is deployable to shinyapps.io via `rsconnect`.
+
+# Details
+
 - Package versions and sources used for this app are as follows:
 
 ```
