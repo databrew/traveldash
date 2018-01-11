@@ -74,7 +74,7 @@ for(i in 1:n){
   new_row <- new_row %>%
     dplyr::mutate(Counterpart = sample(events$Counterpart, 1)) %>%
     dplyr::mutate(`Visit start` = sample(seq(as.Date('2017-01-01'),
-                                             Sys.Date(),
+                                             Sys.Date() + 100,
                                              1),
                                          1)) %>%
     mutate(`Visit end` = `Visit start` + sample(1:20, 1),
