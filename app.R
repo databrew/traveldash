@@ -565,6 +565,7 @@ server <- function(input, output, session) {
       mutate(`Visit month` = format(`Visit start`, '%B')) %>%
       mutate(Long = -65,
              Lat = 31)
+    new_row$Event <- 'Some event'
     new_row$file <- paste0('headshots/circles/new',
                            sample(1:4, 1),
                            '.png')
@@ -673,7 +674,7 @@ server <- function(input, output, session) {
                  })
                  print(newValue)
                  values = unlist(newValue)
-                 values <- c(values, 'headshots/circles/new.png')
+                 values <- c(values, 'New event', 'headshots/circles/new.png')
                  # DF=data_frame(lapply(newValue, function(x) t(data.frame(x))))
                  hh <- events %>% sample_n(0)
                  hh[1,] <- NA
