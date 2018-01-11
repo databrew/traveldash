@@ -18,10 +18,6 @@ sidebar <- dashboardSidebar(
       tabName="main",
       icon=icon("eye")),
     menuItem(
-      text="Network analysis",
-      tabName="network",
-      icon=icon("eye")),
-    menuItem(
       text="Edit data",
       tabName="edit_data",
       icon=icon("edit")),
@@ -74,26 +70,15 @@ body <- dashboardBody(
           column(8,
                  leafletOutput('leafy'))),
 
-        fluidRow(column(6),
-                 column(6,
+        fluidRow(column(12,
                         textInput('search',
                                   'Filter for people, places, organizations, etc.',
                                   width = '100%'))),
         fluidRow(
-          column(4,
-                 sankeyNetworkOutput('sank')),
-          column(8,
+          column(12,
                  h3('Detailed visit information',
                     align = 'center'),
                  DT::dataTableOutput('visit_info_table'))
-        )
-      )
-    ),
-    tabItem(
-      tabName = 'network',
-      fluidPage(
-        fluidRow(
-          forceNetworkOutput('graph')
         )
       )
     ),
@@ -315,37 +300,7 @@ server <- function(input, output, session) {
                  icon = icons,
                  popup = popups)
   })
-  
-  output$sank <- renderSankeyNetwork({
-    x <- filtered_events()
-    show_sankey <- FALSE
-    if(!is.null(x)){
-      if(nrow(x) > 0){
-        show_sankey <- TRUE
-      }
-    }
-    if(show_sankey){
-      make_sank(events = x)
-    } else {
-      return(NULL)
-    }
-  })
-  
-  output$graph <- renderForceNetwork({
-    x <- filtered_events()
-    show_graph <- FALSE
-    if(!is.null(x)){
-      if(nrow(x) > 0){
-        show_graph <- TRUE
-      }
-    }
-    if(show_graph){
-      make_graph(events = x)
-    } else {
-      return(NULL)
-    }
-  })
-  
+
   output$visit_info_table <- DT::renderDataTable({
     x <- filtered_events()
     x <- x %>%
