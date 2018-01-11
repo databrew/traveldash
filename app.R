@@ -18,6 +18,10 @@ sidebar <- dashboardSidebar(
       tabName="main",
       icon=icon("eye")),
     menuItem(
+      text="Upload data",
+      tabName="upload_data",
+      icon=icon("upload")),
+    menuItem(
       text="Edit data",
       tabName="edit_data",
       icon=icon("edit")),
@@ -111,14 +115,123 @@ body <- dashboardBody(
     ),
     tabItem(
       tabName = 'edit_data',
-      uiOutput("MainBody"))
-    
+      uiOutput("MainBody")),
+    tabItem(tabName = 'upload_data',
+            fluidPage(
+              fluidRow(
+                column(6,
+                       h4('Upload data'),
+                       helpText('Upload a dataset from your computer'),
+                       fileInput('file1', 
+                                 '',
+                                 accept=c('text/csv', 
+                                          'text/comma-separated-values,text/plain', 
+                                          '.csv'))),
+                column(6,
+                       h4('Download data'),
+                       helpText('Click the "Download" button to get a sample dataset.'),
+                       downloadButton("downloadData", "Download"))),
+              uiOutput('upload_ui'),
+              fluidRow(
+                h3(textOutput('your_data_text')),
+                DT::dataTableOutput('uploaded_table')
+              )
+               
+            ))
   ))
 # UI
 ui <- dashboardPage(header, sidebar, body, skin="blue")
 print('Done defining UI')
 # Server
 server <- function(input, output, session) {
+  
+  # Create a reactive data frame from the user upload 
+  uploaded <- reactive({
+    inFile <- input$file1
+    
+    if (is.null(inFile))
+      return(NULL)
+    
+    read_csv(inFile$datapath)
+  })
+  
+  # Column table
+  output$column_table <- renderTable({
+    events %>% sample_n(0)
+  })
+  
+  output$uploaded_table <- DT::renderDataTable({
+    x <- uploaded()
+    if(!is.null(x)){
+      prettify(x)
+    } else {
+      NULL
+    }
+  })
+  
+  output$your_data_text <- renderText({
+    x <- uploaded()
+    if(!is.null(x)){
+      'Your data'
+    } else {
+      NULL
+    }
+  })
+  
+  output$conformity_text <- renderText({
+    x <- uploaded()
+    if(!is.null(x)){
+      uploaded_names <- names(x)
+      good_names <- names(events)
+      if(all(good_names %in% uploaded_names)){
+        'Your data matches the required format. Click "Submit" to use it in the app.'
+      } else {
+        paste0('Your data does not match the required format. ',
+               'Missing the following variables: ',
+               paste0(good_names[which(!good_names %in% uploaded_names)], collapse = ', '))
+      }
+    } else {
+      NULL
+    }
+  })
+  
+  output$submit_text <-
+    renderText({
+      out <- submit_text()
+      out
+    })
+  output$upload_ui <-
+    renderUI({
+      
+      x <- uploaded()
+      if(is.null(x)){
+        fluidRow(
+          column(8,
+                 helpText(paste0('Your uploaded data must include the below columns: ')),
+                 tableOutput('column_table')),
+          column(4)
+        )
+      } else {
+        fluidPage(
+          fluidRow(h4(textOutput('conformity_text'))),
+          fluidRow(actionButton('submit',
+                                'Submit',
+                                icon = icon('gears'))),
+          fluidRow(
+            textOutput('submit_text')
+          )
+        )
+      }
+    })
+  
+  output$downloadData <- downloadHandler(
+    filename = function() {
+      'example-upload-data.csv'
+    },
+    content = function(file) {
+      write_csv(example_upload_data, file, row.names = FALSE)
+    }
+  )
   
   # hide sidebar by default
   # addClass(selector = "body", class = "sidebar-collapse")
@@ -255,6 +368,15 @@ server <- function(input, output, session) {
   vals$Data<-filter_events(events = events,
                            visit_start = min(date_dictionary$date),
                            visit_end = max(date_dictionary$date))
+  observeEvent(input$submit, {
+    new_data <- uploaded()
+    head(new_data)
+    vals$Data <- new_data
+  })
+  submit_text <- reactiveVal(value = '')
+  observeEvent(input$submit, {
+    submit_text('Data uploaded! Now click through other tabs to explore your data.')
+  })
   observeEvent(input$Del_row_head, {
     vals$Data <- vals$Data
   })
