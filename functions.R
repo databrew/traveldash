@@ -117,10 +117,10 @@ make_graph <- function(events){
                NodeID = "name", Group = "group",
                Nodesize="size",                                                    # column names that gives the size of nodes
                radiusCalculation = JS(" d.nodesize^2+10"),                         # How to use this column to calculate radius of nodes? (Java script expression)
-               opacity = 0.6,                                                      # Opacity of nodes when you hover it
-               opacityNoHover = 0.6,                                               # Opacity of nodes you do not hover
+               opacity = 1,                                                      # Opacity of nodes when you hover it
+               opacityNoHover = 0.8,                                               # Opacity of nodes you do not hover
                colourScale = JS("d3.scaleOrdinal(d3.schemeCategory10);"),          # Javascript expression, schemeCategory10 and schemeCategory20 work
-               fontSize = 17,                                                      # Font size of labels
+               fontSize = 12,                                                      # Font size of labels
                # fontFamily = "serif",                                               # Font family for labels
                
                # custom edges
@@ -130,8 +130,8 @@ make_graph <- function(events){
                linkWidth = JS("function(d) { return Math.sqrt(d.value); }"),       # edges width
                
                # layout
-               linkDistance = 250,                                                 # link size, if higher, more space between nodes
-               charge = -100,                                                       # if highly negative, more space betqeen nodes
+               linkDistance = 150,                                                 # link size, if higher, more space between nodes
+               charge = -60,                                                       # if highly negative, more space betqeen nodes
                
                # -- general parameters
                height = NULL,                                                      # height of frame area in pixels
@@ -141,46 +141,6 @@ make_graph <- function(events){
                bounded = F, 
                clickAction = NULL)
 }
-
-make_sank <- function(events){
-  x <- events %>% group_by(Person, Counterpart) %>%
-    tally %>%
-    ungroup %>%
-    mutate(Person = as.numeric(factor(Person)),
-           Counterpart = as.numeric(factor(Counterpart)))
-  nodes = data.frame("name" = 
-                       c(sort(unique(events$Person)),
-                         sort(unique(events$Counterpart))))
-  
-  # Replacer
-  replacer <- function(x){
-    out <- data.frame(x = nodes$name, y = (1:nrow(nodes))-1)
-    x <- data.frame(x = x)
-    out <- left_join(x, out)
-    return(out$y)
-  }
-  links = bind_rows(
-    # Person to counterpart
-    events %>% group_by(Person, Counterpart) %>%
-      tally %>%
-      ungroup %>%
-      mutate(Person = replacer(Person),
-             Counterpart = replacer(Counterpart)) %>%
-      rename(a = Person,
-             b = Counterpart)
-  )
-  
-  # Each row represents a link. The first number represents the node being conntected from. 
-  # The second number represents the node connected to.
-  # The third number is the value of the node
-  names(links) = c("source", "target", "value")
-  nd3::sankeyNetwork(Links = links, Nodes = nodes,
-                     Source = "source", Target = "target",
-                     Value = "value", NodeID = "name",
-                     fontSize= 12, nodeWidth = 30)
-}
-
-
 # Define function for filtering events
 filter_events <- function(events,
                           person = NULL,
