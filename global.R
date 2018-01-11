@@ -109,5 +109,7 @@ date_dictionary <-
 date_dictionary <- date_dictionary %>%
   mutate(day_number = 1:nrow(date_dictionary))
 
+# Example data
+example_upload_data <- read_csv('example-upload-data.csv')
 
 print('Done with global.R')
