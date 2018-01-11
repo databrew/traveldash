@@ -18,6 +18,10 @@ sidebar <- dashboardSidebar(
       tabName="main",
       icon=icon("eye")),
     menuItem(
+      text="Network analysis",
+      tabName="network",
+      icon=icon("eye")),
+    menuItem(
       text="Edit data",
       tabName="edit_data",
       icon=icon("edit")),
@@ -70,23 +74,26 @@ body <- dashboardBody(
           column(8,
                  leafletOutput('leafy'))),
 
-        fluidRow(column(6,
-                        selectInput('sank_or_graph',
-                                    'Chart type',
-                                    choices = c('Sankey',
-                                                'Network graph'),
-                                    selected = 'Network graph')),
+        fluidRow(column(6),
                  column(6,
                         textInput('search',
                                   'Filter for people, places, organizations, etc.',
                                   width = '100%'))),
         fluidRow(
           column(4,
-                 uiOutput('sank_ui')),
+                 sankeyNetworkOutput('sank')),
           column(8,
                  h3('Detailed visit information',
                     align = 'center'),
                  DT::dataTableOutput('visit_info_table'))
+        )
+      )
+    ),
+    tabItem(
+      tabName = 'network',
+      fluidPage(
+        fluidRow(
+          forceNetworkOutput('graph')
         )
       )
     ),
@@ -337,15 +344,6 @@ server <- function(input, output, session) {
     } else {
       return(NULL)
     }
-  })
-  
-  output$sank_ui <- renderUI({
-    if(input$sank_or_graph == 'Sankey'){
-      sankeyNetworkOutput('sank')
-    } else {
-      forceNetworkOutput('graph')
-    }
-    
   })
   
   output$visit_info_table <- DT::renderDataTable({

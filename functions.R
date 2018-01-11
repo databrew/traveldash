@@ -112,13 +112,34 @@ make_graph <- function(events){
 
   nodes$size <- 1
   names(links) = c("source", "target", "value")
-  
   # Plot
   forceNetwork(Links = links, Nodes = nodes,
-               Source = "source", Target = "target",
-               Value = "value", NodeID = "name",
-               Group = "group", opacity = 0.8,
-               fontSize= 20)
+               NodeID = "name", Group = "group",
+               Nodesize="size",                                                    # column names that gives the size of nodes
+               radiusCalculation = JS(" d.nodesize^2+10"),                         # How to use this column to calculate radius of nodes? (Java script expression)
+               opacity = 0.6,                                                      # Opacity of nodes when you hover it
+               opacityNoHover = 0.6,                                               # Opacity of nodes you do not hover
+               colourScale = JS("d3.scaleOrdinal(d3.schemeCategory10);"),          # Javascript expression, schemeCategory10 and schemeCategory20 work
+               fontSize = 17,                                                      # Font size of labels
+               # fontFamily = "serif",                                               # Font family for labels
+               
+               # custom edges
+               # Value="my_width",
+               arrows = FALSE,                                                     # Add arrows?
+               # linkColour = c("grey","orange"),                                    # colour of edges
+               linkWidth = JS("function(d) { return Math.sqrt(d.value); }"),       # edges width
+               
+               # layout
+               linkDistance = 250,                                                 # link size, if higher, more space between nodes
+               charge = -100,                                                       # if highly negative, more space betqeen nodes
+               
+               # -- general parameters
+               height = NULL,                                                      # height of frame area in pixels
+               width = NULL,
+               zoom = TRUE,                                                        # Can you zoom on the figure
+               # legend = TRUE,                                                      # add a legend?
+               bounded = F, 
+               clickAction = NULL)
 }
 
 make_sank <- function(events){
