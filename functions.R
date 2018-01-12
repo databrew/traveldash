@@ -77,6 +77,110 @@ prettify <- function (the_table, remove_underscores_columns = TRUE, cap_columns 
   return(the_table)
 }
 
+make_graph <- function(events){
+  # Replacer
+  replacer <- function(x){
+    out <- data.frame(x = nodes$name, y = (1:nrow(nodes))-1)
+    x <- data.frame(x = x)
+    out <- left_join(x, out)
+    return(out$y)
+  }
+  x <- events %>% group_by(Person, Counterpart) %>%
+    tally %>%
+    ungroup %>%
+    mutate(Person = as.numeric(factor(Person)),
+           Counterpart = as.numeric(factor(Counterpart)))
+  nodes = data.frame("name" = 
+                       c(sort(unique(events$Person)),
+                         sort(unique(events$Counterpart))))
+  nodes$group <-replacer(nodes$name)
+  noder <- events %>% group_by(x = Person) %>% tally
+  noderb <- events %>% group_by(x = Counterpart) %>% tally
+  noder<- bind_rows(noder, noderb) %>%
+    group_by(name = x) %>% summarise(size = sum(n))
+  nodes <- left_join(nodes, noder, by = 'name')
+  links = bind_rows(
+    # Person to counterpart
+    events %>% group_by(Person, Counterpart) %>%
+      tally %>%
+      ungroup %>%
+      mutate(Person = replacer(Person),
+             Counterpart = replacer(Counterpart)) %>%
+      rename(a = Person,
+             b = Counterpart)
+  )
+
+  nodes$size <- 1
+  names(links) = c("source", "target", "value")
+  # Plot
+  forceNetwork(Links = links, Nodes = nodes,
+               NodeID = "name", Group = "group",
+               Nodesize="size",                                                    # column names that gives the size of nodes
+               radiusCalculation = JS(" d.nodesize^2+10"),                         # How to use this column to calculate radius of nodes? (Java script expression)
+               opacity = 1,                                                      # Opacity of nodes when you hover it
+               opacityNoHover = 0.8,                                               # Opacity of nodes you do not hover
+               colourScale = JS("d3.scaleOrdinal(d3.schemeCategory10);"),          # Javascript expression, schemeCategory10 and schemeCategory20 work
+               fontSize = 17,                                                      # Font size of labels
+               # fontFamily = "serif",                                               # Font family for labels
+               
+               # custom edges
+               # Value="my_width",
+               arrows = FALSE,                                                     # Add arrows?
+               # linkColour = c("grey","orange"),                                    # colour of edges
+               linkWidth = JS("function(d) { return Math.sqrt(d.value); }"),       # edges width
+               
+               # layout
+               linkDistance = 250,                                                 # link size, if higher, more space between nodes
+               charge = -100,                                                       # if highly negative, more space betqeen nodes
+               
+               # -- general parameters
+               height = NULL,                                                      # height of frame area in pixels
+               width = NULL,
+               zoom = TRUE,                                                        # Can you zoom on the figure
+               # legend = TRUE,                                                      # add a legend?
+               bounded = F, 
+               clickAction = NULL)
+}
+
+make_sank <- function(events){
+  x <- events %>% group_by(Person, Counterpart) %>%
+    tally %>%
+    ungroup %>%
+    mutate(Person = as.numeric(factor(Person)),
+           Counterpart = as.numeric(factor(Counterpart)))
+  nodes = data.frame("name" = 
+                       c(sort(unique(events$Person)),
+                         sort(unique(events$Counterpart))))
+  
+  # Replacer
+  replacer <- function(x){
+    out <- data.frame(x = nodes$name, y = (1:nrow(nodes))-1)
+    x <- data.frame(x = x)
+    out <- left_join(x, out)
+    return(out$y)
+  }
+  links = bind_rows(
+    # Person to counterpart
+    events %>% group_by(Person, Counterpart) %>%
+      tally %>%
+      ungroup %>%
+      mutate(Person = replacer(Person),
+             Counterpart = replacer(Counterpart)) %>%
+      rename(a = Person,
+             b = Counterpart)
+  )
+  
+  # Each row represents a link. The first number represents the node being conntected from. 
+  # The second number represents the node connected to.
+  # The third number is the value of the node
+  names(links) = c("source", "target", "value")
+  nd3::sankeyNetwork(Links = links, Nodes = nodes,
+                     Source = "source", Target = "target",
+                     Value = "value", NodeID = "name",
+                     fontSize= 12, nodeWidth = 30)
+}
+
+
 # Define function for filtering events
 filter_events <- function(events,
                           person = NULL,
@@ -177,54 +281,4 @@ gg_cal <- function(dates, fills) {
           axis.title=element_blank(),
           axis.text.y = element_blank(),
           strip.placement = "outsite")
-}
-
-make_nd3 <- function (Links, Nodes, Source, Target, Value, NodeID, NodeGroup = NodeID, 
-                 LinkGroup = NULL, units = "", colourScale = JS("d3.scaleOrdinal(d3.schemeCategory20);"), 
-                 fontSize = 7, fontFamily = NULL, nodeWidth = 15, nodePadding = 10, 
-                 margin = NULL, height = NULL, width = NULL, iterations = 32, 
-                 sinksRight = TRUE) 
-{
-  check_zero(Links[, Source], Links[, Target])
-  colourScale <- as.character(colourScale)
-  Links <- tbl_df_strip(Links)
-  Nodes <- tbl_df_strip(Nodes)
-  if (!is.data.frame(Links)) {
-    stop("Links must be a data frame class object.")
-  }
-  if (!is.data.frame(Nodes)) {
-    stop("Nodes must be a data frame class object.")
-  }
-  if (missing(Source)) 
-    Source = 1
-  if (missing(Target)) 
-    Target = 2
-  if (missing(Value)) {
-    LinksDF <- data.frame(Links[, Source], Links[, Target])
-    names(LinksDF) <- c("source", "target")
-  }
-  else if (!missing(Value)) {
-    LinksDF <- data.frame(Links[, Source], Links[, Target], 
-                          Links[, Value])
-    names(LinksDF) <- c("source", "target", "value")
-  }
-  if (missing(NodeID)) 
-    NodeID = 1
-  NodesDF <- data.frame(Nodes[, NodeID])
-  names(NodesDF) <- c("name")
-  if (is.character(NodeGroup)) {
-    NodesDF$group <- Nodes[, NodeGroup]
-  }
-  if (is.character(LinkGroup)) {
-    LinksDF$group <- Links[, LinkGroup]
-  }
-  margin <- margin_handler(margin)
-  options = list(NodeID = NodeID, NodeGroup = NodeGroup, LinkGroup = LinkGroup, 
-                 colourScale = colourScale, fontSize = fontSize, fontFamily = fontFamily, 
-                 nodeWidth = nodeWidth, nodePadding = nodePadding, units = units, 
-                 margin = margin, iterations = iterations, sinksRight = sinksRight)
-  htmlwidgets::createWidget(name = "sankeyNetwork", x = list(links = LinksDF, 
-                                                             nodes = NodesDF, options = options), width = width, height = height, 
-                            htmlwidgets::sizingPolicy(padding = 10, browser.fill = TRUE), 
-                            package = "nd3")
 }

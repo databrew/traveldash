@@ -18,6 +18,10 @@ sidebar <- dashboardSidebar(
       tabName="main",
       icon=icon("eye")),
     menuItem(
+      text="Network analysis",
+      tabName="network",
+      icon=icon("arrows")),
+    menuItem(
       text="Upload data",
       tabName="upload_data",
       icon=icon("upload")),
@@ -84,6 +88,14 @@ body <- dashboardBody(
                  h3('Detailed visit information',
                     align = 'center'),
                  DT::dataTableOutput('visit_info_table'))
+        )
+      )
+    ),
+    tabItem(
+      tabName = 'network',
+      fluidPage(
+        fluidRow(
+          networkD3::forceNetworkOutput('graph')
         )
       )
     ),
@@ -399,6 +411,11 @@ server <- function(input, output, session) {
     }
     return(x)
     
+  })
+  
+  output$graph <- renderForceNetwork({
+    e <- filtered_events()
+    make_graph(events = e)
   })
   
   output$leafy <- renderLeaflet({
