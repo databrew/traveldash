@@ -168,7 +168,9 @@ server <- function(input, output, session) {
     if (is.null(inFile))
       return(NULL)
     
-    read_csv(inFile$datapath)
+    x <- read_csv(inFile$datapath)
+    x$file <- 'headshots/circles/marker.png'
+    x
   })
   
   # Column table
@@ -197,8 +199,8 @@ server <- function(input, output, session) {
   output$conformity_text <- renderText({
     x <- uploaded()
     if(!is.null(x)){
-      uploaded_names <- names(x)
-      good_names <- names(events)
+      uploaded_names <- names(x)[1:11]
+      good_names <- names(events)[1:11]
       if(all(good_names %in% uploaded_names)){
         'Your data matches the required format. Click "Submit" to use it in the app.'
       } else {
