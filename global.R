@@ -19,6 +19,7 @@ print('Done with package loading')
 
 # Read in events from google sheets
 the_sheet <- gs_title('Travel dashboard events')
+the_sheet <- gs_url('https://docs.google.com/spreadsheets/d/13m0gMUQ2cQOoxPQgO2A7EESm4pG3eftTCGOdiH-0W6Y/')
 events <- gs_read_csv(the_sheet)
 
 
