@@ -113,7 +113,9 @@ make_graph <- function(events){
   nodes$size <- 1
   names(links) = c("source", "target", "value")
   # Plot
-  forceNetwork(Links = links, Nodes = nodes,
+  forceNetwork(Links = links, 
+               Nodes = nodes,
+               Value = 'value',
                NodeID = "name", Group = "group",
                Nodesize="size",                                                    # column names that gives the size of nodes
                radiusCalculation = JS(" d.nodesize^2+10"),                         # How to use this column to calculate radius of nodes? (Java script expression)
@@ -127,7 +129,7 @@ make_graph <- function(events){
                # Value="my_width",
                arrows = FALSE,                                                     # Add arrows?
                # linkColour = c("grey","orange"),                                    # colour of edges
-               linkWidth = JS("function(d) { return Math.sqrt(d.value); }"),       # edges width
+               linkWidth = "function(d) { return (d.value^3)*0.4}",
                
                # layout
                linkDistance = 250,                                                 # link size, if higher, more space between nodes

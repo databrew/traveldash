@@ -86,6 +86,7 @@ body <- dashboardBody(
                                            'Filter for people, places, organizations, etc.'))))),
         fluidRow(
           column(4,
+                 helpText('Interactions during selected period:'),
                  sankeyNetworkOutput('sank')),
           column(8,
                  h3('Detailed visit information',
@@ -98,6 +99,7 @@ body <- dashboardBody(
       tabName = 'network',
       fluidPage(
         fluidRow(
+          h3('Visualization of interaction between people during the selected period', align = 'center'),
           forceNetworkOutput('graph')
         )
       )
