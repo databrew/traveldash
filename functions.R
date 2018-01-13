@@ -129,7 +129,7 @@ make_graph <- function(events){
                # Value="my_width",
                arrows = FALSE,                                                     # Add arrows?
                # linkColour = c("grey","orange"),                                    # colour of edges
-               linkWidth = "function(d) { return (d.value^3)*0.4}",
+               linkWidth = "function(d) { return (d.value^5)*0.4}",
                
                # layout
                linkDistance = 250,                                                 # link size, if higher, more space between nodes
