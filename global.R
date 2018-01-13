@@ -12,9 +12,16 @@ library(tidyverse)
 library(googleVis)
 library(DT)
 library(data.table)
+library(googlesheets)
 # library(tidygraph) # must use dev version: install_github('thomasp85/tidygraph')
 
 print('Done with package loading')
+
+# Read in events from google sheets
+the_sheet <- gs_title('Travel dashboard events')
+events <- gs_read_csv(the_sheet)
+
+
 # Save events as a binary for faster loading
 if('events.RData' %in% dir()){
   load('events.RData')
