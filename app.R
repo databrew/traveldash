@@ -65,25 +65,25 @@ body <- dashboardBody(
         fluidRow(
           column(4,
                  fluidRow(
-                   h4('Date range'),
+                   helpText('Pick the start/end dates for analysis of itineraries:'),
                    uiOutput('datey'),
+                   helpText('Or set the date range using the below slider:'),
                    uiOutput('dater'),
+                   helpText('Or click forward or back to move over time'),
                    column(1,
                           actionButton("action_back", "Back", icon = icon('arrow-circle-left'))),
                    column(4, NULL),
                    column(1,
-                          actionButton("action_forward", "Forward", icon=icon("arrow-circle-right")))
-                 ),
-                 htmlOutput('g_calendar')
+                          actionButton("action_forward", "Forward", icon=icon("arrow-circle-right")))),
+                 fluidRow(helpText('Or click on any date below to jump around:'),
+                          htmlOutput('g_calendar'))
           ),
           column(8,
-                 leafletOutput('leafy'))),
-
-        fluidRow(column(6),
-                 column(6,
-                        textInput('search',
-                                  'Filter for people, places, organizations, etc.',
-                                  width = '100%'))),
+                 leafletOutput('leafy'),
+                 fluidRow(column(3),
+                          column(9,
+                                 textInput('search',
+                                           'Filter for people, places, organizations, etc.'))))),
         fluidRow(
           column(4,
                  sankeyNetworkOutput('sank')),
