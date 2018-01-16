@@ -84,8 +84,6 @@ for(i in 1:n){
 }
 new_rows <- bind_rows(new_rows)
 events <- bind_rows(events, new_rows)
-# For now, just add the same file for every photo
-events$file <- paste0('headshots/circles/', events$Person, '.png')
 events <- events %>%
   dplyr::rename(Event = event)
   save(events, file = 'events.RData')

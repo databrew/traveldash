@@ -63,33 +63,41 @@ body <- dashboardBody(
       tabName="main",
       fluidPage(
         fluidRow(
+          column(1),
           column(4,
                  fluidRow(
-                   helpText('Pick the start/end dates for analysis of itineraries:'),
+                   h6('Pick the start/end dates for analysis of itineraries:',
+                      align = 'center'),
                    uiOutput('datey'),
-                   helpText('Or set the date range using the below slider:'),
+                   h6('Or set the date range using the below slider:',
+                      align = 'center'),
                    uiOutput('dater'),
-                   helpText('Or click forward or back to move over time'),
-                   column(1,
-                          actionButton("action_back", "Back", icon = icon('arrow-circle-left'))),
-                   column(4, NULL),
-                   column(1,
-                          actionButton("action_forward", "Forward", icon=icon("arrow-circle-right")))),
-                 fluidRow(helpText('Or click on any date below to jump around:'),
-                          htmlOutput('g_calendar'))
+                   h6('Or click forward or back to move over time',
+                      align = 'center'),
+                   fluidRow(column(1,
+                                   actionButton("action_back", "Back", icon = icon('arrow-circle-left'))),
+                            column(4, NULL),
+                            column(1,
+                                   actionButton("action_forward", "Forward", icon=icon("arrow-circle-right")))),
+                   
+                   h6('Or click on any date below to jump around:',
+                      align = 'center'),
+                   htmlOutput('g_calendar'))
           ),
-          column(8,
+          column(1),
+          column(6,
                  leafletOutput('leafy'),
                  fluidRow(column(3),
                           column(9,
                                  textInput('search',
                                            'Filter for people, places, organizations, etc.'))))),
         fluidRow(
-          column(4,
-                 helpText('Interactions during selected period:'),
+          column(6,
+                 h4('Interactions during selected period:',
+                    align = 'center'),
                  sankeyNetworkOutput('sank')),
-          column(8,
-                 h3('Detailed visit information',
+          column(6,
+                 h4('Detailed visit information',
                     align = 'center'),
                  DT::dataTableOutput('visit_info_table'))
         )
@@ -171,7 +179,6 @@ server <- function(input, output, session) {
       return(NULL)
     
     x <- read_csv(inFile$datapath)
-    x$file <- 'headshots/circles/marker.png'
     x
   })
   
@@ -428,10 +435,7 @@ server <- function(input, output, session) {
   # Leaflet proxy for the points
   observeEvent(filtered_events(), {
     places <- filtered_events()
-    icons <- icons(
-      iconUrl = paste0('www/', places$file),
-      iconWidth = 28, iconHeight = 28
-    )
+
     popups <- paste0(places$Person, ' of the ', places$Organization, ' meeting with ', places$Counterpart, ' in ',
                      places$`City of visit`, ' on ', format(places$`Visit start`, '%B %d, %Y'))
     
@@ -439,7 +443,6 @@ server <- function(input, output, session) {
     leafletProxy("leafy") %>%
       clearMarkers() %>%
       addMarkers(data = places, lng =~Long, lat = ~Lat,
-                 icon = icons,
                  popup = popups)
   })
   
@@ -529,7 +532,7 @@ server <- function(input, output, session) {
                    datevar = 'date',
                    numvar = 'num',
                    options=list(
-                     width=300,
+                     width=400,
                      height = 160,
                      # legendPosition = 'bottom',
                      # legendPosition = 'none',
@@ -614,9 +617,6 @@ server <- function(input, output, session) {
       mutate(Long = -65,
              Lat = 31)
     new_row$Event <- 'Some event'
-    new_row$file <- paste0('headshots/circles/new',
-                           sample(1:4, 1),
-                           '.png')
     vals$Data<-bind_rows(new_row,vals$Data)
   })
   
@@ -722,7 +722,7 @@ server <- function(input, output, session) {
                  })
                  print(newValue)
                  values = unlist(newValue)
-                 values <- c(values, 'New event', 'headshots/circles/new.png')
+                 values <- c(values, 'New event')
                  # DF=data_frame(lapply(newValue, function(x) t(data.frame(x))))
                  hh <- events %>% sample_n(0)
                  hh[1,] <- NA
