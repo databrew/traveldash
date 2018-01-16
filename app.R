@@ -691,9 +691,13 @@ server <- function(input, output, session) {
     DT <- as.data.frame(DT)
     
     names(DT) <- c('Old', 'New')
-    DT
-  },escape=F,options=list(dom='t',ordering=F),
-  selection="none"
+    DT::datatable(DT,
+                  escape=F,
+                  options=list(dom='t',
+                               ordering=F,
+                               pageLength = nrow(DT)),
+                  selection="none")
+  }
   )
   
   
@@ -708,7 +712,6 @@ server <- function(input, output, session) {
                  })
                  print(newValue)
                  values = unlist(newValue)
-                 values <- c(values, 'New event')
                  hh <- events %>% sample_n(0)
                  hh[1,] <- NA
                  classes <- unlist(lapply(hh, class))
