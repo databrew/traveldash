@@ -496,26 +496,6 @@ server <- function(input, output, session) {
       DT::formatStyle(columns = colnames(.), fontSize = '50%')
   })
   
-  # output$calendar_plot <-
-  #   renderPlot({
-  #     fd <- the_dates()
-  #     if(is.null(fd)){
-  #       return(NULL)
-  #     } else {
-  #       fills <- ifelse(date_dictionary$date >= fd[1] &
-  #                         date_dictionary$date <= fd[2],
-  #                       'Selected',
-  #                       'Not selected')
-  #         date_dictionary$date[date_dictionary$date >= fd[1] &
-  #                                     date_dictionary$date <= fd[2]]
-  #         col_vec <- c('darkorange', 'lightblue')
-  #       gg_cal(date_dictionary$date, fills) +
-  #         scale_fill_manual(name = '',
-  #                            values = col_vec) +
-  #         theme(legend.position = 'none')
-  #     }
-  #   })
-  
   output$g_calendar <- renderGvis({
     
     fd <- the_dates()
@@ -614,8 +594,8 @@ server <- function(input, output, session) {
       `Visit end` = Sys.Date())
     new_row <- new_row %>%
       mutate(`Visit month` = format(`Visit start`, '%B')) %>%
-      mutate(Long = -65,
-             Lat = 31)
+      mutate(Lat = 31,
+             Long = -65)
     new_row$Event <- 'Some event'
     vals$Data<-bind_rows(new_row,vals$Data)
   })
@@ -686,18 +666,24 @@ server <- function(input, output, session) {
     }
     
     row_change=list()
-    for (i in colnames(old_row)){
-      if (is.numeric(vals$Data[[i]]))
-      {
+    for (i in 1:length(colnames(old_row))){
+      cn <- names(old_row)[i]
+      message(i)
+      message(cn)
+      if (is.numeric(vals$Data[[cn]])){
+        message('ok')
         row_change[[i]]<-paste0('<input class="new_input" value="',
-                                copycat[1,i],
-                                '" type="number" id=new_',i,'>')
+                                copycat[1,cn],
+                                '" type="number" id=new_',cn,'>')
+      } else {
+        row_change[[i]]<-paste0('<input class="new_input" value="',
+                                copycat[1,cn],
+                                '" type="text" id=new_',cn,'>')
       }
-      else
-        row_change[[i]]<-paste0('<input class="new_input" value="',
-                                copycat[1,i],
-                                '" type="text" id=new_',i,'>')
+        
     }
+    names(row_change) <- names(old_row)
+    print(row_change)
     row_change = bind_rows(row_change)
     setnames(row_change,colnames(old_row))
     DT=bind_rows(copycat,row_change)
@@ -723,7 +709,6 @@ server <- function(input, output, session) {
                  print(newValue)
                  values = unlist(newValue)
                  values <- c(values, 'New event')
-                 # DF=data_frame(lapply(newValue, function(x) t(data.frame(x))))
                  hh <- events %>% sample_n(0)
                  hh[1,] <- NA
                  classes <- unlist(lapply(hh, class))
@@ -747,9 +732,7 @@ server <- function(input, output, session) {
                  }
                  new_classes <- lapply(vals$Data, class)
                  vals$Data[as.numeric(gsub("modify_","",input$lastClickId)),]<-DF
-                 
-               }
-  )
+               })
   
   
   }
