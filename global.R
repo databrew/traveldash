@@ -28,6 +28,14 @@ for(i in 1:length(functions)){
 # Define whether using database or google
 use_google <- TRUE
 
+# Token handling
+if(use_google & !'googlesheets_token.rds' %in% dir()){
+  token <- gs_auth(cache = FALSE)
+  gd_token()
+  saveRDS(token, file = "googlesheets_token.rds")
+}
+suppressMessages(gs_auth(token = "googlesheets_token.rds", verbose = FALSE))
+
 # Read in data (either from google or database, depending on above)
 if(use_google){
   message('Using google')
