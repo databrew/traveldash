@@ -147,7 +147,9 @@ make_graph <- function(events){
 make_sank <- function(events){
   events <- events %>%
     filter(!is.na(Person),
-           !is.na(Counterpart))
+           !is.na(Counterpart)) %>%
+    filter(nchar(Person) > 1,
+           nchar(Counterpart) > 2)
   x <- events %>%
     group_by(Person, Counterpart) %>%
     tally %>%
