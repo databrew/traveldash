@@ -1,31 +1,31 @@
-event_id,Person,Organization,City of visit,Country of visit,Counterpart,Visit start,Visit end,Visit month,Lat,Long,Event
-1,Joe Brew,World Bank,New York,United States,Donald Trump,2017-05-15,2017-05-25,May,40.71278,-74.00597,World Finance Summit
-2,Joe Brew,World Bank,Paris,France,Emmanuel Macron,2017-10-20,2017-10-30,October,48.85661,2.35222,G20 sub meeting
-3,Joe Brew,World Bank,Moscow,Russia,Vladimir Putin,2017-01-11,2017-01-21,January,55.75583,37.6173,World Bank internal meeting
-4,Soren Heitmann,World Bank,Brasilia,Brazil,Michel Temer,2017-06-16,2017-06-26,June,-15.79423,-47.88217,Private meeting
-5,Soren Heitmann,World Bank,Brasilia,Brazil,Michel Temer,2017-07-17,2017-07-27,July,-15.79423,-47.88217,Bi-national conference
-6,Oleksiy Anokhin,World Bank,Berlin,Germany,Angela Merkel,2017-02-12,2017-02-22,February,52.52001,13.40495,Trade summit
-7,Oleksiy Anokhin,World Bank,Johannesburg,South Africa,Jacob Zuma,2017-08-18,2017-08-28,August,-26.2041,28.04731,Non-official event
-8,Paul Farmer,World Bank,Kinshasa,Dem. Rep. Congo,Antonio Guterres,2017-04-14,2017-04-24,April,-4.32758,15.31357,IFC meeting
-9,Paul Farmer,World Bank,London,United Kingdom,Theresa May,2017-09-19,2017-09-29,September,51.50735,-0.12776,International Development Summit
-10,Oprah Winfrey,IFC,Beijing,China,Xi Jinping,2017-03-13,2017-03-23,March,39.9042,116.4074,Technology and Development Symposium
-11,Joe Brew,World Bank,Nola,Central African Republic,Emmanuel Macron,2017-10-30,2017-11-18,October,3.533697732,16.06660559,Technology and Development Symposium
-12,Joe Brew,World Bank,Qasserine,Tunisia,Xi Jinping,2018-01-21,2018-01-23,January,35.18039654,8.829993041,Technology and Development Symposium
-13,Joe Brew,World Bank,Ghadamis,Libya,Angela Merkel,2018-04-01,2018-04-05,April,30.13328859,9.500029662,Bi-national conference
-14,Paul Farmer,World Bank,Kanyato,Tanzania,Emmanuel Macron,2017-03-10,2017-03-13,March,-4.456538067,30.26139807,Private meeting
-15,Joe Brew,World Bank,Qoqon,Uzbekistan,Michel Temer,2017-07-19,2017-07-25,July,40.54040529,70.94000037,Trade summit
-16,Oleksiy Anokhin,World Bank,Kumi,Uganda,Donald Trump,2017-07-17,2017-07-29,July,1.4608333,33.9361111,Trade summit
-17,Joe Brew,World Bank,Nyac,United States of America,Theresa May,2017-03-15,2017-03-18,March,61.00414329,-159.9404806,Technology and Development Symposium
-18,Joe Brew,World Bank,Kedougou,Senegal,Donald Trump,2017-03-25,2017-04-07,March,12.56043357,-12.17999068,International Development Summit
-19,Oprah Winfrey,IFC,Kendu Bay,Kenya,Theresa May,2017-02-13,2017-02-14,February,-0.359578838,34.63999385,World Bank internal meeting
-20,Paul Farmer,World Bank,Biu,Nigeria,Donald Trump,2017-04-15,2017-04-25,April,10.62042279,12.18999467,Trade summit
-21,Soren Heitmann,World Bank,Richmond,Australia,Xi Jinping,2017-08-12,2017-08-27,August,-20.71626911,143.1333199,World Bank internal meeting
-22,Joe Brew,World Bank,Fresno,United States of America,Emmanuel Macron,2017-07-24,2017-08-11,July,36.7477169,-119.7729841,Technology and Development Symposium
-23,Soren Heitmann,World Bank,Argentia,Canada,Xi Jinping,2017-09-19,2017-09-27,September,47.30043194,-53.98999679,Private meeting
-24,Soren Heitmann,World Bank,Phnum Tbeng Meanchey,Cambodia,Vladimir Putin,2017-10-17,2017-10-31,October,13.816701,104.9667037,Trade summit
-25,Joe Brew,World Bank,Adelaide,Australia,Jacob Zuma,2017-12-23,2017-12-27,December,-34.93498777,138.6000048,Bi-national conference
-26,Joe Brew,World Bank,Ntungamo,Uganda,Vladimir Putin,2017-01-21,2017-01-31,January,-0.8794444,30.2641667,International Development Summit
-27,Oleksiy Anokhin,World Bank,Kibungo,Rwanda,Antonio Guterres,2018-03-25,2018-04-14,March,-2.166695932,30.53330158,Non-official event
-28,Soren Heitmann,World Bank,Tongue,Guinea,Vladimir Putin,2017-09-04,2017-09-18,September,11.43999904,-11.67000248,World Finance Summit
-29,Soren Heitmann,World Bank,Jullundur,India,Antonio Guterres,2018-01-15,2018-01-18,January,31.33492067,75.56902014,Private meeting
-30,Soren Heitmann,World Bank,Shashemene,Ethiopia,Emmanuel Macron,2018-02-18,2018-03-08,February,7.200398986,38.59003699,World Bank internal meeting
+event_id,Person,Organization,City of visit,Country of visit,Counterpart,Visit start,Visit end,Lat,Long,Event
+1,Joe Brew,World Bank,New York,United States,Donald Trump,2017-05-15,2017-05-25,40.71278,-74.00597,World Finance Summit
+2,Joe Brew,World Bank,Paris,France,Emmanuel Macron,2017-10-20,2017-10-30,48.85661,2.35222,G20 sub meeting
+3,Joe Brew,World Bank,Moscow,Russia,Vladimir Putin,2017-01-11,2017-01-21,55.75583,37.6173,World Bank internal meeting
+4,Soren Heitmann,World Bank,Brasilia,Brazil,Michel Temer,2017-06-16,2017-06-26,-15.79423,-47.88217,Private meeting
+5,Soren Heitmann,World Bank,Brasilia,Brazil,Michel Temer,2017-07-17,2017-07-27,-15.79423,-47.88217,Bi-national conference
+6,Oleksiy Anokhin,World Bank,Berlin,Germany,Angela Merkel,2017-02-12,2017-02-22,52.52001,13.40495,Trade summit
+7,Oleksiy Anokhin,World Bank,Johannesburg,South Africa,Jacob Zuma,2017-08-18,2017-08-28,-26.2041,28.04731,Non-official event
+8,Paul Farmer,World Bank,Kinshasa,Dem. Rep. Congo,Antonio Guterres,2017-04-14,2017-04-24,-4.32758,15.31357,IFC meeting
+9,Paul Farmer,World Bank,London,United Kingdom,Theresa May,2017-09-19,2017-09-29,51.50735,-0.12776,International Development Summit
+10,Oprah Winfrey,IFC,Beijing,China,Xi Jinping,2017-03-13,2017-03-23,39.9042,116.4074,Technology and Development Symposium
+11,Joe Brew,World Bank,Nola,Central African Republic,Emmanuel Macron,2017-10-30,2017-11-18,3.533697732,16.06660559,Technology and Development Symposium
+12,Joe Brew,World Bank,Qasserine,Tunisia,Xi Jinping,2018-01-21,2018-01-23,35.18039654,8.829993041,Technology and Development Symposium
+13,Joe Brew,World Bank,Ghadamis,Libya,Angela Merkel,2018-04-01,2018-04-05,30.13328859,9.500029662,Bi-national conference
+14,Paul Farmer,World Bank,Kanyato,Tanzania,Emmanuel Macron,2017-03-10,2017-03-13,-4.456538067,30.26139807,Private meeting
+15,Joe Brew,World Bank,Qoqon,Uzbekistan,Michel Temer,2017-07-19,2017-07-25,40.54040529,70.94000037,Trade summit
+16,Oleksiy Anokhin,World Bank,Kumi,Uganda,Donald Trump,2017-07-17,2017-07-29,1.4608333,33.9361111,Trade summit
+17,Joe Brew,World Bank,Nyac,United States of America,Theresa May,2017-03-15,2017-03-18,61.00414329,-159.9404806,Technology and Development Symposium
+18,Joe Brew,World Bank,Kedougou,Senegal,Donald Trump,2017-03-25,2017-04-07,12.56043357,-12.17999068,International Development Summit
+19,Oprah Winfrey,IFC,Kendu Bay,Kenya,Theresa May,2017-02-13,2017-02-14,-0.359578838,34.63999385,World Bank internal meeting
+20,Paul Farmer,World Bank,Biu,Nigeria,Donald Trump,2017-04-15,2017-04-25,10.62042279,12.18999467,Trade summit
+21,Soren Heitmann,World Bank,Richmond,Australia,Xi Jinping,2017-08-12,2017-08-27,-20.71626911,143.1333199,World Bank internal meeting
+22,Joe Brew,World Bank,Fresno,United States of America,Emmanuel Macron,2017-07-24,2017-08-11,36.7477169,-119.7729841,Technology and Development Symposium
+23,Soren Heitmann,World Bank,Argentia,Canada,Xi Jinping,2017-09-19,2017-09-27,47.30043194,-53.98999679,Private meeting
+24,Soren Heitmann,World Bank,Phnum Tbeng Meanchey,Cambodia,Vladimir Putin,2017-10-17,2017-10-31,13.816701,104.9667037,Trade summit
+25,Joe Brew,World Bank,Adelaide,Australia,Jacob Zuma,2017-12-23,2017-12-27,-34.93498777,138.6000048,Bi-national conference
+26,Joe Brew,World Bank,Ntungamo,Uganda,Vladimir Putin,2017-01-21,2017-01-31,-0.8794444,30.2641667,International Development Summit
+27,Oleksiy Anokhin,World Bank,Kibungo,Rwanda,Antonio Guterres,2018-03-25,2018-04-14,-2.166695932,30.53330158,Non-official event
+28,Soren Heitmann,World Bank,Tongue,Guinea,Vladimir Putin,2017-09-04,2017-09-18,11.43999904,-11.67000248,World Finance Summit
+29,Soren Heitmann,World Bank,Jullundur,India,Antonio Guterres,2018-01-15,2018-01-18,31.33492067,75.56902014,Private meeting
+30,Soren Heitmann,World Bank,Shashemene,Ethiopia,Emmanuel Macron,2018-02-18,2018-03-08,7.200398986,38.59003699,World Bank internal meeting

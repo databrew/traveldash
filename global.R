@@ -16,6 +16,8 @@ library(googlesheets)
 library(DBI)
 library(yaml)
 library(httr)
+library(tmap)
+library(tmaptools)
 message('Done with package loading')
 
 # Source all the functions in the R directory

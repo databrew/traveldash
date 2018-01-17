@@ -3,10 +3,13 @@ A travel dashboard for the IFC / World Bank
 
 # Developer's instructions
 
+_The below assumes ubuntu 16.04_
+
 ## Packages
 
 - This package requires a non-standard installation of `networkD3`. Prior to running the application, install `nd3` by running `devtools::install_github('databrew/nd3').
 - Package versions and sources used for this app are at the bottom of this document.
+- Note that proper functioning of the `tmap` package requires gdal 2.01 or greater. For installation, see this [SO thread](https://stackoverflow.com/questions/37294127/python-gdal-2-1-installation-on-ubuntu-16-04).
 
 ## Credentials set-up
 
