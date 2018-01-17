@@ -10,6 +10,16 @@ A travel dashboard for the IFC / World Bank
 
 ## Credentials set-up
 
+To use this app with database functionality, you'll note to provide database information and credentials. You'll note a `credentials/credentials.yaml` file. This is set up to assume an accessible, non-password protected "arl" database. If your database requires credentials, is running on a specific port, etc, add to the file in this format:
+
+```
+host: some.host.net
+port: 5230 # or some other port number
+user: ausername
+password: apassword
+```
+
+
 ## Database set-up
 
 To run the app locally, you must have a PostgreSQL database running. This database should be named `arl`, have a schema named `pd_wbgtravel`, and have a table named `dev_events`. Here's how to create that from scratch.
@@ -19,15 +29,17 @@ To run the app locally, you must have a PostgreSQL database running. This databa
 - Create a `pd_wbgtravel` schema: `create schema pd_wbgtravel;`
 - Set the search path for the schema: `SET search_path TO pd_wbgtravel;`
 - Ctrl+d to get out of interactive psql session.
-- 
-- CREATE SOME TABLE IN THE DATABASE
-
+- Run the code in `R/populate_dev_events.R` in order to populate the `dev_events` table.
+- Enter the `arl` database in an interactive psql session: `psql arl`.
 - Confirm that the table is there: `\dt` should return:
 
 ```
-SOME STUFF HERE
-```
+           List of relations
+ Schema |    Name    | Type  |  Owner  
+--------+------------+-------+---------
+ public | dev_events | table | joebrew
 
+```
 
 
 ## Package versions
