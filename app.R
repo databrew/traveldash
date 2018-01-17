@@ -211,7 +211,7 @@ server <- function(input, output, session) {
       uploaded_names <- names(x)[1:11]
       good_names <- names(events)[1:11]
       if(all(good_names %in% uploaded_names)){
-        'Your data matches the required format. Click "Submit" to use it in the app.'
+        'Your data matches the required format. Click "Submit" to use it in the app and save it to the database.'
       } else {
         paste0('Your data does not match the required format. ',
                'Missing the following variables: ',
