@@ -5,6 +5,10 @@ A travel dashboard for the IFC / World Bank
 
 _The below assumes ubuntu 16.04_
 
+## Data source
+
+This application uses either a PostgreSQL database or a google sheet as the data source. Whether to use one or the other is defined in the `use_google` option in the first few lines of `global.R`. In production, this app will use the database; the purpose of the google sheets option is to allow for deploying to shinyapps.io. This application allows for modification of the underlying data; changes made in one "mode" (ie, `use_google` set to `TRUE`) will not affect the data in the other mode (ie, the database).
+
 ## Packages
 
 - This package requires a non-standard installation of `networkD3`. Prior to running the application, install `nd3` by running `devtools::install_github('databrew/nd3').
@@ -27,7 +31,7 @@ password: apassword
 To run the app locally, you must have a PostgreSQL database running. This database should be named `arl`, have a schema named `pd_wbgtravel`, and have a table named `dev_events`. Here's how to create that from scratch.
 
 - Create a database named "arl" by entering into an interactive PostgreSQL session (`psql`) and then running the following: `CREATE DATABASE arl;`
-- Connect to the database: `\connect ARL;`
+- Connect to the database: `\connect arl;`
 - Create a `pd_wbgtravel` schema: `create schema pd_wbgtravel;`
 - Set the search path for the schema: `SET search_path TO pd_wbgtravel;`
 - Ctrl+d to get out of interactive psql session.
