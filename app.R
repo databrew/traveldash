@@ -593,7 +593,6 @@ server <- function(input, output, session) {
       `Visit start` = Sys.Date() - 3,
       `Visit end` = Sys.Date())
     new_row <- new_row %>%
-      mutate(`Visit month` = format(`Visit start`, '%B')) %>%
       mutate(Lat = 31,
              Long = -65)
     new_row$Event <- 'Some event'

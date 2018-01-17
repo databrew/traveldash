@@ -3,8 +3,34 @@ A travel dashboard for the IFC / World Bank
 
 # Developer's instructions
 
+## Packages
+
 - This package requires a non-standard installation of `networkD3`. Prior to running the application, install `nd3` by running `devtools::install_github('databrew/nd3').
-- Package versions and sources used for this app are as follows:
+- Package versions and sources used for this app are at the bottom of this document.
+
+## Credentials set-up
+
+## Database set-up
+
+To run the app locally, you must have a PostgreSQL database running. This database should be named `arl`, have a schema named `pd_wbgtravel`, and have a table named `dev_events`. Here's how to create that from scratch.
+
+- Create a database named "arl" by entering into an interactive PostgreSQL session (`psql`) and then running the following: `CREATE DATABASE arl;`
+- Connect to the database: `\connect ARL;`
+- Create a `pd_wbgtravel` schema: `create schema pd_wbgtravel;`
+- Set the search path for the schema: `SET search_path TO pd_wbgtravel;`
+- Ctrl+d to get out of interactive psql session.
+- 
+- CREATE SOME TABLE IN THE DATABASE
+
+- Confirm that the table is there: `\dt` should return:
+
+```
+SOME STUFF HERE
+```
+
+
+
+## Package versions
 
 ```
         package  version source

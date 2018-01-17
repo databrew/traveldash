@@ -1,2 +1,3 @@
 rsconnect/*
 .httr-oauth
+credentials/credentials.yaml

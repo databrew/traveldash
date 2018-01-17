@@ -12,8 +12,16 @@ library(tidyverse)
 library(googleVis)
 library(DT)
 library(data.table)
+library(googlesheets)
+library(DBI)
+library(yaml)
+library(httr)
 
 print('Done with package loading')
+
+# Read in data from google sheets
+data_url <- gs_url('https://docs.google.com/spreadsheets/d/13m0gMUQ2cQOoxPQgO2A7EESm4pG3eftTCGOdiH-0W6Y/edit#gid=0')
+events <- gs_read_csv(data_url)
 
 # Save events as a binary for faster loading
 if('events.RData' %in% dir()){
@@ -77,8 +85,7 @@ for(i in 1:n){
                                              Sys.Date() + 100,
                                              1),
                                          1)) %>%
-    mutate(`Visit end` = `Visit start` + sample(1:20, 1),
-           `Visit month` = format(`Visit start`, '%B'))
+    mutate(`Visit end` = `Visit start` + sample(1:20, 1))
   new_row <- new_row[,names(events)]
   new_rows[[i]] <- new_row
 }
