@@ -145,11 +145,16 @@ make_graph <- function(events){
 }
 
 make_sank <- function(events){
-  x <- events %>% group_by(Person, Counterpart) %>%
+  events <- events %>%
+    filter(!is.na(Person),
+           !is.na(Counterpart))
+  x <- events %>%
+    group_by(Person, Counterpart) %>%
     tally %>%
     ungroup %>%
     mutate(Person = as.numeric(factor(Person)),
            Counterpart = as.numeric(factor(Counterpart)))
+  # Remove those without a person/counterpart
   nodes = data.frame("name" = 
                        c(sort(unique(events$Person)),
                          sort(unique(events$Counterpart))))
@@ -171,6 +176,7 @@ make_sank <- function(events){
       rename(a = Person,
              b = Counterpart)
   )
+
   
   # Each row represents a link. The first number represents the node being conntected from. 
   # The second number represents the node connected to.
