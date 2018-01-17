@@ -20,11 +20,14 @@ This application uses either a PostgreSQL database or a google sheet as the data
 To use this app with database functionality, you'll note to provide database information and credentials. You'll note a `credentials/credentials.yaml` file. This is set up to assume an accessible, non-password protected "arl" database. If your database requires credentials, is running on a specific port, etc, add to the file in this format:
 
 ```
-host: some.host.net
-port: 5230 # or some other port number
-user: ausername
-password: apassword
+dbname: arl
+host: "w0lxsfigssa01"
+port: 5432
+user: "rscript"
+password: <ENTER CORRECT PASSWORD HERE>
 ```
+
+The above arguments should reflect any and all argments that one might pass to the `dbConnect` function.
 
 ## Database set-up
 
