@@ -395,6 +395,7 @@ server <- function(input, output, session) {
   vals$Data<-filter_events(events = events,
                            visit_start = min(date_dictionary$date),
                            visit_end = max(date_dictionary$date))
+  # Replace data with uploaded data
   observeEvent(input$submit, {
     new_data <- uploaded()
     # Update the session
@@ -423,6 +424,36 @@ server <- function(input, output, session) {
               overwrite = TRUE)
     }
   })
+  
+  # Replace data with modified data
+  observeEvent(input$submit2, {
+    new_data <- vals$Data
+    # Update the underlying data (google sheets or database)
+    if(use_google){
+      # Write to a temp csv
+      tf <- tempfile(fileext = '.csv')
+      write_csv(new_data, tf)
+      message('Writing new data to google')
+      gs_upload(file = tf,
+                sheet_title = 'Travel dashboard events - do not modify name or duplicate',
+                verbose = TRUE,
+                overwrite = TRUE)
+      # Identify the sheet
+      the_sheet <- data_url
+      gs_add_row(ss = the_sheet,
+                 ws = 1,
+                 input = new_data)
+    } else {
+      connection_object <- credentials_connect(credentials_extract())
+      copy_to(connection_object, 
+              new_data, 
+              "dev_events",
+              temporary = FALSE,
+              overwrite = TRUE)
+    }
+  })
+  
+  
   submit_text <- reactiveVal(value = '')
   observeEvent(input$submit, {
     submit_text('Data uploaded! Now click through other tabs to explore your data.')
@@ -559,10 +590,11 @@ server <- function(input, output, session) {
       shinydashboard::box(width=12,
           h3(strong("Create, modify, and delete travel events"),align="center"),
           hr(),
-          column(6,offset = 6,
+          column(12,#offset = 6,
                  HTML('<div class="btn-group" role="group" aria-label="Basic example">'),
                  actionButton(inputId = "Add_row_head",label = "Add a new row"),
                  actionButton(inputId = "Del_row_head",label = "Delete selected rows"),
+                 actionButton(inputId = "submit2",label = "Save changes"),
                  HTML('</div>')
           ),
           
