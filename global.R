@@ -18,7 +18,7 @@ library(yaml)
 library(httr)
 library(tmap)
 library(tmaptools)
-message('Done with package loading')
+message('############ Done with package loading')
 
 # Source all the functions in the R directory
 functions <- dir('R')
@@ -58,4 +58,4 @@ date_dictionary <- date_dictionary %>%
 # Example data
 example_upload_data <- read_csv('example-upload-data.csv')
 
-print('Done with global.R')
+message('############ Done with global.R')

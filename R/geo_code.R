@@ -24,7 +24,7 @@ geo_code <- function(events_tbl){
     # Geocode them
     gc_list <- list()
     for(i in 1:length(empties)){
-      message('i of ', length(empties), ': geocoding ',
+      message(i, ' of ', length(empties), ': geocoding ',
               empties[i])
       gc <- geocode_OSM(q = empties[i])$coords
       if(is.null(gc)){

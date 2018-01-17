@@ -154,7 +154,7 @@ body <- dashboardBody(
                                           'text/comma-separated-values,text/plain', 
                                           '.csv'))),
                 column(6,
-                       h4('Download data'),
+                       h4('Download sample dataset'),
                        helpText('Click the "Download" button to get a sample dataset.'),
                        downloadButton("downloadData", "Download"))),
               uiOutput('upload_ui'),
@@ -398,6 +398,8 @@ server <- function(input, output, session) {
   # Replace data with uploaded data
   observeEvent(input$submit, {
     new_data <- uploaded()
+    # Geocode the new data if applicable
+    new_data <- geo_code(new_data)
     # Update the session
     vals$Data <- new_data
     # Update the underlying data (google sheets or database)
@@ -425,9 +427,12 @@ server <- function(input, output, session) {
     }
   })
   
-  # Replace data with modified data
+  # After modification is confirmed, update the data stores
+  # (db or google)
   observeEvent(input$submit2, {
     new_data <- vals$Data
+    # Geocode if applicable
+    new_data <- geo_code(new_data)
     # Update the underlying data (google sheets or database)
     if(use_google){
       # Write to a temp csv

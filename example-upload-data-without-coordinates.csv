@@ -1,0 +1,8 @@
+event_id,Person,Organization,City of visit,Country of visit,Counterpart,Visit start,Visit end,Lat,Long,Event
+1,Joe Brew,World Bank,New York,United States,Donald Trump,2017-05-15,2017-05-25,,,World Finance Summit
+2,Joe Brew,World Bank,Paris,France,Emmanuel Macron,2017-10-20,2017-10-30,,,G20 sub meeting
+3,Joe Brew,World Bank,Moscow,Russia,Vladimir Putin,2017-01-11,2017-01-21,,,World Bank internal meeting
+4,Soren Heitmann,World Bank,Brasilia,Brazil,Michel Temer,2017-06-16,2017-06-26,,,Private meeting
+5,Soren Heitmann,World Bank,Brasilia,Brazil,Michel Temer,2017-07-17,2017-07-27,,,Bi-national conference
+6,Oleksiy Anokhin,World Bank,Berlin,Germany,Angela Merkel,2017-02-12,2017-02-22,,,Trade summit
+7,Oleksiy Anokhin,World Bank,Johannesburg,South Africa,Jacob Zuma,2017-08-18,2017-08-28,,,Non-official event
