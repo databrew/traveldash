@@ -398,10 +398,14 @@ server <- function(input, output, session) {
   # Replace data with uploaded data
   observeEvent(input$submit, {
     new_data <- uploaded()
+    message('new data has ', nrow(new_data), ' rows')
     # Geocode the new data if applicable
     new_data <- geo_code(new_data)
+    message('done geocoding')
     # Update the session
     vals$Data <- new_data
+    message('overwrote vals$Data')
+    print(nrow(vals$Data))
     # Update the underlying data (google sheets or database)
     if(use_google){
       # Write to a temp csv
@@ -418,18 +422,21 @@ server <- function(input, output, session) {
                  ws = 1,
                  input = new_data)
     } else {
+      message('Overwriting the database')
       connection_object <- credentials_connect(credentials_extract())
       copy_to(connection_object, 
               new_data, 
               "dev_events",
               temporary = FALSE,
               overwrite = TRUE)
+      message('Overwrote the database')
     }
   })
   
   # After modification is confirmed, update the data stores
   # (db or google)
   observeEvent(input$submit2, {
+    message('Modification confirmed, geocoding and overwriting data.')
     new_data <- vals$Data
     # Geocode if applicable
     new_data <- geo_code(new_data)
@@ -469,7 +476,8 @@ server <- function(input, output, session) {
   filtered_events <- reactive({
     # x <- vals$Data
     fd <- the_dates()
-    x <- filter_events(events = vals$Data,
+    vd <- vals$Data
+    x <- filter_events(events = vd,
                        visit_start = fd[1],
                        visit_end = fd[2],
                        search = input$search)
