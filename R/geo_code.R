@@ -3,7 +3,6 @@
 #' Geocode an "events" table
 #' @param events_tbl An events table
 #' @return An events table
-#' @import tmap
 #' @import tmaptools
 #' @import dplyr
 #' @export

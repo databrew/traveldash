@@ -16,7 +16,6 @@ library(googlesheets)
 library(DBI)
 library(yaml)
 library(httr)
-library(tmap)
 library(tmaptools)
 message('############ Done with package loading')
 
