@@ -416,11 +416,6 @@ server <- function(input, output, session) {
                 sheet_title = 'Travel dashboard events - do not modify name or duplicate',
                 verbose = TRUE,
                 overwrite = TRUE)
-      # Identify the sheet
-      the_sheet <- data_url
-      gs_add_row(ss = the_sheet,
-                 ws = 1,
-                 input = new_data)
     } else {
       message('Overwriting the database')
       connection_object <- credentials_connect(credentials_extract())
@@ -450,11 +445,6 @@ server <- function(input, output, session) {
                 sheet_title = 'Travel dashboard events - do not modify name or duplicate',
                 verbose = TRUE,
                 overwrite = TRUE)
-      # Identify the sheet
-      the_sheet <- data_url
-      gs_add_row(ss = the_sheet,
-                 ws = 1,
-                 input = new_data)
     } else {
       connection_object <- credentials_connect(credentials_extract())
       copy_to(connection_object, 

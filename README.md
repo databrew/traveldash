@@ -48,3 +48,12 @@ To run the app locally, you must have a PostgreSQL database running. This databa
  public | dev_events | table | joebrew
 
 ```
+
+## Running the app without a database
+
+For the purposes of quick testing and iterability, the app can also be run without a database. In this case, google sheets is used like a database (ie, data is read from google sheets and written to google sheets following upload/modification). In order to run in this mode, set the below line in `global.R` to `TRUE`.
+
+```
+# Define whether using database or google
+use_google <- TRUE
+```

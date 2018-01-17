@@ -27,7 +27,7 @@ for(i in 1:length(functions)){
 }
 
 # Define whether using database or google
-use_google <- FALSE
+use_google <- TRUE
 
 # Read in data (either from google or database, depending on above)
 if(use_google){
