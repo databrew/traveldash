@@ -397,8 +397,31 @@ server <- function(input, output, session) {
                            visit_end = max(date_dictionary$date))
   observeEvent(input$submit, {
     new_data <- uploaded()
-    head(new_data)
+    # Update the session
     vals$Data <- new_data
+    # Update the underlying data (google sheets or database)
+    if(use_google){
+      # Write to a temp csv
+      tf <- tempfile(fileext = '.csv')
+      write_csv(new_data, tf)
+      message('Writing new data to google')
+      gs_upload(file = tf,
+                sheet_title = 'Travel dashboard events - do not modify name or duplicate',
+                verbose = TRUE,
+                overwrite = TRUE)
+      # Identify the sheet
+      the_sheet <- data_url
+      gs_add_row(ss = the_sheet,
+                 ws = 1,
+                 input = new_data)
+    } else {
+      connection_object <- credentials_connect(credentials_extract())
+      copy_to(connection_object, 
+              new_data, 
+              "dev_events",
+              temporary = FALSE,
+              overwrite = TRUE)
+    }
   })
   submit_text <- reactiveVal(value = '')
   observeEvent(input$submit, {
