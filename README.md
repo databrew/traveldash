@@ -19,7 +19,6 @@ user: ausername
 password: apassword
 ```
 
-
 ## Database set-up
 
 To run the app locally, you must have a PostgreSQL database running. This database should be named `arl`, have a schema named `pd_wbgtravel`, and have a table named `dev_events`. Here's how to create that from scratch.
