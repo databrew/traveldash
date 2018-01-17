@@ -30,10 +30,18 @@ use_google <- TRUE
 
 # Read in data (either from google or database, depending on above)
 if(use_google){
+  message('Using google')
   # Read in data from google sheets
+  message('Defining the location of stored data')
   data_url <- gs_url('https://docs.google.com/spreadsheets/d/13m0gMUQ2cQOoxPQgO2A7EESm4pG3eftTCGOdiH-0W6Y/edit#gid=0')
+  message('Sleeping for 1 second')
+  Sys.sleep(1)
+  # Reading in the data from google
   events <- gs_read_csv(data_url)  
+  message('Finished reading in events data. It looks like this:')
+  print(head(events))
 } else {
+  message('Using database')
   # Read in data from the database
   events <- get_data(tab = 'dev_events')
 }
