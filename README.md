@@ -12,7 +12,6 @@ This application uses either a PostgreSQL database or a google sheet as the data
 ## Packages
 
 - This package requires a non-standard installation of `networkD3`. Prior to running the application, install `nd3` by running `devtools::install_github('databrew/nd3').
-- Note that proper functioning of the `tmap` package requires gdal 2.01 or greater. For installation, see this [SO thread](https://stackoverflow.com/questions/37294127/python-gdal-2-1-installation-on-ubuntu-16-04).
 
 ## Credentials set-up
 
