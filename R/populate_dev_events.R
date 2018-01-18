@@ -30,6 +30,8 @@ populate_dev_events <- function(connection_object = NULL,
   # data_url <- gs_url('https://docs.google.com/spreadsheets/d/13m0gMUQ2cQOoxPQgO2A7EESm4pG3eftTCGOdiH-0W6Y/edit#gid=0')
   # events <- gs_read_csv(data_url)
   events <- read_csv('events.csv')
+  events$`Visit end` <- as.character(events$`Visit end`)
+  events$`Visit start` <- as.character(events$`Visit start`)
   
   # Table name
   if(use_sqlite){
@@ -45,7 +47,7 @@ populate_dev_events <- function(connection_object = NULL,
   dbDisconnect(connection_object)
 }
 
-# Populate both sqlite and postrgres
+# # Populate both sqlite and postrgres
 # for(i in c(TRUE, FALSE)){
 #   if(i){
 #     message('Populating SQLite database')

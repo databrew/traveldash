@@ -97,6 +97,14 @@ get_data <- function(query = NULL,
   return_object <- dbGetQuery(connection_object, 
                               query)
   
+  # SQLite doesn't handle dates, so we have to convert from characters
+  # This is a hard-coded hack
+  if("Visit start" %in% names(return_object)){
+    return_object$`Visit start` <- as.Date(return_object$`Visit start`)
+  }
+  if("Visit end" %in% names(return_object)){
+    return_object$`Visit end` <- as.Date(return_object$`Visit end`)
+  }
 
   # # Disconnect
   # pool::poolClose(connection_object)
