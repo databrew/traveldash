@@ -564,7 +564,16 @@ server <- function(input, output, session) {
   observeEvent(filtered_events(), {
     places <- filtered_events()
     
-    popups <- paste0(places$Person, ' of the ', places$Organization, ' meeting with ', places$Counterpart, ' in ',
+    popups <- paste0(places$Person, ' of the ', places$Organization,
+                     ifelse(!is.na(places$Counterpart) &
+                              places$Counterpart != '',
+                            paste0(' meeting with ', 
+                                   places$Counterpart,
+                                   collapse = ' '),
+                            ''
+                            ),
+                      
+                     ' in ',
                      places$`City of visit`, ' on ', format(places$`Visit start`, '%B %d, %Y'))
     
     # Get faces
