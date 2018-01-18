@@ -491,12 +491,17 @@ server <- function(input, output, session) {
                             places$Person,
                             'Unknown')
     
+    message('nrow places ', nrow(places))
+    message('nrow faces ', nrow(faces))
     # Join the files to the places data
-    places <- 
-      left_join(places,
-                faces,
-                by = 'joiner')
-    
+    if(nrow(places) > 0){
+      places <- 
+        left_join(places,
+                  faces,
+                  by = 'joiner')
+    } else {
+      places <- events[0,]
+    }
     face_icons <- icons(places$file,
                         iconWidth = 25, iconHeight = 25)
     
