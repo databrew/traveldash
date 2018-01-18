@@ -31,43 +31,22 @@ for(i in 1:length(functions)){
 }
 
 
-# Define whether using database or google
-use_google <- FALSE
-if(use_google){
-  message('In "google mode"')
+# Define whether using postgresql or sqlite
+use_sqlite <- FALSE
+if(use_sqlite){
+  message('In "sqlite mode"')
 } else {
   message('In "Postgres mode"')
 }
 
-# Token handling
-if(use_google & !'googlesheets_token.rds' %in% dir()){
-  token <- gs_auth(cache = FALSE)
-  gd_token()
-  saveRDS(token, file = "googlesheets_token.rds")
-}
-suppressMessages(gs_auth(token = "googlesheets_token.rds", verbose = FALSE))
+# Create a connection pool
+pool <- create_pool(options_list = credentials_extract(),
+                    use_sqlite = use_sqlite)
 
-# Read in data (either from google or database, depending on above)
-if(use_google){
-  message('Using google')
-  # Read in data from google sheets
-  message('Defining the location of stored data')
-  data_url <- gs_url('https://docs.google.com/spreadsheets/d/13m0gMUQ2cQOoxPQgO2A7EESm4pG3eftTCGOdiH-0W6Y/edit#gid=0')
-  message('Sleeping for 1 second')
-  Sys.sleep(1)
-  # Reading in the data from google
-  events <- gs_read_csv(data_url)  
-  message('Finished reading in events data. It looks like this:')
-  print(head(events))
-} else {
-  message('Using database')
-  # Create a connection pool
-  pool <- create_pool(credentials_extract())
-  # Read in data from the database
-  events <- get_data(tab = 'dev_events',
-                     schema = 'pd_wbgtravel',
-                     connection_object = pool)
-}
+# Read in data from the database
+events <- get_data(tab = 'dev_events',
+                   schema = 'pd_wbgtravel',
+                   connection_object = pool)
 
 # Define static objects for selection
 people <- sort(unique(events$Person))
@@ -75,7 +54,6 @@ organizations <- sort(unique(events$Organization))
 cities <- sort(unique(events$`City of visit`))
 counterparts <- sort(unique(events$Counterpart))
 countries <- sort(unique(events$`Country of visit`))
-
 
 # Create a dataframe for dicting day numbers to dates
 date_dictionary <-

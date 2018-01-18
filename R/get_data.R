@@ -89,9 +89,10 @@ get_data <- function(query = NULL,
 
   # Query / connect
   if(!is.null(tab)){
-    query <- paste0("select * from ",
+    query <- paste0("select * from '",
                     schema,
-                    tab)
+                    tab,
+                    "'")
   }
   return_object <- dbGetQuery(connection_object, 
                               query)

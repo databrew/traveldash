@@ -477,7 +477,8 @@ server <- function(input, output, session) {
     l <- leaflet() %>%
       addProviderTiles("Esri.WorldStreetMap") %>%
       setView(lng = mean(events$Long, na.rm = TRUE) - 5, lat = mean(events$Lat, na.rm = TRUE), zoom = 1) %>%
-    leaflet.extras::addFullscreenControl() 
+    leaflet.extras::addFullscreenControl() %>%
+      addLegend(position = 'topright', colors = c('red', 'blue'), labels = c('Meeting', 'No meeting'))
     # addDrawToolbar(
     #   targetGroup='draw',
     #   editOptions = editToolbarOptions(selectedPathOptions = selectedPathOptions()))  %>%
