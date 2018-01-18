@@ -100,10 +100,15 @@ get_data <- function(query = NULL,
   # SQLite doesn't handle dates, so we have to convert from characters
   # This is a hard-coded hack
   if("Visit start" %in% names(return_object)){
-    return_object$`Visit start` <- as.Date(return_object$`Visit start`)
-  }
-  if("Visit end" %in% names(return_object)){
-    return_object$`Visit end` <- as.Date(return_object$`Visit end`)
+    if(is.numeric(return_object$`Visit start`)){
+      return_object$`Visit start` <- as.Date(return_object$`Visit start`,
+                                             origin = '1970-01-01')
+      return_object$`Visit end` <- as.Date(return_object$`Visit end`,
+                                           origin = '1970-01-01')
+    } else {
+      return_object$`Visit start` <- as.Date(return_object$`Visit start`)
+      return_object$`Visit end` <- as.Date(return_object$`Visit end`)
+    }
   }
 
   # # Disconnect
