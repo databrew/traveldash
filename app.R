@@ -127,8 +127,98 @@ body <- dashboardBody(
                       'MasterCard Foundation'),
                     " to expand microfinance and advance digital financial services in Sub-Saharan Africa) by the FIG Africa Digital Financial Services unit (the MEL team).")),
         br(),
-        fluidRow(div(img(src='partnershiplogo.png', align = "center"), style="text-align: center;"),
-                 br(),
+        fluidRow(div(img(src='partnershiplogo.png', 
+                         align = "center",
+                         height = '90'), style="text-align: center;"),
+                 br(), 
+                 style = 'text-align:center;'
+        ),
+        br(),
+        fluidRow(
+          shinydashboard::box(
+            title = 'Lesley Sarah Denyes',
+            fluidPage(
+              fluidRow(
+                div(a(img(src='about/Lesley Sarah Denyes.jpg', 
+                          align = "center",
+                          height = '80'),
+                      href="mailto:LDenyes@ifc.org"), 
+                    style="text-align: center;")
+              ),
+              fluidRow(h5('MCF Program Manager'),
+                       h5('Johannesburg, ', 
+                          a(href = 'mailto:LDenyes@ifc.org',
+                            'LDenyes@ifc.org')))
+            ),
+            width = 4),
+          shinydashboard::box(
+            title = 'Soren Heitmann',
+            fluidPage(
+              fluidRow(
+                div(a(img(src='about/Soren Heitmann.jpg', 
+                          align = "center",
+                          height = '80'),
+                      href="mailto:sheitmann@ifc.org"), 
+                    style="text-align: center;")
+              ),
+              fluidRow(h5('Research Manager'),
+                       h5('Johannesburg, ', 
+                          a(href = 'mailto:sheitmann@ifc.org',
+                            'sheitmann@ifc.org')))
+            ),
+            width = 4),
+          shinydashboard::box(
+            title = 'Oleksiy Anokhin',
+            fluidPage(
+              fluidRow(
+                div(a(img(src='about/Oleksiy Anokhin.jpg', 
+                          align = "center",
+                          height = '80'),
+                      href="mailto:oanokhin@ifc.org"), 
+                    style="text-align: center;")
+              ),
+              fluidRow(h5('Dashboard Project Manager'),
+                       h5('Washington, DC, ', 
+                          a(href = 'mailto:oanokhin@ifc.org',
+                            'oanokhin@ifc.org')))
+            ),
+            width = 4)
+        ),
+        fluidRow(
+          shinydashboard::box(
+            title = 'Joe Brew',
+            fluidPage(
+              fluidRow(
+                div(a(img(src='about/Joe Brew.png', 
+                          align = "center",
+                          height = '80'),
+                      href="mailto:jbrew1@worldbank.org"), 
+                    style="text-align: center;")
+              ),
+              fluidRow(h5('Data Scientist'),
+                       h5('Amsterdam, ', 
+                          a(href = 'mailto:jbrew1@worldbank.org',
+                            'jbrew1@worldbank.org')))
+            ),
+            width = 4),
+          shinydashboard::box(
+            title = 'Roman Zhukovskyi',
+            fluidPage(
+              fluidRow(
+                div(a(img(src='about/Roman Zhukovskyi.jpg', 
+                          align = "center",
+                          height = '80'),
+                      href="mailto:rzhukovskyi@worldbank.org"), 
+                    style="text-align: center;")
+              ),
+              fluidRow(h5('Guy'),
+                       h5('Washington, DC, ', 
+                          a(href = 'mailto:rzhukovskyi@worldbank.org',
+                            'rzhukovskyi@worldbank.org')))
+            ),
+            width = 4)
+        ),
+        fluidRow(br(),
                  div(a(actionButton(inputId = "email", label = "Contact", 
                                     icon = icon("envelope", lib = "font-awesome")),
                        href="mailto:sheitmann@ifc.org",
