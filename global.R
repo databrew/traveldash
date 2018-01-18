@@ -12,7 +12,7 @@ library(tidyverse)
 library(googleVis)
 library(DT)
 library(data.table)
-library(googlesheets)
+#library(googlesheets)
 library(DBI)
 library(yaml)
 library(httr)
@@ -23,7 +23,7 @@ library(leaflet.extras)
 library(RSQLite)
 
 message('############ Done with package loading')
-
+#setwd("C:/Users/SHeitmann/WBG/Sinja Buri - FIG SSA MEL/MEL Program Operations/Knowledge Products/Dashboards & Viz/WBG Travel/GitHub/traveldash")
 # Source all the functions in the R directory
 functions <- dir('R')
 for(i in 1:length(functions)){
@@ -32,7 +32,7 @@ for(i in 1:length(functions)){
 
 
 # Define whether using postgresql or sqlite
-use_sqlite <- TRUE
+use_sqlite <- FALSE
 if(use_sqlite){
   message('In "sqlite mode"')
 } else {
