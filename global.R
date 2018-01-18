@@ -32,6 +32,11 @@ for(i in 1:length(functions)){
 
 # Define whether using database or google
 use_google <- FALSE
+if(use_google){
+  message('In "google mode"')
+} else {
+  message('In "Postgres mode"')
+}
 
 # Token handling
 if(use_google & !'googlesheets_token.rds' %in% dir()){

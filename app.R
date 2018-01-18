@@ -476,11 +476,11 @@ server <- function(input, output, session) {
   output$leafy <- renderLeaflet({
     l <- leaflet() %>%
       addProviderTiles("Esri.WorldStreetMap") %>%
-      setView(lng = mean(events$Long) - 5, lat = mean(events$Lat), zoom = 1) #%>%
-      # leaflet.extras::addFullscreenControl() %>%
-      # addDrawToolbar(
-      #   targetGroup='draw',
-      #   editOptions = editToolbarOptions(selectedPathOptions = selectedPathOptions()))  %>%
+      setView(lng = mean(events$Long, na.rm = TRUE) - 5, lat = mean(events$Lat, na.rm = TRUE), zoom = 1) %>%
+    leaflet.extras::addFullscreenControl() 
+    # addDrawToolbar(
+    #   targetGroup='draw',
+    #   editOptions = editToolbarOptions(selectedPathOptions = selectedPathOptions()))  %>%
       # addLayersControl(overlayGroups = c('draw'), options =
       #                    layersControlOptions(collapsed=FALSE)) %>%
       # addStyleEditor()
