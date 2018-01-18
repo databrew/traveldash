@@ -17,7 +17,11 @@ library(DBI)
 library(yaml)
 library(httr)
 library(tmaptools)
+library(pool)
 message('############ Done with package loading')
+
+# Connect to pool
+pool <- create_pool(credentials_extract())
 
 # Source all the functions in the R directory
 functions <- dir('R')

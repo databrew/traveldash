@@ -418,12 +418,8 @@ server <- function(input, output, session) {
                 overwrite = TRUE)
     } else {
       message('Overwriting the database')
-      connection_object <- credentials_connect(credentials_extract())
-      copy_to(connection_object, 
-              new_data, 
-              "dev_events",
-              temporary = FALSE,
-              overwrite = TRUE)
+      # Overwrite the data
+      dbWriteTable(pool, c("pd_wbgtravel", "events"), value = new_data, overwrite = TRUE)
       message('Overwrote the database')
     }
   })
@@ -446,12 +442,10 @@ server <- function(input, output, session) {
                 verbose = TRUE,
                 overwrite = TRUE)
     } else {
-      connection_object <- credentials_connect(credentials_extract())
-      copy_to(connection_object, 
-              new_data, 
-              "dev_events",
-              temporary = FALSE,
-              overwrite = TRUE)
+      message('Overwriting the database')
+      # Overwrite the data
+      dbWriteTable(pool, c("pd_wbgtravel", "events"), value = new_data, overwrite = TRUE)
+      message('Overwrote the database')
     }
   })
   
