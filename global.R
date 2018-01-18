@@ -28,11 +28,9 @@ for(i in 1:length(functions)){
   source(paste0('R/', functions[i]), chdir = TRUE)
 }
 
-# Create a connection pool
-pool <- create_pool(credentials_extract())
 
 # Define whether using database or google
-use_google <- FALSE
+use_google <- TRUE
 
 # Token handling
 if(use_google & !'googlesheets_token.rds' %in% dir()){
@@ -56,6 +54,8 @@ if(use_google){
   print(head(events))
 } else {
   message('Using database')
+  # Create a connection pool
+  pool <- create_pool(credentials_extract())
   # Read in data from the database
   events <- get_data(tab = 'dev_events',
                      schema = 'pd_wbgtravel',
