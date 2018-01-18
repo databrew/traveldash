@@ -487,11 +487,38 @@ server <- function(input, output, session) {
     popups <- paste0(places$Person, ' of the ', places$Organization, ' meeting with ', places$Counterpart, ' in ',
                      places$`City of visit`, ' on ', format(places$`Visit start`, '%B %d, %Y'))
     
+    # Get faces
+    faces_dir <- paste0('www/headshots/circles/')
+    faces <- dir(faces_dir)
+    faces <- data_frame(joiner = gsub('.png', '', faces, fixed = TRUE),
+                        file = paste0(faces_dir, faces))
+    
+    # Create a join column
+    faces$joiner <- ifelse(is.na(faces$joiner) | faces$joiner == 'NA', 
+                           'Unknown', 
+                           faces$joiner)
+    places$joiner <- ifelse(places$Person %in% faces$joiner, 
+                            places$Person,
+                            'Unknown')
+    
+    # Join the files to the places data
+    places <- 
+      left_join(places,
+                faces,
+                by = 'joiner')
+    
+    face_icons <- icons(places$file,
+                        iconWidth = 25, iconHeight = 25,
+                        shadowWidth = 25, shadowHeight = 25,
+                        shadowAnchorX = 15, shadowAnchorY = 25)
+    
+    
     ## plot the subsetted ata
     leafletProxy("leafy") %>%
       clearMarkers() %>%
       addMarkers(data = places, lng =~Long, lat = ~Lat,
-                 popup = popups)
+                 popup = popups,
+                 icon = face_icons)
   })
   
   output$sank <- renderSankeyNetwork({
@@ -787,10 +814,8 @@ server <- function(input, output, session) {
   
   # On session end, close
   session$onSessionEnded(function() {
-    message('Session ended.')
-    try({
-      pool::poolClose(pool)
-    })
+    message('Session ended. Closing the connection pool.')
+    tryCatch(pool::poolClose(pool), error = function(e) {message('')})
   })
   
   }
