@@ -22,12 +22,14 @@ populate_dev_events <- function(connection_object = NULL,
     the_credentials <- credentials_extract()
     
     # Establish the connection
-    connection_object <- credentials_connect(the_credentials)
+    connection_object <- credentials_connect(the_credentials,
+                                             use_sqlite = use_sqlite)
   }
   
   # Read in the events data from google sheets
-  data_url <- gs_url('https://docs.google.com/spreadsheets/d/13m0gMUQ2cQOoxPQgO2A7EESm4pG3eftTCGOdiH-0W6Y/edit#gid=0')
-  events <- gs_read_csv(data_url)
+  # data_url <- gs_url('https://docs.google.com/spreadsheets/d/13m0gMUQ2cQOoxPQgO2A7EESm4pG3eftTCGOdiH-0W6Y/edit#gid=0')
+  # events <- gs_read_csv(data_url)
+  events <- read_csv('events.csv')
   
   # Table name
   if(use_sqlite){
@@ -42,3 +44,14 @@ populate_dev_events <- function(connection_object = NULL,
   # Disconnect
   dbDisconnect(connection_object)
 }
+
+# Populate both sqlite and postrgres
+# for(i in c(TRUE, FALSE)){
+#   if(i){
+#     message('Populating SQLite database')
+#   } else {
+#     message('Populating Postgres database')
+#   }
+#   populate_dev_events(connection_object = NULL,
+#                       use_sqlite = i)
+# }
