@@ -4,7 +4,7 @@ event_id,Person,Organization,City of visit,Country of visit,Counterpart,Visit st
 3,Jim Yong Kim,World Bank,Moscow,Russia,Vladimir Putin,2017-01-11,2017-01-21,55.75583,37.6173,World Bank internal meeting
 4,Joaquim Levy,World Bank,Brasilia,Brazil,Michel Temer,2017-06-16,2017-06-26,-15.79423,-47.88217,Private meeting
 5,Joaquim Levy,World Bank,Brasilia,Brazil,Michel Temer,2017-07-17,2017-07-27,-15.79423,-47.88217,Bi-national conference
-6,Kristalina Georgieva,World Bank,Berlin,Germany,Angela Merkel,2017-02-12,2017-02-22,52.52001,13.40495,Trade summit
+6,Kristalina Georgieva,World Bank,Berlin,Germany,Angela Merkel,2017-02-12,2017-02-22,52.52001,13.40495,Davos
 7,Kristalina Georgieva,World Bank,Johannesburg,South Africa,Jacob Zuma,2017-08-18,2017-08-28,-26.2041,28.04731,Non-official event
 8,Paul Romer,World Bank,Kinshasa,Dem. Rep. Congo,Antonio Guterres,2017-04-14,2017-04-24,-4.32758,15.31357,IFC meeting
 9,Paul Romer,World Bank,London,United Kingdom,Theresa May,2017-09-19,2017-09-29,51.50735,-0.12776,International Development Summit
@@ -24,15 +24,15 @@ event_id,Person,Organization,City of visit,Country of visit,Counterpart,Visit st
 23,Jim Yong Kim,World Bank,Kaniama,Congo (Kinshasa),Vladimir Putin,2018-02-12,2018-02-25,-7.569629701,24.17003861,G20 sub meeting
 24,Kristalina Georgieva,World Bank,Er Rachidia,Morocco,Jacob Zuma,2017-09-30,2017-10-05,31.94041343,-4.449971559,World Bank internal meeting
 25,Philippe Le Houerou,IFC,Nebbi,Uganda,Theresa May,2017-04-23,2017-05-06,2.4758333,31.1025,Technology and Development Symposium
-26,Jim Yong Kim,World Bank,Villa Union,Mexico,Vladimir Putin,2017-04-09,2017-04-21,23.19999086,-106.2300381,World Bank internal meeting
-27,Paul Romer,World Bank,Azogues,Ecuador,Angela Merkel,2017-03-25,2017-03-29,-2.740002015,-78.84003036,IFC meeting
+26,Jim Yong Kim,World Bank,Villa Union,Mexico,Vladimir Putin,2017-04-09,2017-04-21,23.19999086,-106.2300381,Davos
+27,Paul Romer,World Bank,Azogues,Ecuador,Angela Merkel,2017-03-25,2017-03-29,-2.740002015,-78.84003036,Davos
 28,Jim Yong Kim,World Bank,Tonantins,Brazil,Jacob Zuma,2018-01-17,2018-01-18,-2.872707093,-67.80189274,
 29,Paul Romer,World Bank,Manica,Mozambique,Vladimir Putin,2017-12-15,2017-12-21,-18.96960569,32.87999792,Bi-national conference
 30,Jim Yong Kim,World Bank,Puerto Limon,Costa Rica,Vladimir Putin,2017-07-13,2017-07-15,10.00002138,-83.03334029,Trade summit
 31,Kristalina Georgieva,World Bank,Polokwane,South Africa,Emmanuel Macron,2018-04-12,2018-04-14,-23.89002887,29.45002641,
 32,Jim Yong Kim,World Bank,Ebebiyin,Gabon,Theresa May,2017-09-22,2017-10-01,2.152997996,11.33000156,World Finance Summit
 33,Joaquim Levy,World Bank,Tsuruoka,Japan,Antonio Guterres,2018-02-20,2018-02-21,38.70041424,139.830214,World Bank internal meeting
-34,Jim Yong Kim,World Bank,Acapulco,Mexico,Emmanuel Macron,2018-02-28,2018-03-09,16.84999086,-99.91597905,Private meeting
+34,Jim Yong Kim,World Bank,Acapulco,Mexico,Emmanuel Macron,2018-02-28,2018-03-09,16.84999086,-99.91597905,Davos
 35,Philippe Le Houerou,IFC,Mwanza,Tanzania,Michel Temer,2017-05-13,2017-05-15,-2.520015443,32.93002071,World Finance Summit
 36,Jim Yong Kim,World Bank,Joinville,Brazil,Xi Jinping,2017-07-22,2017-08-07,-26.31995807,-48.83994938,
 37,Jim Yong Kim,World Bank,Zorgo,Burkina Faso,Angela Merkel,2017-01-05,2017-01-15,12.24299707,-0.611000429,
@@ -63,7 +63,7 @@ event_id,Person,Organization,City of visit,Country of visit,Counterpart,Visit st
 62,Paul Romer,World Bank,Tchibanga,Gabon,Angela Merkel,2018-01-15,2018-01-27,-2.856995957,11.02699849,Bi-national conference
 63,Paul Romer,World Bank,Maanshan,China,Angela Merkel,2017-05-31,2017-06-11,31.73040041,118.4800443,Non-official event
 64,Philippe Le Houerou,IFC,Trelew,Argentina,Michel Temer,2018-02-07,2018-02-18,-43.25003579,-65.3299506,
-65,Kristalina Georgieva,World Bank,Itaberaba,Brazil,Vladimir Putin,2017-06-29,2017-07-10,-12.5196118,-40.2999797,Non-official event
+65,Kristalina Georgieva,World Bank,Itaberaba,Brazil,Vladimir Putin,2017-06-29,2017-07-10,-12.5196118,-40.2999797,Davos
 66,Paul Romer,World Bank,Changwon,South Korea,Emmanuel Macron,2017-04-30,2017-05-12,35.21910219,128.583562,G20 sub meeting
 67,Paul Romer,World Bank,Marrupa,Mozambique,Angela Merkel,2018-01-10,2018-01-19,-13.19838174,37.49945756,Non-official event
 68,Philippe Le Houerou,IFC,Malakal,South Sudan,Theresa May,2017-03-05,2017-03-12,9.536897195,31.65598995,Technology and Development Symposium
