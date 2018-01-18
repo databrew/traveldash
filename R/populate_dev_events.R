@@ -5,7 +5,7 @@
 #' in or somewhere upwards of the working directory.
 #' @return The dev_events table will be populated
 #' @import DBI
-#' @import dplyr
+#' @import RPostgreSQL
 #' @import googlesheets
 #' @export
 
@@ -27,9 +27,8 @@ populate_dev_events <- function(connection_object = NULL){
   events <- gs_read_csv(data_url)
   
   # Upload
-  copy_to(connection_object, 
-          events, 
-          "dev_events",
-          temporary = FALSE,
-          overwrite = TRUE)
+  dbWriteTable(connection_object, c("pd_wbgtravel", "events"), value = events)
+  
+  # Disconnect
+  dbDisconnect(connection_object)
 }

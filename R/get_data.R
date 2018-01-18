@@ -3,6 +3,7 @@
 #' Fetch a table or a specific query of a table from the database.
 #' @param query A SQL query as a chracter string of length 1
 #' @param tab As an alternative to query, the name of an entire table to return
+#' @param schema The schema of the table in the connected database. If \code{NULL}, then will follow the default search_path
 #' @param dbname The name of the database from which you are getting data.
 #' Example: portfolio. If \code{NULL}
 #' the function will try to use the \code{dbname} in your \code{connection_object}; if the \code{connection_object} is \code{NULL}, the function will
@@ -20,24 +21,22 @@
 #' @param password The password If \code{NULL}
 #' the function will try to use the \code{pqssword} in your \code{connection_object}; if the \code{connection_object} is \code{NULL}, the function will
 #' try to create a \code{connection_object} as described below.
-#' @param connection_object An open connection to adatabase (as created through \code{credentials_extract} and \code{credentials_connect} or \code{credentials_now}); if \code{NULL}, the function will try to create a \code{connection_object} by retrieving user information from the \code{credentials/credentials.yaml}
+#' @param connection_object An open connection to adatabase (as created through \code{credentials_extract} and \code{credentials_connect}); if \code{NULL}, the function will try to create a \code{connection_object} by retrieving user information from the \code{credentials/credentials.yaml}
 #' in or somewhere upwards of the working directory.
-#' @param collect Whether to collect into memory (using dplyr's \code{connect}
-#' function) the result or not
 #' @return A dataframe matching the results of either the \code{query} or \code{tab} arguments
 #' @import DBI
-#' @import dplyr
+#' @import RPostgreSQL
 #' @export
 
 get_data <- function(query = NULL,
                      tab = NULL,
+                     schema = NULL,
                      dbname = NULL,
                      host = NULL,
                      port = NULL,
                      user = NULL,
                      password = NULL,
-                     connection_object = NULL,
-                     collect = TRUE){
+                     connection_object = NULL){
 
   # If not connection object, try to find one
   if(is.null(connection_object)){
@@ -69,8 +68,6 @@ get_data <- function(query = NULL,
 
     # Establish the connection
     connection_object <- credentials_connect(the_credentials)
-
-
   }
 
 
@@ -82,21 +79,28 @@ get_data <- function(query = NULL,
   if(is.null(connection_object)){
     stop('You must supply a connection object (use credentials_extract and credentials_connect, or simply credentials_now).')
   }
-
-  # QUERY / CONNECT
-  if(!is.null(tab)){
-    return_object <- tbl(connection_object,
-                         tab)
+  
+  # Modify the schema
+  if(is.null(schema)){
+    schema <- ''
   } else {
-    return_object <- tbl(src = connection_object,
-                         from = sql(query))
+    schema <- paste0(schema, '.')
   }
 
-  if(collect){
-    # Collect
-    return_object <- dplyr::collect(return_object,
-                             n = Inf)
+  # Query / connect
+  if(!is.null(tab)){
+    return_object <- dbGetQuery(connection_object, 
+                                paste0("select * from ",
+                                       schema,
+                                       tab))
+  } else {
+    return_object <- dbGetQuery(connection_object, 
+                                query)
   }
 
+  # Disconnect
+  dbDisconnect(connection_object)
+
+  # Spit back
   return(return_object)
 }

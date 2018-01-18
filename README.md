@@ -34,17 +34,16 @@ To run the app locally, you must have a PostgreSQL database running. This databa
 - Create a database named "arl" by entering into an interactive PostgreSQL session (`psql`) and then running the following: `CREATE DATABASE arl;`
 - Connect to the database: `\connect arl;`
 - Create a `pd_wbgtravel` schema: `create schema pd_wbgtravel;`
-- Set the search path for the schema: `SET search_path TO pd_wbgtravel;`
 - Ctrl+d to get out of interactive psql session.
 - Run the code in `R/populate_dev_events.R` in order to populate the `dev_events` table.
 - Enter the `arl` database in an interactive psql session: `psql arl`.
-- Confirm that the table is there: `\dt` should return:
+- Confirm that the table is there: `\dt pd_wbgtravel.*` should return:
 
 ```
-           List of relations
- Schema |    Name    | Type  |  Owner  
---------+------------+-------+---------
- public | dev_events | table | joebrew
+            List of relations
+    Schema    |  Name  | Type  |  Owner  
+--------------+--------+-------+---------
+ pd_wbgtravel | events | table | joebrew
 
 ```
 
