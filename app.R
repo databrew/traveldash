@@ -476,7 +476,14 @@ server <- function(input, output, session) {
   output$leafy <- renderLeaflet({
     l <- leaflet() %>%
       addProviderTiles("Esri.WorldStreetMap") %>%
-      setView(lng = mean(events$Long) - 5, lat = mean(events$Lat), zoom = 1)
+      setView(lng = mean(events$Long) - 5, lat = mean(events$Lat), zoom = 1) #%>%
+      # leaflet.extras::addFullscreenControl() %>%
+      # addDrawToolbar(
+      #   targetGroup='draw',
+      #   editOptions = editToolbarOptions(selectedPathOptions = selectedPathOptions()))  %>%
+      # addLayersControl(overlayGroups = c('draw'), options =
+      #                    layersControlOptions(collapsed=FALSE)) %>%
+      # addStyleEditor()
     l
   })
   
@@ -518,7 +525,7 @@ server <- function(input, output, session) {
       clearMarkers() %>%
       addMarkers(data = places, lng =~Long, lat = ~Lat,
                  popup = popups,
-                 icon = face_icons)
+                 icon = face_icons) 
   })
   
   output$sank <- renderSankeyNetwork({

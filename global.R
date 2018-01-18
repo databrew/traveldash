@@ -19,6 +19,7 @@ library(httr)
 library(tmaptools)
 library(RPostgreSQL)
 library(pool) # devtools::install_github("rstudio/pool")
+library(leaflet.extras)
 
 message('############ Done with package loading')
 
@@ -30,7 +31,7 @@ for(i in 1:length(functions)){
 
 
 # Define whether using database or google
-use_google <- TRUE
+use_google <- FALSE
 
 # Token handling
 if(use_google & !'googlesheets_token.rds' %in% dir()){
