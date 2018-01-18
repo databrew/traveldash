@@ -788,7 +788,9 @@ server <- function(input, output, session) {
   # On session end, close
   session$onSessionEnded(function() {
     message('Session ended.')
-    pool::poolClose(pool)
+    try({
+      pool::poolClose(pool)
+    })
   })
   
   }
