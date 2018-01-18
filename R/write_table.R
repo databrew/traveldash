@@ -42,7 +42,7 @@ write_table <- function(connection_object = NULL,
   # Write
   dbWriteTable(connection_object, 
                table_name, 
-               value = new_data, 
+               value = value, 
                overwrite = TRUE, 
                row.names = FALSE)
 
