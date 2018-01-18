@@ -403,47 +403,29 @@ server <- function(input, output, session) {
     vals$Data <- new_data
     message('overwrote vals$Data')
     print(nrow(vals$Data))
-    # Update the underlying data (google sheets or database)
-    if(use_google){
-      # Write to a temp csv
-      tf <- tempfile(fileext = '.csv')
-      write_csv(new_data, tf)
-      message('Writing new data to google')
-      gs_upload(file = tf,
-                sheet_title = 'Travel dashboard events - do not modify name or duplicate',
-                verbose = TRUE,
-                overwrite = TRUE)
-    } else {
-      message('Overwriting the database')
-      # Overwrite the data
-      dbWriteTable(pool, c("pd_wbgtravel", "events"), value = new_data, overwrite = TRUE, row.names = FALSE)
-      message('Overwrote the database')
-    }
+    # Update the underlying data
+    write_table(connection_object = pool,
+                table = 'dev_events',
+                schema = 'pd_wbgtravel',
+                value = new_data,
+                use_sqlite = use_sqlite)
+    message('Overwrote the database')
   })
   
   # After modification is confirmed, update the data stores
-  # (db or google)
   observeEvent(input$submit2, {
     message('Modification confirmed, geocoding and overwriting data.')
     new_data <- vals$Data
     # Geocode if applicable
     new_data <- geo_code(new_data)
-    # Update the underlying data (google sheets or database)
-    if(use_google){
-      # Write to a temp csv
-      tf <- tempfile(fileext = '.csv')
-      write_csv(new_data, tf)
-      message('Writing new data to google')
-      gs_upload(file = tf,
-                sheet_title = 'Travel dashboard events - do not modify name or duplicate',
-                verbose = TRUE,
-                overwrite = TRUE)
-    } else {
-      message('Overwriting the database')
-      # Overwrite the data
-      dbWriteTable(pool, c("pd_wbgtravel", "events"), value = new_data, overwrite = TRUE, row.names = FALSE)
-      message('Overwrote the database')
-    }
+    # Update the underlying data 
+    # Update the underlying data
+    write_table(connection_object = pool,
+                table = 'dev_events',
+                schema = 'pd_wbgtravel',
+                value = new_data,
+                use_sqlite = use_sqlite)
+    message('Ovewrote the database')
   })
   
   
