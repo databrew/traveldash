@@ -17,11 +17,10 @@ library(DBI)
 library(yaml)
 library(httr)
 library(tmaptools)
-library(pool)
-message('############ Done with package loading')
+library(RPostgreSQL)
+library(pool) # devtools::install_github("rstudio/pool")
 
-# Connect to pool
-pool <- create_pool(credentials_extract())
+message('############ Done with package loading')
 
 # Source all the functions in the R directory
 functions <- dir('R')
@@ -29,8 +28,11 @@ for(i in 1:length(functions)){
   source(paste0('R/', functions[i]), chdir = TRUE)
 }
 
+# Create a connection pool
+pool <- create_pool(credentials_extract())
+
 # Define whether using database or google
-use_google <- TRUE
+use_google <- FALSE
 
 # Token handling
 if(use_google & !'googlesheets_token.rds' %in% dir()){
@@ -55,7 +57,9 @@ if(use_google){
 } else {
   message('Using database')
   # Read in data from the database
-  events <- get_data(tab = 'dev_events')
+  events <- get_data(tab = 'dev_events',
+                     schema = 'pd_wbgtravel',
+                     connection_object = pool)
 }
 
 # Define static objects for selection

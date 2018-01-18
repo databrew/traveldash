@@ -27,7 +27,7 @@ populate_dev_events <- function(connection_object = NULL){
   events <- gs_read_csv(data_url)
   
   # Upload
-  dbWriteTable(connection_object, c("pd_wbgtravel", "events"), value = events)
+  dbWriteTable(connection_object, c("pd_wbgtravel", "dev_events"), value = events, row.names = FALSE, overwrite = TRUE)
   
   # Disconnect
   dbDisconnect(connection_object)

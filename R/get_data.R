@@ -89,17 +89,16 @@ get_data <- function(query = NULL,
 
   # Query / connect
   if(!is.null(tab)){
-    return_object <- dbGetQuery(connection_object, 
-                                paste0("select * from ",
-                                       schema,
-                                       tab))
-  } else {
-    return_object <- dbGetQuery(connection_object, 
-                                query)
+    query <- paste0("select * from ",
+                    schema,
+                    tab)
   }
+  return_object <- dbGetQuery(connection_object, 
+                              query)
+  
 
-  # Disconnect
-  dbDisconnect(connection_object)
+  # # Disconnect
+  # pool::poolClose(connection_object)
 
   # Spit back
   return(return_object)

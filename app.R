@@ -419,7 +419,7 @@ server <- function(input, output, session) {
     } else {
       message('Overwriting the database')
       # Overwrite the data
-      dbWriteTable(pool, c("pd_wbgtravel", "events"), value = new_data, overwrite = TRUE)
+      dbWriteTable(pool, c("pd_wbgtravel", "events"), value = new_data, overwrite = TRUE, row.names = FALSE)
       message('Overwrote the database')
     }
   })
@@ -444,7 +444,7 @@ server <- function(input, output, session) {
     } else {
       message('Overwriting the database')
       # Overwrite the data
-      dbWriteTable(pool, c("pd_wbgtravel", "events"), value = new_data, overwrite = TRUE)
+      dbWriteTable(pool, c("pd_wbgtravel", "events"), value = new_data, overwrite = TRUE, row.names = FALSE)
       message('Overwrote the database')
     }
   })
@@ -788,6 +788,11 @@ server <- function(input, output, session) {
                  vals$Data[as.numeric(gsub("modify_","",input$lastClickId)),]<-DF
                })
   
+  # On session end, close
+  session$onSessionEnded(function() {
+    message('Session ended.')
+    pool::poolClose(pool)
+  })
   
   }
 print('Done defining server')
