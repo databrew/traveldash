@@ -20,6 +20,7 @@ library(tmaptools)
 library(RPostgreSQL)
 library(pool) # devtools::install_github("rstudio/pool")
 library(leaflet.extras)
+library(RSQLite)
 
 message('############ Done with package loading')
 

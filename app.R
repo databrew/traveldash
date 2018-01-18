@@ -515,14 +515,20 @@ server <- function(input, output, session) {
                 by = 'joiner')
     
     face_icons <- icons(places$file,
-                        iconWidth = 25, iconHeight = 25,
-                        shadowWidth = 25, shadowHeight = 25,
-                        shadowAnchorX = 15, shadowAnchorY = 25)
+                        iconWidth = 25, iconHeight = 25)
+    
+    # Define which are "events" vs not
+    cols <- ifelse(is.na(places$Event) | 
+                   places$Event == '',
+                   'blue',
+                   'red')
     
     
     ## plot the subsetted ata
     leafletProxy("leafy") %>%
       clearMarkers() %>%
+      addCircleMarkers(data = places, lng =~Long, lat = ~Lat,
+                       col = cols, radius = 14) %>%
       addMarkers(data = places, lng =~Long, lat = ~Lat,
                  popup = popups,
                  icon = face_icons) 
