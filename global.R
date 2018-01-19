@@ -46,7 +46,6 @@ pool <- create_pool(options_list = credentials_extract(),
 # Read in data from the database
 events <- get_data(tab = 'dev_events',
                    schema = 'pd_wbgtravel',
-                   connection_object = pool)
                    connection_object = pool,
                    use_sqlite = use_sqlite)
 events$state <- "static" #SAH states [static,modified,new,delete]
