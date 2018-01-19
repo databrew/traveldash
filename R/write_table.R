@@ -1,7 +1,7 @@
 #' Write table
 #'
 #' Write a table in the database
-#' @param connection_object An open connection to adatabase (as created through \code{credentials_extract} and \code{credentials_connect} or \code{credentials_now}); if \code{NULL}, the function will try to create a \code{connection_object} by retrieving user information from the \code{credentials/credentials.yaml}
+#' @param connection_object An open connection to a database (as created through \code{credentials_extract} and \code{credentials_connect} or \code{credentials_now}); if \code{NULL}, the function will try to create a \code{connection_object} by retrieving user information from the \code{credentials/credentials.yaml}
 #' in or somewhere upwards of the working directory.
 #' @param table The name of the table in the database to be written
 #' @param schema The schema of the table in the database to be written
