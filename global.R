@@ -39,6 +39,13 @@ if(use_sqlite){
   message('In "Postgres mode"')
 }
 
+# Define the skin
+if(use_sqlite){
+  skin <- 'red'
+} else {
+  skin <- 'blue'
+}
+
 # Create a connection pool
 pool <- create_pool(options_list = credentials_extract(),
                     use_sqlite = use_sqlite)
