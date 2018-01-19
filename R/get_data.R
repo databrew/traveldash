@@ -86,16 +86,16 @@ get_data <- function(query = NULL,
   } else {
     schema <- paste0(schema, '.')
   }
-
+  tab <- paste0(schema, tab)
   # Query / connect
   if(!is.null(tab)){
-    query <- paste0('select * from ',
-                    schema,
-                    tab,
-                    '')
+    return_object <- dbReadTable(connection_object, tab)
+  } else {
+    return_object <- dbGetQuery(connection_object, 
+                                query)
   }
-  return_object <- dbGetQuery(connection_object, 
-                              query)
+  
+  
   
   # SQLite doesn't handle dates, so we have to convert from characters
   # This is a hard-coded hack

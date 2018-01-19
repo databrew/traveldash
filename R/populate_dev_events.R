@@ -35,7 +35,7 @@ populate_dev_events <- function(connection_object = NULL,
   
   # Table name
   if(use_sqlite){
-    table_name <- "pd_wbgtravel.dev_events"
+    table_name <- 'pd_wbgtravel.dev_events'
   } else {
     table_name <- c("pd_wbgtravel", "dev_events")
   }
