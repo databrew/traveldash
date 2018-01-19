@@ -47,6 +47,7 @@ pool <- create_pool(options_list = credentials_extract(),
 events <- get_data(tab = 'dev_events',
                    schema = 'pd_wbgtravel',
                    connection_object = pool)
+events$state <- "static" #SAH states [static,modified,new,delete]
 
 # Define static objects for selection
 people <- sort(unique(events$Person))

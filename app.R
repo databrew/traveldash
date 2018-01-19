@@ -494,7 +494,7 @@ server <- function(input, output, session) {
     message('overwrote vals$Data')
     print(nrow(vals$Data))
     # Update the underlying data
-    write_table(connection_object = pool,
+    write_table(pool = pool,
                 table = 'dev_events',
                 schema = 'pd_wbgtravel',
                 value = new_data,
@@ -510,7 +510,7 @@ server <- function(input, output, session) {
     new_data <- geo_code(new_data)
     # Update the underlying data 
     # Update the underlying data
-    write_table(connection_object = pool,
+    write_table(pool = pool,
                 table = 'dev_events',
                 schema = 'pd_wbgtravel',
                 value = new_data,
@@ -741,21 +741,29 @@ server <- function(input, output, session) {
     })
   
   output$Main_table<-renderDataTable({
-    DT=vals$Data
+#    DT=vals$Data[vals$Data$state != "delete",-(which(names(vals$Data) %in% c("state","event_id","file")))] #SAH Display only valid data rows where state>-2 (ie, not flagged for delete) and only relevant column names
+    
+    #Removed from display those set for deletion, but now added back in because msesses with indexing by row number below. 
+    #indexing should be set to event_id rather than row number to avoid re-sorting issues or permutations that offset row value
+    DT=vals$Data[,-(which(names(vals$Data) %in% c("state","event_id","file")))] #SAH Display only valid data rows where state>-2 (ie, not flagged for delete) and only relevant column names
+    
     DT[["Select"]]<-paste0('<input type="checkbox" name="row_selected" value="Row',1:nrow(vals$Data),'"><br>')
     
     DT[["Actions"]]<-
       paste0('
              <div class="btn-group" role="group" aria-label="Basic example">
              <button type="button" class="btn btn-secondary delete" id=delete_',1:nrow(vals$Data),'>Delete</button>
-             <button type="button" class="btn btn-secondary modify"id=modify_',1:nrow(vals$Data),'>Modify</button>
+             <button type="button" class="btn btn-secondary modify" id=modify_',1:nrow(vals$Data),'>Modify</button>
              </div>
              
              ')
+
     datatable(DT,
               escape=F,
-              options = list(scrollX = TRUE))}
-      )
+              options = list(scrollX = TRUE)) 
+    
+  
+  })
   
   observeEvent(input$Add_row_head,{
     # new_row <-
@@ -767,7 +775,8 @@ server <- function(input, output, session) {
       `Country of visit` = 'International Waters',
       Counterpart = 'Jack Sparrow',
       `Visit start` = Sys.Date() - 3,
-      `Visit end` = Sys.Date())
+      `Visit end` = Sys.Date(),
+      state="new") #SAH state -1=new
     new_row <- new_row %>%
       mutate(Lat = 31,
              Long = -65)
@@ -778,8 +787,8 @@ server <- function(input, output, session) {
   
   observeEvent(input$Del_row_head,{
     row_to_del=as.numeric(gsub("Row","",input$checked_rows))
-    vals$Data=vals$Data[-row_to_del,]}
-  )
+    vals$Data[row_to_del,"state"] <- "delete" #SAH
+  })
   
   ##Managing in row deletion
   # modal_modify <- modalDialog(h3('Test'))
@@ -812,7 +821,7 @@ server <- function(input, output, session) {
                  if (input$lastClickId%like%"delete")
                  {
                    row_to_del=as.numeric(gsub("delete_","",input$lastClickId))
-                   vals$Data=vals$Data[-row_to_del,]
+                   vals$Data$state[row_to_del] <- "delete" #SAH
                  }
                  else if (input$lastClickId%like%"modify")
                  {
@@ -824,6 +833,10 @@ server <- function(input, output, session) {
   output$row_modif<-renderDataTable({
     selected_row=as.numeric(gsub("modify_","",input$lastClickId))
     old_row=vals$Data[selected_row,]
+    old_row$state <- "modified" #SAH modified row state
+    
+    print("Call: output$row_modif :: old_row") #SAH
+    print(old_row) #SAH
     the_dates <- the_nums <- rep(FALSE, ncol(old_row))
     for(j in 1:ncol(old_row)){
       if(class(data.frame(old_row)[,j]) == 'Date'){
@@ -841,12 +854,17 @@ server <- function(input, output, session) {
     }
     
     row_change=list()
+    hidden <- c("event_id","state")
     for (i in 1:length(colnames(old_row))){
       cn <- names(old_row)[i]
-      message(i)
-      message(cn)
-      if (is.numeric(vals$Data[[cn]])){
-        message('ok')
+      #message(i)
+      #message(cn)
+      if (cn %in% hidden) #SAH: ID and state values aren't editable 
+      {
+        row_change[[i]]<-paste0('<input class="new_input" value="',copycat[1,cn],'" type="hidden" id=new_',cn,'>')
+      }
+      else if (is.numeric(vals$Data[[cn]])){
+        #message('ok')
         row_change[[i]]<-paste0('<input class="new_input" value="',
                                 copycat[1,cn],
                                 '" type="number" id=new_',cn,'>')
@@ -858,9 +876,11 @@ server <- function(input, output, session) {
       
     }
     names(row_change) <- names(old_row)
-    print(row_change)
     row_change = bind_rows(row_change)
     setnames(row_change,colnames(old_row))
+    print("Call: output$row_modif :: row_change") #SAH
+    print(row_change) #SAH
+    
     DT=bind_rows(copycat,row_change)
     DT <- t(DT)
     DT <- as.data.frame(DT)
