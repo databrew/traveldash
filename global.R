@@ -32,7 +32,7 @@ for(i in 1:length(functions)){
 
 
 # Define whether using postgresql or sqlite
-use_sqlite <- FALSE
+use_sqlite <- TRUE
 if(use_sqlite){
   message('In "sqlite mode"')
 } else {
@@ -47,6 +47,8 @@ pool <- create_pool(options_list = credentials_extract(),
 events <- get_data(tab = 'dev_events',
                    schema = 'pd_wbgtravel',
                    connection_object = pool)
+                   connection_object = pool,
+                   use_sqlite = use_sqlite)
 events$state <- "static" #SAH states [static,modified,new,delete]
 
 # Define static objects for selection

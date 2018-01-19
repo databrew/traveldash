@@ -23,6 +23,7 @@
 #' try to create a \code{connection_object} as described below.
 #' @param connection_object An open connection to adatabase (as created through \code{credentials_extract} and \code{credentials_connect}); if \code{NULL}, the function will try to create a \code{connection_object} by retrieving user information from the \code{credentials/credentials.yaml}
 #' in or somewhere upwards of the working directory.
+#' @param use_sqlite Whether to use SQLite; alternative is PostgreSQL
 #' @return A dataframe matching the results of either the \code{query} or \code{tab} arguments
 #' @import DBI
 #' @import RPostgreSQL
@@ -36,7 +37,8 @@ get_data <- function(query = NULL,
                      port = NULL,
                      user = NULL,
                      password = NULL,
-                     connection_object = NULL){
+                     connection_object = NULL,
+                     use_sqlite = FALSE){
 
   # If not connection object, try to find one
   if(is.null(connection_object)){
@@ -80,23 +82,27 @@ get_data <- function(query = NULL,
     stop('You must supply a connection object (use credentials_extract and credentials_connect, or simply credentials_now).')
   }
   
-  # Modify the schema
-  if(is.null(schema)){
-    schema <- ''
-  } else {
-    schema <- paste0(schema, '.')
+  # Configure a query if not provided
+  if(is.null(query)){
+    if(is.null(schema)){
+      schema <- ''
+    } else {
+      schema <- paste0(schema, '.')
+    }
+    tab <- paste0(schema, tab)
+    
+    # sqlite requires quotations around the entire schema.table string in order to work
+    if(use_sqlite){
+      tab <- paste0("'", tab, "'")
+    }
+    
+    # Construct a query
+    query <- paste0('select * from ', tab)
   }
-
-  # Query / connect
-  if(!is.null(tab)){
-    query <- paste0('select * from ',
-                    schema,
-                    tab,
-                    '')
-  }
-  return_object <- dbGetQuery(connection_object, 
-                              query)
   
+  return_object <- dbGetQuery(connection_object, 
+                                query)
+
   # SQLite doesn't handle dates, so we have to convert from characters
   # This is a hard-coded hack
   if("Visit start" %in% names(return_object)){
