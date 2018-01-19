@@ -64,23 +64,41 @@ body <- dashboardBody(
           column(1),
           column(4,
                  fluidRow(
-                   h6('Pick the start/end dates for analysis of itineraries:',
-                      align = 'center'),
-                   uiOutput('datey'),
-                   h6('Or set the date range using the below slider:',
-                      align = 'center'),
-                   uiOutput('dater'),
-                   h6('Or click forward or back to move over time',
-                      align = 'center'),
-                   fluidRow(column(1,
-                                   actionButton("action_back", "Back", icon = icon('arrow-circle-left'))),
-                            column(4, NULL),
-                            column(1,
-                                   actionButton("action_forward", "Forward", icon=icon("arrow-circle-right")))),
+                   div(uiOutput('datey'),
+                       uiOutput('dater'), style='text-align: center;'),
+                   fluidRow(
+                     fluidRow(column(1),
+                              column(8,
+                                     h6('Or click forward or back to move over time', align = 'center')),
+                              column(3)),
+                     div(column(1),
+                         column(2,
+                                actionButton("action_back", "Back", icon = icon('arrow-circle-left'))),
+                         column(3),
+                         column(2,
+                                actionButton("action_forward", "Forward", icon=icon("arrow-circle-right"))),
+                         column(4),
+                         style='text-align: center;')
+                   ),
+                   fluidRow(
+                     fluidRow(
+                       column(1),
+                       column(8,
+                              h6('Or click on any date below to jump around:',
+                                 align = 'center')),
+                       column(3)
+                     ),
+                     fluidRow(
+                       div(
+                         # column(1),
+                         column(12,
+                                htmlOutput('g_calendar')),
+                           style = 'text-align: center;')
+                     )
+                     )
+                   )
                    
-                   h6('Or click on any date below to jump around:',
-                      align = 'center'),
-                   htmlOutput('g_calendar'))
+                   
           ),
           column(1),
           column(6,
@@ -211,7 +229,7 @@ body <- dashboardBody(
                       href="mailto:rzhukovskyi@worldbank.org"), 
                     style="text-align: center;")
               ),
-              fluidRow(h5('Guy'),
+              fluidRow(h5('Consultant'),
                        h5('Washington, DC, ', 
                           a(href = 'mailto:rzhukovskyi@worldbank.org',
                             'rzhukovskyi@worldbank.org')))
@@ -435,7 +453,7 @@ server <- function(input, output, session) {
       endy <- starty + dw
     }
     dateRangeInput('date_range',
-                   '',
+                   'Set a date range for analysis of itineraries',
                    start = starty,
                    end = endy)
   })
@@ -469,7 +487,7 @@ server <- function(input, output, session) {
     }
     
     sliderInput("dates",
-                "",
+                "Or set the date range using the below slider:",
                 min = date_dictionary$date[1], 
                 max = date_dictionary$date[length(date_dictionary$date)], 
                 value = c(starty, endy)
