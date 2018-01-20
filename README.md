@@ -50,7 +50,6 @@ CREATE TABLE "pd_wbgtravel"."dev_events" (
   "Lat" numeric(255),
   "Long" numeric(255),
   "Event" varchar(255) COLLATE "pg_catalog"."default",
-  "file" varchar(255) COLLATE "pg_catalog"."default",
   "event_id" serial2 NOT NULL,
   CONSTRAINT "dev_events_pkey" PRIMARY KEY ("event_id"));
 ```
