@@ -32,7 +32,7 @@ for(i in 1:length(functions)){
 
 
 # Define whether using postgresql or sqlite
-use_sqlite <- TRUE
+use_sqlite <- FALSE
 if(use_sqlite){
   message('In "sqlite mode"')
 } else {
@@ -48,6 +48,7 @@ events <- get_data(tab = 'dev_events',
                    schema = 'pd_wbgtravel',
                    connection_object = pool,
                    use_sqlite = use_sqlite)
+events$state <- "static" #SAH states [static,modified,new,delete]
 
 # Define static objects for selection
 people <- sort(unique(events$Person))

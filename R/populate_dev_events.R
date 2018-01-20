@@ -36,12 +36,15 @@ populate_dev_events <- function(connection_object = NULL,
   # Table name
   if(use_sqlite){
     table_name <- 'pd_wbgtravel.dev_events'
+    # Upload
+    dbWriteTable(connection_object, table_name, value = events, 
+                 row.names = FALSE, overwrite = TRUE)
   } else {
     table_name <- c("pd_wbgtravel", "dev_events")
+    # Upload
+    dbWriteTable(connection_object, table_name, value = events, 
+                 row.names = FALSE, overwrite = FALSE, append = TRUE)
   }
-  
-  # Upload
-  dbWriteTable(connection_object, table_name, value = events, row.names = FALSE, overwrite = TRUE)
   
   # Disconnect
   dbDisconnect(connection_object)
