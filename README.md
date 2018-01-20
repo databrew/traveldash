@@ -29,6 +29,8 @@ The above arguments should reflect any and all argments that one might pass to t
 
 ## Database set-up
 
+### PostgreSQL 
+
 To run the app locally, you must have a PostgreSQL database running. This database should be named `ARL`, have a schema named `pd_wbgtravel`, and have a table named `dev_events`. Here's how to create that from scratch.
 
 - Create a database named "ARL" by entering into an interactive PostgreSQL session (`psql`) and then running the following: `CREATE DATABASE "ARL";`
@@ -66,11 +68,27 @@ CREATE TABLE "pd_wbgtravel"."dev_events" (
 
 ```
 
-## Running the app without a database
+### SQLite
 
-For the purposes of quick testing and iterability, the app can also be run without a database. In this case, google sheets is used like a database (ie, data is read from google sheets and written to google sheets following upload/modification). In order to run in this mode, set the below line in `global.R` to `TRUE`.
+AS an alternative to PostgreSQL, we use SQLite for quick testing, development iterations, and deployment to shinyapps.io. Below are the instructions for setting up the app database for use with SQLite.
+
+- Run `sqlite3 ARL.db` from the command line to create a database named `ARL`.
+- In the sqlite command line interface, run `.schema pd_wbgtravel` to create a schema named `pd_wbgtravel`. 
+- Run the below to create a `dev_events` table in the `pd_wbgtravel` schema:
 
 ```
-# Define whether using database or google
-use_google <- TRUE
+CREATE TABLE "dev_events" (
+  "Person" varchar(255),
+  "Organization" varchar(255),
+  "City of visit" varchar(255),
+  "Country of visit" varchar(255),
+  "Counterpart" varchar(255),
+  "Visit start" date,
+  "Visit end" date,
+  "Visit month" varchar(255),
+  "Lat" numeric(255),
+  "Long" numeric(255),
+  "Event" varchar(255),
+  "file" varchar(255),
+  "event_id" serial2 NOT NULL PRIMARY KEY;
 ```

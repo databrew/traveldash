@@ -32,7 +32,7 @@ for(i in 1:length(functions)){
 
 
 # Define whether using postgresql or sqlite
-use_sqlite <- TRUE
+use_sqlite <- FALSE
 if(use_sqlite){
   message('In "sqlite mode"')
 } else {
