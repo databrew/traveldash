@@ -28,7 +28,6 @@ write_table <- function(pool = NULL,
     "Counterpart" varchar(255),
     "Visit start" date,
     "Visit end" date,
-    "Visit month" varchar(255),
     "Lat" numeric,
     "Long" numeric,
     "Event" varchar(255),
@@ -37,13 +36,13 @@ write_table <- function(pool = NULL,
   
   dbSendQuery(connection_object,stmt)
   
-  stmt <- ' COPY public.temp_dev_events("Person","Organization","City of visit","Country of visit","Counterpart","Visit start","Visit end","Visit month","Lat","Long","Event","event_id","state") FROM STDIN;'
+  stmt <- ' COPY public.temp_dev_events("Person","Organization","City of visit","Country of visit","Counterpart","Visit start","Visit end","Lat","Long","Event","event_id","state") FROM STDIN;'
   
   dbSendQuery(connection_object,stmt)
   
   skip_rows <- which(value$state=="static")
-  if (length(skip_rows) > 0) { events <- value[-skip_rows,c("Person","Organization","City of visit","Country of visit","Counterpart","Visit start","Visit end","Visit month","Lat","Long","Event","event_id","state")] 
-  } else { events <- value[,c("Person","Organization","City of visit","Country of visit","Counterpart","Visit start","Visit end","Visit month","Lat","Long","Event","event_id","state")] }
+  if (length(skip_rows) > 0) { events <- value[-skip_rows,c("Person","Organization","City of visit","Country of visit","Counterpart","Visit start","Visit end","Lat","Long","Event","event_id","state")] 
+  } else { events <- value[,c("Person","Organization","City of visit","Country of visit","Counterpart","Visit start","Visit end","Lat","Long","Event","event_id","state")] }
 
   events[["Visit start"]] <- as.character(format.Date(events[["Visit start"]],"%Y-%m-%d")) 
   events[["Visit end"]] <- as.character(format.Date(events[["Visit end"]],"%Y-%m-%d")) 
@@ -57,8 +56,8 @@ write_table <- function(pool = NULL,
   dbSendQuery(connection_object,stmt)
   
   stmt <- '
-            insert into pd_wbgtravel.dev_events("Person","Organization","City of visit","Country of visit","Counterpart","Visit start","Visit end","Visit month","Lat","Long","Event")
-            select "Person","Organization","City of visit","Country of visit","Counterpart","Visit start","Visit end","Visit month","Lat","Long","Event"
+            insert into pd_wbgtravel.dev_events("Person","Organization","City of visit","Country of visit","Counterpart","Visit start","Visit end","Lat","Long","Event")
+            select "Person","Organization","City of visit","Country of visit","Counterpart","Visit start","Visit end","Lat","Long","Event"
             from temp_dev_events
             where state=\'new\';
           '
@@ -73,7 +72,6 @@ write_table <- function(pool = NULL,
             "Counterpart"=tde."Counterpart",
             "Visit start"=tde."Visit start",
             "Visit end"=tde."Visit end",
-            "Visit month"=tde."Visit month",
             "Lat"=tde."Lat",
             "Long"=tde."Long",
             "Event"=tde."Event"

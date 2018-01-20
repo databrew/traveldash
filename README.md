@@ -46,7 +46,6 @@ CREATE TABLE "pd_wbgtravel"."dev_events" (
   "Counterpart" varchar(255) COLLATE "pg_catalog"."default",
   "Visit start" date,
   "Visit end" date,
-  "Visit month" varchar(255) COLLATE "pg_catalog"."default",
   "Lat" numeric(255),
   "Long" numeric(255),
   "Event" varchar(255) COLLATE "pg_catalog"."default",
@@ -71,23 +70,6 @@ CREATE TABLE "pd_wbgtravel"."dev_events" (
 
 AS an alternative to PostgreSQL, we use SQLite for quick testing, development iterations, and deployment to shinyapps.io. Below are the instructions for setting up the app database for use with SQLite.
 
-- Run `sqlite3 ARL.db` from the command line to create a database named `ARL`.
-- In the sqlite command line interface, run `.schema pd_wbgtravel` to create a schema named `pd_wbgtravel`. 
-- Run the below to create a `dev_events` table in the `pd_wbgtravel` schema:
-
 ```
-CREATE TABLE "dev_events" (
-  "Person" varchar(255),
-  "Organization" varchar(255),
-  "City of visit" varchar(255),
-  "Country of visit" varchar(255),
-  "Counterpart" varchar(255),
-  "Visit start" date,
-  "Visit end" date,
-  "Visit month" varchar(255),
-  "Lat" numeric(255),
-  "Long" numeric(255),
-  "Event" varchar(255),
-  "file" varchar(255),
-  "event_id" serial2 NOT NULL PRIMARY KEY;
+(Not done)
 ```
