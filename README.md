@@ -31,7 +31,7 @@ The above arguments should reflect any and all argments that one might pass to t
 
 To run the app locally, you must have a PostgreSQL database running. This database should be named `ARL`, have a schema named `pd_wbgtravel`, and have a table named `dev_events`. Here's how to create that from scratch.
 
-- Create a database named "arl" by entering into an interactive PostgreSQL session (`psql`) and then running the following: `CREATE DATABASE "ARL";`
+- Create a database named "ARL" by entering into an interactive PostgreSQL session (`psql`) and then running the following: `CREATE DATABASE "ARL";`
 - Connect to the database: `\connect ARL;`
 - Create a `pd_wbgtravel` schema: `create schema pd_wbgtravel;`
 - Create a table in the database via the following:
@@ -50,7 +50,7 @@ CREATE TABLE "pd_wbgtravel"."dev_events" (
   "Event" varchar(255) COLLATE "pg_catalog"."default",
   "file" varchar(255) COLLATE "pg_catalog"."default",
   "event_id" serial2 NOT NULL,
-  CONSTRAINT "dev_events_pkey" PRIMARY KEY ("event_id");
+  CONSTRAINT "dev_events_pkey" PRIMARY KEY ("event_id"));
 ```
 
 - Ctrl+d to get out of interactive psql session.

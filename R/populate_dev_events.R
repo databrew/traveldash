@@ -41,7 +41,8 @@ populate_dev_events <- function(connection_object = NULL,
   }
   
   # Upload
-  dbWriteTable(connection_object, table_name, value = events, row.names = FALSE, overwrite = TRUE)
+  dbWriteTable(connection_object, table_name, value = events, 
+               row.names = FALSE, overwrite = FALSE, append = TRUE)
   
   # Disconnect
   dbDisconnect(connection_object)
