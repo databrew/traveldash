@@ -272,7 +272,7 @@ body <- dashboardBody(
             ))
   ))
 message('Done defining UI')
-ui <- dashboardPage(header, sidebar, body, skin="blue")
+ui <- dashboardPage(header, sidebar, body, skin=skin)
 
 server <- function(input, output, session) {
   

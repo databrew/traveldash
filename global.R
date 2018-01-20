@@ -68,3 +68,5 @@ date_dictionary <- date_dictionary %>%
 example_upload_data <- read_csv('example-upload-data.csv')
 
 message('############ Done with global.R')
+
+skin <- ifelse(use_sqlite, 'red', 'blue')
