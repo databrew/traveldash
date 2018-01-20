@@ -679,8 +679,6 @@ server <- function(input, output, session) {
                     Organization,
                     Location,
                     Event,
-                    # `City of visit`,
-                    # `Country of visit`,
                     Counterpart,
                     `Visit start`,
                     `Visit end`)
@@ -776,8 +774,6 @@ server <- function(input, output, session) {
       )
   
   observeEvent(input$Add_row_head,{
-    # new_row <-
-    #   events[1,]
     new_row=data_frame(
       Person = 'Jane Doe',
       Organization = 'Organization',
@@ -911,6 +907,7 @@ server <- function(input, output, session) {
                  for(j in 1:length(values)){
                    this_class <- classes[j]
                    if(this_class == 'Date'){
+                     print(values[j])
                      hh[1,j] <- as.Date(values[j])
                    } else if(names(hh)[j] %in% c('Lat', 'Long')){
                      hh[1,j] <- as.numeric(values[j])
