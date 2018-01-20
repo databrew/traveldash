@@ -500,7 +500,7 @@ server <- function(input, output, session) {
   vals$Data<-filter_events(events = events,
                            visit_start = min(date_dictionary$date),
                            visit_end = max(date_dictionary$date))
-  # Replace data with uploaded data
+  # Add uploaded data
   observeEvent(input$submit, {
     new_data <- uploaded()
     message('new data has ', nrow(new_data), ' rows')
@@ -508,9 +508,14 @@ server <- function(input, output, session) {
     new_data <- geo_code(new_data)
     message('done geocoding')
     # Update the session
-    vals$Data <- new_data
-    message('overwrote vals$Data')
-    print(nrow(vals$Data))
+    vals$Data <- bind_rows(vals$Data,
+                           new_data)
+    message('Added to the in-session data')
+    
+    # Pepare data for upload to database
+    new_data <- new_data %>%
+      mutate(state = 'new')
+    
     # Update the underlying data
     write_table(pool = pool,
                 table = 'dev_events',

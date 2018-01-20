@@ -1,5 +1,4 @@
 Person,Organization,City of visit,Country of visit,Counterpart,Visit start,Visit end,Lat,Long,Event
-Jim Yong Kim,World Bank,New York,United States,Donald Trump,2017-05-15,2017-05-25,40.71278,-74.00597,
 Jim Yong Kim,World Bank,Paris,France,Emmanuel Macron,2017-10-20,2017-10-30,48.85661,2.35222,G20 sub meeting
 Jim Yong Kim,World Bank,Moscow,Russia,Vladimir Putin,2017-01-11,2017-01-21,55.75583,37.6173,World Bank internal meeting
 Joaquim Levy,World Bank,Brasilia,Brazil,Michel Temer,2017-06-16,2017-06-26,-15.79423,-47.88217,Private meeting
@@ -69,3 +68,4 @@ Paul Romer,World Bank,Marrupa,Mozambique,Angela Merkel,2018-01-10,2018-01-19,-13
 Philippe Le Houerou,IFC,Malakal,South Sudan,Theresa May,2017-03-05,2017-03-12,9.536897195,31.65598995,Technology and Development Symposium
 Kristalina Georgieva,World Bank,Gitega,Burundi,Antonio Guterres,2017-06-05,2017-06-08,-3.426006654,29.84359411,World Bank internal meeting
 Paul Romer,World Bank,Ilorin,Nigeria,Michel Temer,2017-09-20,2017-09-22,8.490010192,4.549995889,
+Jim Yong Kim,World Bank,New York,United States,Donald Trump,2017-05-15,2017-05-25,40.71278,-74.00597,
