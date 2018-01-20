@@ -856,8 +856,8 @@ server <- function(input, output, session) {
     
     row_change=list()
     for (i in 1:length(colnames(old_row))){
-      cn <- names(old_row)[i]
       message(i)
+      cn <- names(old_row)[i]
       message(cn)
       if (is.numeric(vals$Data[[cn]])){
         message('ok')
