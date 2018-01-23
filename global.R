@@ -31,7 +31,6 @@ for(i in 1:length(functions)){
   source(paste0('R/', functions[i]), chdir = TRUE)
 }
 
-
 # Define whether using postgresql or sqlite
 use_sqlite <- TRUE
 if(use_sqlite){
