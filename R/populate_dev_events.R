@@ -32,8 +32,8 @@ populate_dev_events <- function(connection_object = NULL,
   # events <- read_csv('events.csv')
   events <- read_csv('data/Travel Event Dashboard_DATA (January 23).csv')
   events <- events %>% dplyr::filter(!is.na(Person))
-  events$`Visit start` <- as.Date(events$`Visit start`, format = '%b/%d/%Y')
-  events$`Visit end` <- as.Date(events$`Visit end`, format = '%b/%d/%Y')
+  events$`Visit start` <- as.Date(events$`Visit start`, format = '%m/%d/%Y')
+  events$`Visit end` <- as.Date(events$`Visit end`, format = '%m/%d/%Y')
   events$`Visit end` <- as.character(events$`Visit end`)
   events$`Visit start` <- as.character(events$`Visit start`)
   
