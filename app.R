@@ -91,14 +91,14 @@ body <- dashboardBody(
                               h6('Or click on any date below to jump around:',
                                  align = 'center')),
                        column(3)
-                     ),
-                     fluidRow(
-                       div(
-                         # column(1),
-                         column(12,
-                                htmlOutput('g_calendar')),
-                           style = 'text-align: center;')
-                     )
+                     )#,
+                     # fluidRow(
+                     #   div(
+                     #     # column(1),
+                     #     column(12,
+                     #            htmlOutput('g_calendar')),
+                     #       style = 'text-align: center;')
+                     # )
                      )
                    )
                    
@@ -403,11 +403,11 @@ server <- function(input, output, session) {
     starter(as.Date(input$date_range[1]))
     ender(as.Date(input$date_range[2]))
   })
-  observeEvent(input$selected_date, {
-    dw <- date_width()
-    starter(as.Date(selected_date()))
-    ender(as.Date(starter() + dw))
-  })
+  # observeEvent(input$selected_date, {
+  #   dw <- date_width()
+  #   starter(as.Date(selected_date()))
+  #   ender(as.Date(starter() + dw))
+  # })
   observeEvent(input$action_forward, {
     dw <- date_width()
     if(!is.null(dw)){
@@ -429,7 +429,8 @@ server <- function(input, output, session) {
     }
   })
   
-  selected_date <- reactive({input$selected_date})
+  # selected_date <- reactive({input$selected_date})
+
   seld <- reactive({
     x <- starter()
     x <- as.Date(x, 
@@ -705,40 +706,40 @@ server <- function(input, output, session) {
     return(x)
   })
   
-  output$g_calendar <- renderGvis({
-    
-    fd <- the_dates()
-    if(is.null(fd)){
-      return(NULL)
-    } else {
-      fills <- ifelse(date_dictionary$date >= fd[1] &
-                        date_dictionary$date <= fd[2],
-                      1,
-                      0)
-      dd <- date_dictionary %>%
-        mutate(num = fills)
-      gvisCalendar(data = dd, 
-                   datevar = 'date',
-                   numvar = 'num',
-                   options=list(
-                     width=400,
-                     height = 160,
-                     # legendPosition = 'bottom',
-                     # legendPosition = 'none',
-                     # legend = "{position:'none'}",
-                     calendar="{yearLabel: { fontName: 'Helvetica',
-                     fontSize: 14, color: 'black', bold: false},
-                     cellSize: 5,
-                     cellColor: { stroke: 'black', strokeOpacity: 0.2 },
-                     focusedCellColor: {stroke:'red'}}",
-                     gvis.listener.jscode = "
-                     var selected_date = data.getValue(chart.getSelection()[0].row,0);
-                     var parsed_date = selected_date.getFullYear()+'-'+(selected_date.getMonth()+1)+'-'+selected_date.getDate();
-                     Shiny.onInputChange('selected_date',parsed_date)"))
-      
-      
-}
-})
+#   output$g_calendar <- renderGvis({
+#     
+#     fd <- the_dates()
+#     if(is.null(fd)){
+#       return(NULL)
+#     } else {
+#       fills <- ifelse(date_dictionary$date >= fd[1] &
+#                         date_dictionary$date <= fd[2],
+#                       1,
+#                       0)
+#       dd <- date_dictionary %>%
+#         mutate(num = fills)
+#       gvisCalendar(data = dd, 
+#                    datevar = 'date',
+#                    numvar = 'num',
+#                    options=list(
+#                      width=400,
+#                      height = 160,
+#                      # legendPosition = 'bottom',
+#                      # legendPosition = 'none',
+#                      # legend = "{position:'none'}",
+#                      calendar="{yearLabel: { fontName: 'Helvetica',
+#                      fontSize: 14, color: 'black', bold: false},
+#                      cellSize: 5,
+#                      cellColor: { stroke: 'black', strokeOpacity: 0.2 },
+#                      focusedCellColor: {stroke:'red'}}",
+#                      gvis.listener.jscode = "
+#                      var selected_date = data.getValue(chart.getSelection()[0].row,0);
+#                      var parsed_date = selected_date.getFullYear()+'-'+(selected_date.getMonth()+1)+'-'+selected_date.getDate();
+#                      Shiny.onInputChange('selected_date',parsed_date)"))
+#       
+#       
+# }
+# })
   
   output$MainBody<-renderUI({
     fluidPage(
