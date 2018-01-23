@@ -22,6 +22,7 @@ library(pool) # devtools::install_github("rstudio/pool")
 library(leaflet.extras)
 library(RSQLite)
 library(timevis)
+library(lubridate)
 
 message('############ Done with package loading')
 #setwd("C:/Users/SHeitmann/WBG/Sinja Buri - FIG SSA MEL/MEL Program Operations/Knowledge Products/Dashboards & Viz/WBG Travel/GitHub/traveldash")
@@ -30,7 +31,6 @@ functions <- dir('R')
 for(i in 1:length(functions)){
   source(paste0('R/', functions[i]), chdir = TRUE)
 }
-
 
 # Define whether using postgresql or sqlite
 use_sqlite <- TRUE
@@ -64,6 +64,31 @@ date_dictionary <-
                         1)) 
 date_dictionary <- date_dictionary %>%
   mutate(day_number = 1:nrow(date_dictionary))
+
+# Define functions for getting start and end date (appropriate range)
+get_start_date <- function(x){
+  day <- as.numeric(format(x, '%d'))
+  month <- as.numeric(format(x, '%m'))
+  year <- as.numeric(format(x, '%Y'))
+  if(day > 15){
+    out <- floor_date(x, unit = 'month')
+  } else {
+    out <- floor_date(x - months(1), unit = 'month')
+  }
+  return(out)
+}
+get_end_date <- function(x){
+  day <- as.numeric(format(x, '%d'))
+  month <- as.numeric(format(x, '%m'))
+  year <- as.numeric(format(x, '%Y'))
+  if(day > 15){
+    out <- ceiling_date(x + months(1), unit = 'month') - 1
+  } else {
+    out <- ceiling_date(x, unit = 'month')
+  }
+  return(out)
+}
+
 
 # Example data
 example_upload_data <- read_csv('example-upload-data.csv')
