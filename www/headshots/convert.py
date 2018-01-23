@@ -1,7 +1,6 @@
 import os
 import re
 photos = os.listdir(os.getcwd())
-photos = ['Rex Tillerson.png', 'Mike Pence.png', 'Donald Trump.png']
 for i in range(0, (len(photos)-1)):
 	this_photo = photos[i]#.split('xxxx')
 	this_photo = re.sub(r' ', '\ ', this_photo)
