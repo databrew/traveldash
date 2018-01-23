@@ -12,7 +12,7 @@
  Target Server Version : 100001
  File Encoding         : 65001
 
- Date: 23/01/2018 08:25:15
+ Date: 23/01/2018 13:23:31
 */
 
 
@@ -538,6 +538,162 @@ INSERT INTO "pd_wbgtravel"."trip_agendas" VALUES (154, 177, 0);
 INSERT INTO "pd_wbgtravel"."trip_agendas" VALUES (239, 177, 0);
 
 -- ----------------------------
+-- Table structure for trip_meetings
+-- ----------------------------
+DROP TABLE IF EXISTS "pd_wbgtravel"."trip_meetings";
+CREATE TABLE "pd_wbgtravel"."trip_meetings" (
+  "meeting_person_id" int4 NOT NULL,
+  "travelers_trip_id" int4 NOT NULL,
+  "topic" varchar(50) COLLATE "pg_catalog"."default",
+  "description" text COLLATE "pg_catalog"."default"
+)
+;
+COMMENT ON COLUMN "pd_wbgtravel"."trip_meetings"."meeting_person_id" IS 'ID of person I am meeting';
+COMMENT ON COLUMN "pd_wbgtravel"."trip_meetings"."travelers_trip_id" IS 'ID of my trip';
+
+-- ----------------------------
+-- Records of trip_meetings
+-- ----------------------------
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (35, 147, 'International Development Summit', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (35, 148, 'Bi-national conference', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (35, 162, 'Technology and Development Symposium', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (35, 166, 'IFC meeting', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (35, 172, 'International Development Summit', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (35, 183, 'Technology and Development Symposium', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (35, 185, 'World Bank internal meeting', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (35, 191, 'Private meeting', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (36, 141, 'Non-official event', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (36, 144, 'G20 sub meeting', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (36, 156, 'Trade summit', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (36, 157, 'Non-official event', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (36, 161, 'Bi-national conference', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (36, 175, 'Technology and Development Symposium', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (36, 201, 'Technology and Development Symposium', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (36, 204, 'Trade summit', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (37, 177, 'World Bank internal meeting', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (37, 180, 'International Development Summit', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (37, 196, 'World Finance Summit', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (37, 206, 'Trade summit', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (38, 169, 'Technology and Development Symposium', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (38, 171, 'Technology and Development Symposium', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (38, 179, 'Bi-national conference', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (38, 184, 'Non-official event', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (38, 189, 'Technology and Development Symposium', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (38, 194, 'World Bank internal meeting', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (38, 202, 'Private meeting', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (39, 143, 'Trade summit', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (39, 152, 'Trade summit', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (39, 154, 'IFC meeting', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (39, 159, 'Trade summit', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (39, 164, 'Bi-national conference', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (39, 176, 'Non-official event', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (39, 190, 'World Bank internal meeting', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (40, 140, 'Trade summit', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (40, 153, 'Trade summit', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (40, 160, 'International Development Summit', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (40, 167, 'World Finance Summit', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (40, 178, 'International Development Summit', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (40, 181, 'Bi-national conference', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (40, 186, 'Bi-national conference', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (40, 187, 'Trade summit', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (41, 139, 'Bi-national conference', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (41, 149, 'Bi-national conference', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (41, 150, 'Non-official event', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (41, 158, 'World Finance Summit', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (41, 163, 'Trade summit', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (41, 170, 'Trade summit', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (41, 193, 'World Bank internal meeting', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (41, 197, 'G20 sub meeting', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (41, 198, 'Private meeting', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (41, 199, 'Bi-national conference', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (42, 142, 'Private meeting', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (42, 155, 'World Bank internal meeting', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (42, 168, 'Technology and Development Symposium', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (42, 173, 'Technology and Development Symposium', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (42, 192, 'World Bank internal meeting', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (42, 203, 'IFC meeting', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (42, 205, 'World Bank internal meeting', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (42, 207, 'International Development Summit', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (43, 145, 'IFC meeting', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (43, 146, 'Non-official event', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (43, 151, 'Non-official event', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (43, 165, 'Private meeting', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (43, 174, 'IFC meeting', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (43, 182, 'G20 sub meeting', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (43, 188, 'Trade summit', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (43, 195, 'G20 sub meeting', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (43, 200, 'Private meeting', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (30, 214, 'International Development Summit', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (30, 215, 'Bi-national conference', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (30, 216, 'Non-official event', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (30, 218, 'G20 sub meeting', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (30, 237, 'Trade summit', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (30, 242, 'Trade summit', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (30, 251, 'Bi-national conference', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (30, 260, 'Private meeting', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (30, 271, 'IFC meeting', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (30, 272, 'Non-official event', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (31, 219, 'Trade summit', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (31, 220, 'Non-official event', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (31, 238, 'Trade summit', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (31, 239, 'IFC meeting', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (31, 240, 'Trade summit', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (31, 245, 'Trade summit', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (31, 250, 'Bi-national conference', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (31, 253, 'Non-official event', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (31, 259, 'World Finance Summit', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (31, 263, 'World Bank internal meeting', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (31, 269, 'Non-official event', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (32, 208, 'Technology and Development Symposium', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (32, 210, 'IFC meeting', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (32, 213, 'International Development Summit', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (32, 217, 'Bi-national conference', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (32, 221, 'Technology and Development Symposium', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (32, 225, 'World Bank internal meeting', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (32, 226, 'International Development Summit', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (32, 228, 'Technology and Development Symposium', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (32, 231, 'Technology and Development Symposium', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (32, 233, 'Bi-national conference', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (32, 236, 'Bi-national conference', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (32, 241, 'Non-official event', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (32, 243, 'International Development Summit', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (32, 244, 'World Finance Summit', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (32, 248, 'International Development Summit', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (32, 249, 'Bi-national conference', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (32, 252, 'Trade summit', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (32, 255, 'Trade summit', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (32, 262, 'Technology and Development Symposium', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (32, 264, 'Technology and Development Symposium', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (32, 268, 'Private meeting', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (32, 273, 'IFC meeting', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (32, 276, 'G20 sub meeting', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (33, 211, 'Technology and Development Symposium', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (33, 212, 'World Bank internal meeting', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (33, 229, 'Non-official event', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (33, 234, 'Technology and Development Symposium', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (33, 246, 'Bi-national conference', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (33, 247, 'Trade summit', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (33, 275, 'Trade summit', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (34, 209, 'Private meeting', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (34, 222, 'Technology and Development Symposium', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (34, 223, 'Trade summit', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (34, 224, 'World Finance Summit', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (34, 227, 'Trade summit', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (34, 230, 'World Bank internal meeting', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (34, 232, 'Private meeting', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (34, 235, 'World Bank internal meeting', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (34, 254, 'World Bank internal meeting', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (34, 256, 'G20 sub meeting', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (34, 257, 'Private meeting', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (34, 258, 'Bi-national conference', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (34, 261, 'World Bank internal meeting', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (34, 265, 'IFC meeting', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (34, 266, 'World Bank internal meeting', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (34, 267, 'International Development Summit', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (34, 270, 'G20 sub meeting', NULL);
+INSERT INTO "pd_wbgtravel"."trip_meetings" VALUES (34, 274, 'Private meeting', NULL);
+
+-- ----------------------------
 -- Table structure for trips
 -- ----------------------------
 DROP TABLE IF EXISTS "pd_wbgtravel"."trips";
@@ -547,7 +703,7 @@ CREATE TABLE "pd_wbgtravel"."trips" (
   "city_id" int4 NOT NULL,
   "trip_start_date" date NOT NULL,
   "trip_end_date" date NOT NULL,
-  "trip_title" varchar(75) COLLATE "pg_catalog"."default",
+  "trip_reason" varchar(75) COLLATE "pg_catalog"."default",
   "time_created" timestamp(6) NOT NULL DEFAULT now()
 )
 ;
@@ -714,6 +870,96 @@ $BODY$
   COST 100;
 
 -- ----------------------------
+-- View structure for view_trips_and_meetings
+-- ----------------------------
+DROP VIEW IF EXISTS "pd_wbgtravel"."view_trips_and_meetings";
+CREATE VIEW "pd_wbgtravel"."view_trips_and_meetings" AS  SELECT pe.is_wbg,
+    pe.short_name,
+    pe.organization,
+    pe.title,
+    pe.sub_organization,
+    ci.country_name,
+    ci.city_name,
+    tr.trip_reason,
+    tr.trip_start_date,
+    tr.trip_end_date,
+    counterparts.short_name AS meeting_with,
+    tm.topic AS meeting_topic
+   FROM ((((pd_wbgtravel.trips tr
+     JOIN pd_wbgtravel.cities ci ON ((ci.city_id = tr.city_id)))
+     JOIN pd_wbgtravel.people pe ON ((pe.person_id = tr.person_id)))
+     LEFT JOIN pd_wbgtravel.trip_meetings tm ON ((tm.travelers_trip_id = tr.trip_id)))
+     LEFT JOIN pd_wbgtravel.people counterparts ON ((counterparts.person_id = tm.meeting_person_id)));
+
+-- ----------------------------
+-- View structure for trips_and_counterparts
+-- ----------------------------
+DROP VIEW IF EXISTS "pd_wbgtravel"."trips_and_counterparts";
+CREATE VIEW "pd_wbgtravel"."trips_and_counterparts" AS  WITH all_trip_agendas AS (
+         SELECT ta_1.trip_id,
+            ag.agenda_id,
+            ag.agenda_type,
+            ag.short_title,
+            ag.long_title,
+            ag.topics,
+            ag.calendar_schedule,
+            ag.location,
+            ag.description,
+            ag.time_created
+           FROM (pd_wbgtravel.trip_agendas ta_1
+             JOIN pd_wbgtravel.agendas ag ON ((ag.agenda_id = ta_1.agenda_id)))
+        ), all_trips AS (
+         SELECT tr.trip_id,
+            pe.person_id,
+            ci.city_id,
+            ata.agenda_id,
+            pe.short_name,
+            pe.title,
+            pe.organization,
+            pe.sub_organization,
+            pe.is_wbg,
+            tr.trip_start_date,
+            tr.trip_end_date,
+            tr.trip_reason AS trip_title,
+            ci.country_name,
+            ci.city_name,
+            ci.latitude,
+            ci.longitude,
+            ata.agenda_type,
+            ata.short_title,
+            ata.calendar_schedule
+           FROM (((pd_wbgtravel.trips tr
+             JOIN pd_wbgtravel.people pe ON ((pe.person_id = tr.person_id)))
+             LEFT JOIN pd_wbgtravel.cities ci ON ((ci.city_id = tr.city_id)))
+             LEFT JOIN all_trip_agendas ata ON ((ata.trip_id = tr.trip_id)))
+        )
+ SELECT trips.trip_id,
+    trips.person_id,
+    trips.city_id,
+    trips.agenda_id,
+    trips.short_name,
+    trips.title,
+    trips.organization,
+    trips.sub_organization,
+    trips.is_wbg,
+    trips.trip_start_date,
+    trips.trip_end_date,
+    trips.trip_title,
+    trips.country_name,
+    trips.city_name,
+    trips.latitude,
+    trips.longitude,
+    trips.agenda_type,
+    trips.short_title,
+    trips.calendar_schedule,
+    pe2.short_name AS counterpart_name
+   FROM (((all_trips trips
+     LEFT JOIN pd_wbgtravel.trip_agendas ta ON (((ta.agenda_id = trips.agenda_id) AND (ta.trip_id <> trips.trip_id))))
+     LEFT JOIN pd_wbgtravel.trips tr2 ON ((tr2.trip_id = ta.trip_id)))
+     LEFT JOIN pd_wbgtravel.people pe2 ON ((pe2.person_id = tr2.person_id)))
+  ORDER BY trips.agenda_id;
+
+-- ----------------------------
 -- Alter sequences owned by
 -- ----------------------------
 ALTER SEQUENCE "pd_wbgtravel"."agendas_agenda_id_seq"
@@ -765,15 +1011,20 @@ ALTER TABLE "pd_wbgtravel"."people" ADD CONSTRAINT "people_pkey" PRIMARY KEY ("p
 ALTER TABLE "pd_wbgtravel"."trip_agendas" ADD CONSTRAINT "trip_agendas_pkey" PRIMARY KEY ("trip_id", "agenda_id");
 
 -- ----------------------------
+-- Primary Key structure for table trip_meetings
+-- ----------------------------
+ALTER TABLE "pd_wbgtravel"."trip_meetings" ADD CONSTRAINT "trip_meetings_pkey" PRIMARY KEY ("meeting_person_id", "travelers_trip_id");
+
+-- ----------------------------
 -- Primary Key structure for table trips
 -- ----------------------------
 ALTER TABLE "pd_wbgtravel"."trips" ADD CONSTRAINT "trips_pkey" PRIMARY KEY ("trip_id");
 
 -- ----------------------------
--- Foreign Keys structure for table trip_agendas
+-- Foreign Keys structure for table trip_meetings
 -- ----------------------------
-ALTER TABLE "pd_wbgtravel"."trip_agendas" ADD CONSTRAINT "trip_agendas_agenda_id_fkey" FOREIGN KEY ("agenda_id") REFERENCES "agendas" ("agenda_id") ON DELETE CASCADE ON UPDATE CASCADE;
-ALTER TABLE "pd_wbgtravel"."trip_agendas" ADD CONSTRAINT "trip_agendas_trip_id_fkey" FOREIGN KEY ("trip_id") REFERENCES "trips" ("trip_id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "pd_wbgtravel"."trip_meetings" ADD CONSTRAINT "trip_meetings_person_id_fkey" FOREIGN KEY ("meeting_person_id") REFERENCES "people" ("person_id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "pd_wbgtravel"."trip_meetings" ADD CONSTRAINT "trip_meetings_trip_id_fkey" FOREIGN KEY ("travelers_trip_id") REFERENCES "trips" ("trip_id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- ----------------------------
 -- Foreign Keys structure for table trips
