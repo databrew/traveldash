@@ -83,23 +83,23 @@ body <- dashboardBody(
                                 actionButton("action_forward", "Forward", icon=icon("arrow-circle-right"))),
                          column(4),
                          style='text-align: center;')
-                   ),
-                   fluidRow(
-                     fluidRow(
-                       column(1),
-                       column(8,
-                              h6('Or click on any date below to jump around:',
-                                 align = 'center')),
-                       column(3)
-                     )#,
-                     # fluidRow(
-                     #   div(
-                     #     # column(1),
-                     #     column(12,
-                     #            htmlOutput('g_calendar')),
-                     #       style = 'text-align: center;')
-                     # )
-                     )
+                   )#,
+                   # fluidRow(
+                   #   fluidRow(
+                   #     column(1),
+                   #     column(8,
+                   #            h6('Or click on any date below to jump around:',
+                   #               align = 'center')),
+                   #     column(3)
+                   #   )#,
+                   #   # fluidRow(
+                   #   #   div(
+                   #   #     # column(1),
+                   #   #     column(12,
+                   #   #            htmlOutput('g_calendar')),
+                   #   #       style = 'text-align: center;')
+                   #   # )
+                   #   )
                    )
                    
                    
@@ -380,8 +380,8 @@ server <- function(input, output, session) {
   # hide sidebar by default
   # addClass(selector = "body", class = "sidebar-collapse")
   
-  starter <- reactiveVal(value = as.numeric(Sys.Date() - 30))
-  ender <- reactiveVal(value = as.numeric(Sys.Date()))
+  starter <- reactiveVal(value = as.numeric(get_start_date(Sys.Date())))
+  ender <- reactiveVal(value = as.numeric(get_end_date(Sys.Date())))
   the_dates <- reactive(
     c(starter(),
       ender())
