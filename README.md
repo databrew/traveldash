@@ -29,6 +29,36 @@ The above arguments should reflect any and all argments that one might pass to t
 
 ## Database set-up
 
+### Setting up the development database
+
+The development database is resembles the production database, but is named `dev` rather than `ARL`. To set up the database from scratch, take the following steps:
+
+- Create a database named "ARL" by entering into an interactive PostgreSQL session (`psql`) and then running the following: `CREATE DATABASE "dev";`
+- Connect to the database: `\connect dev;`
+- Create a `pd_wbgtravel` schema: `create schema pd_wbgtravel;`
+- Create and populate the tables by running the following: 
+
+```
+psql -d dev -f dev_database/pd_wbgtravel.sql
+```
+- Enter into the database again: `psql dev`
+- Confirm that the tables are there: `\dt pd_wbgtravel.*` should return:
+
+```
+               List of relations
+    Schema    |     Name      | Type  |  Owner  
+--------------+---------------+-------+---------
+ pd_wbgtravel | agendas       | table | joebrew
+ pd_wbgtravel | cities        | table | joebrew
+ pd_wbgtravel | dev_events    | table | joebrew
+ pd_wbgtravel | people        | table | joebrew
+ pd_wbgtravel | trip_agendas  | table | joebrew
+ pd_wbgtravel | trip_meetings | table | joebrew
+ pd_wbgtravel | trips         | table | joebrew
+(7 rows)
+```
+
+
 ### PostgreSQL 
 
 To run the app locally, you must have a PostgreSQL database running. This database should be named `ARL`, have a schema named `pd_wbgtravel`, and have a table named `dev_events`. Here's how to create that from scratch.
