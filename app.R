@@ -20,6 +20,10 @@ sidebar <- dashboardSidebar(
       tabName="network",
       icon=icon("eye")),
     menuItem(
+      text="Timeline",
+      tabName="timeline",
+      icon=icon("calendar")),
+    menuItem(
       text="Upload data",
       tabName="upload_data",
       icon=icon("upload")),
@@ -125,6 +129,14 @@ body <- dashboardBody(
         fluidRow(
           h3('Visualization of interaction between people during the selected period', align = 'center'),
           forceNetworkOutput('graph')
+        )
+      )
+    ),
+    tabItem(
+      tabName = 'timeline',
+      fluidPage(
+        fluidRow(
+          timevisOutput('timevis')
         )
       )
     ),
@@ -678,6 +690,19 @@ server <- function(input, output, session) {
     prettify(x,
              download_options = TRUE) %>%
       DT::formatStyle(columns = colnames(.), fontSize = '50%')
+  })
+  
+  output$timevis <-  renderTimevis({
+    fe <- filtered_events()
+    fe$start <- fe$`Visit start`
+    fe$content <- paste0(fe$Person, ' in ', fe$`City of visit`)
+    fe$end <- fe$`Visit end`
+    fe$id <- 1:nrow(fe)
+    fe$type <- ifelse(as.numeric(fe$end - fe$start) == 0, 'box', 'range')
+    fe$title <- paste0(fe$Person, ' in ', fe$`City of visit`, ' from',
+                       fe$start, ' through ' , fe$end)
+    x <- timevis(data = fe)
+    return(x)
   })
   
   output$g_calendar <- renderGvis({

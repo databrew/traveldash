@@ -21,6 +21,7 @@ library(RPostgreSQL)
 library(pool) # devtools::install_github("rstudio/pool")
 library(leaflet.extras)
 library(RSQLite)
+library(timevis)
 
 message('############ Done with package loading')
 #setwd("C:/Users/SHeitmann/WBG/Sinja Buri - FIG SSA MEL/MEL Program Operations/Knowledge Products/Dashboards & Viz/WBG Travel/GitHub/traveldash")
