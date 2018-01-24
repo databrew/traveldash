@@ -27,10 +27,10 @@ sidebar <- dashboardSidebar(
       text="Upload data",
       tabName="upload_data",
       icon=icon("upload")),
-    menuItem(
-      text="Edit data",
-      tabName="edit_data",
-      icon=icon("edit")),
+    # menuItem(
+    #   text="Edit data",
+    #   tabName="edit_data",
+    #   icon=icon("edit")),
     menuItem(
       text = 'About',
       tabName = 'about',
@@ -257,19 +257,19 @@ body <- dashboardBody(
         )
       )
     ),
-    tabItem(
-      tabName = 'edit_data',
-      uiOutput("MainBody")),
+    # tabItem(
+    #   tabName = 'edit_data',
+    #   uiOutput("MainBody")),
     tabItem(tabName = 'upload_data',
             fluidPage(
               fluidRow(
                 column(6,
                        h4('Upload data'),
                        helpText('Upload a dataset from your computer. This should be either a .csv or .xls file.'),
-                       fileInput('file1', 
+                       fileInput('file1',
                                  '',
-                                 accept=c('text/csv', 
-                                          'text/comma-separated-values,text/plain', 
+                                 accept=c('text/csv',
+                                          'text/comma-separated-values,text/plain',
                                           '.csv'))),
                 column(6,
                        h4('Download sample dataset'),
@@ -281,7 +281,7 @@ body <- dashboardBody(
                 h3(textOutput('your_data_text')),
                 DT::dataTableOutput('uploaded_table')
               )
-              
+
             ))
   ))
 message('Done defining UI')
