@@ -56,6 +56,12 @@ psql -d dev -f dev_database/pd_wbgtravel.sql
 ```
 
 - To ensure that the database upload worked correctly, run the `upload_raw_data.R` script.
+- Next, create a "events" view by running the following:
+
+```
+ psql -d dev -f create_events_view.sql
+```
+
 
 ### SQLite
 
