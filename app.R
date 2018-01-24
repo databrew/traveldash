@@ -127,7 +127,7 @@ body <- dashboardBody(
       tabName = 'network',
       fluidPage(
         fluidRow(
-          h3('Visualization of interaction between people during the selected period', align = 'center'),
+          h3('Visualization of interaction between people and places during the selected period', align = 'center'),
           forceNetworkOutput('graph')
         )
       )
@@ -293,11 +293,16 @@ server <- function(input, output, session) {
   uploaded <- reactive({
     inFile <- input$file1
     
-    if (is.null(inFile))
+    if (is.null(inFile)){
       return(NULL)
-    
-    x <- read_csv(inFile$datapath)
-    x
+    } else {
+      if(grepl('csv', inFile$datapath)){
+        x <- read_csv(inFile$datapath)
+      } else if(grepl('xls', inFile$datapath)){
+        x <- read_excel(inFile$datapath)
+      }
+      x
+    }
   })
   
   # Column table
@@ -329,14 +334,15 @@ server <- function(input, output, session) {
   output$conformity_text <- renderText({
     x <- uploaded()
     if(!is.null(x)){
-      uploaded_names <- names(x)[1:11]
-      good_names <- names(events)[1:11]
-      if(all(good_names %in% uploaded_names)){
-        'Your data matches the required format. Click "Submit" to use it in the app and save it to the database.'
+      uploaded_names <- names(x)
+      short_names <- names(head(short_format))
+      long_names <- names(head(long_format))
+      if(all(uploaded_names == short_names)){
+        'Your data matches the short format. Click "Submit" to use it in the app and save it to the database.'
+      } else if(all(uploaded_names == long_names)){
+        'Your data matches the long format. Click "Submit" to use it in the app and save it to the database.'
       } else {
-        paste0('Your data does not match the required format. ',
-               'Missing the following variables: ',
-               paste0(good_names[which(!good_names %in% uploaded_names)], collapse = ', '))
+        paste0('Your data does not match either the short or long format. Please upload a different dataset.')
       }
     } else {
       NULL
