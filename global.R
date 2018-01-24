@@ -66,45 +66,66 @@ for (i in 1:length(tables)){
          envir = .GlobalEnv)
 }
 
-# Create an events table from the db tables
-# Person, Organization, City of visit, Country of visit, Counterpart, Visit start, Visit end, Lat, Long, Event
-
-# Combine trips and people
-x <- left_join(trips %>% dplyr::select(-time_created),
-               people %>% dplyr::select(-time_created),
-               by = 'person_id') %>%
-  # Get into on cities
-  left_join(cities, by = 'city_id') %>%
-  # Get info on counterparts
-  left_join(trip_meetings,
-            by = c('person_id'))
-  dplyr::rename(Person = short_name,
-                Organization = organization,
-                `City of visit` = city_name,
-                `Country of visit` = country_name,
-                Counterpart)
-  
-
-# Read in data from the database
-events <- get_data(tab = 'dev_events',
+# Get the events view too
+events <- get_data(tab = 'events',
                    schema = 'pd_wbgtravel',
                    connection_object = pool,
                    use_sqlite = use_sqlite)
 
-# Define static objects for selection
-people <- sort(unique(events$Person))
-organizations <- sort(unique(events$Organization))
-cities <- sort(unique(events$`City of visit`))
-counterparts <- sort(unique(events$Counterpart))
-countries <- sort(unique(events$`Country of visit`))
+# Restructure like the events table
+events <- events %>%
+  dplyr::rename(Person = short_name,
+                Organization = organization,
+                `City of visit` = city_name,
+                `Country of visit` = country_name,
+                Counterpart = trip_reason,
+                `Visit start` = trip_start_date,
+                `Visit end` = trip_end_date,
+                Lat = latitude,
+                Long = longitude,
+                Event = topic) %>%
+  dplyr::select(Person, Organization, `City of visit`, `Country of visit`,
+                Counterpart, `Visit start`, `Visit end`, Lat, Long, Event)
 
-# Create a dataframe for dicting day numbers to dates
-date_dictionary <-
-  data_frame(date = seq(as.Date('2017-01-01'),
-                        as.Date('2018-12-31'),
-                        1)) 
-date_dictionary <- date_dictionary %>%
-  mutate(day_number = 1:nrow(date_dictionary))
+# Create an events table from the db tables
+# Person, Organization, City of visit, Country of visit, Counterpart, Visit start, Visit end, Lat, Long, Event
+
+# Create an events view
+# events <- trip_meetings %>%
+#   left_join(trips  %>% dplyr::select(-time_created),
+#             by = c('travelers_trip_id' = 'trip_id')) %>%
+#   left_join(people %>% dplyr::select(-time_created),
+#                by = 'person_id') %>%
+#   # Get into on cities
+#   left_join(cities, by = 'city_id') %>%
+#   dplyr::rename(Person = short_name,
+#                 Organization = organization,
+#                 `City of visit` = city_name,
+#                 `Country of visit` = country_name,
+#                 Counterpart = trip_reason,
+#                 `Visit start` = trip_start_date,
+#                 `Visit end` = trip_end_date,
+#                 Lat = latitude,
+#                 Long = longitude,
+#                 Event = topic) %>%
+#   dplyr::select(Person, Organization, `City of visit`, `Country of visit`, 
+#                 Counterpart, `Visit start`, `Visit end`, Lat, Long, Event)
+#   
+
+## Define static objects for selection
+# people <- sort(unique(events$Person))
+# organizations <- sort(unique(events$Organization))
+# cities <- sort(unique(events$`City of visit`))
+# counterparts <- sort(unique(events$Counterpart))
+# countries <- sort(unique(events$`Country of visit`))
+
+# # Create a dataframe for dicting day numbers to dates
+# date_dictionary <-
+#   data_frame(date = seq(as.Date('2017-01-01'),
+#                         as.Date('2018-12-31'),
+#                         1)) 
+# date_dictionary <- date_dictionary %>%
+#   mutate(day_number = 1:nrow(date_dictionary))
 
 # Define functions for getting start and end date (appropriate range)
 get_start_date <- function(x){
