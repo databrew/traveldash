@@ -1,7 +1,7 @@
 #' Geocode in DB
 #' 
 #' Geocode missing lat /lons in the database
-#' @param conn The connection object
+#' @param pool The connection pool
 #' @param use_sqlite Whether to use_sqlite (alternative is postgres)
 #' @return the cities table in the database gets updated
 #' @export
@@ -9,13 +9,13 @@
 #' @import DBI
 #' @import dplyr
 
-geo_code_in_db <- function(conn,
+geo_code_in_db <- function(pool,
                            use_sqlite = FALSE){
   
   # Get the cities table from the db
   cities <- get_data(tab = 'cities',
                      schema = 'pd_wbgtravel',
-                     connection_object = conn,
+                     connection_object = pool,
                      use_sqlite = FALSE) 
   
   geo_code_cities_in_db <- FALSE
@@ -37,7 +37,7 @@ geo_code_in_db <- function(conn,
                     cities$country_name, ''))
     # Define which ones need to be geocoded
     need_geo <- which(is.na(cities$latitude) | is.na(cities$longitude))
-    message('1 new location needs geo-coding')
+    message(length(need_geo), ' new locations needs geo-coding')
     gc_list <- list()
     for(i in 1:length(need_geo)){
       this_row <- need_geo[i]
@@ -57,7 +57,7 @@ geo_code_in_db <- function(conn,
     gc <- bind_rows(gc_list)
     
     # Update the db
-    messaging('Updating the database')
+    message('Updating the database')
     city_ids <- cities$city_id[need_geo]
     for(i in 1:length(city_ids)){
       this_id <- city_ids[i]
@@ -72,10 +72,12 @@ geo_code_in_db <- function(conn,
                                    " WHERE city_id = ",
                                    this_id,
                                    ";")
+      conn <- poolCheckout(pool)
       dbSendQuery(conn = conn,
                   statement = longitude_statement)
       dbSendQuery(conn = conn,
                   statement = latitude_statement)
+      poolReturn(conn)
     }
   }
 }

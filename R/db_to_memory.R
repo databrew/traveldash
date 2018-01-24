@@ -2,10 +2,12 @@
 #' 
 #' Assign the data from the database to the global environment
 #' @param pool A connection pool
+#' @param return_list Return the objects as a list, rather than assignation to global environment
 #' @return Objects assigned to global environment
 #' @export
 
-db_to_memory <- function(pool){
+db_to_memory <- function(pool,
+                         return_list = FALSE){
   
   # The database lay-out is as follows:
   #    Schema    |     Name      | Type  |  Owner  
@@ -16,6 +18,8 @@ db_to_memory <- function(pool){
   # pd_wbgtravel | trips         | table | joebrew
   # There is also an "events" view 
   
+  out_list <- list()
+  
   # Read in all tables
   tables <- dbListTables(pool)
   for (i in 1:length(tables)){
@@ -25,9 +29,14 @@ db_to_memory <- function(pool){
                   schema = 'pd_wbgtravel',
                   connection_object = pool,
                   use_sqlite = use_sqlite)
-    assign(this_table,
-           x,
-           envir = .GlobalEnv)
+    if(return_list){
+      out_list[[i]] <- x
+      names(out_list)[i] <- this_table
+    } else {
+      assign(this_table,
+             x,
+             envir = .GlobalEnv)
+    }
   }
   
   # Get the events view too
@@ -49,7 +58,16 @@ db_to_memory <- function(pool){
                   Event = meeting_topic) %>%
     dplyr::select(Person, Organization, `City of visit`, `Country of visit`,
                   Counterpart, `Visit start`, `Visit end`, Lat, Long, Event)
-  assign('events',
-         events,
-         envir = .GlobalEnv)
+  if(return_list){
+    i <- length(tables) + 1
+    out_list[[i]] <- events
+    names(out_list)[i] <- 'events'
+  } else {
+    assign('events',
+           events,
+           envir = .GlobalEnv)
+  }
+  if(return_list){
+    return(out_list)
+  }
 }

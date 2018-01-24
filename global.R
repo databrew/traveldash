@@ -46,7 +46,7 @@ pool <- create_pool(options_list = credentials_extract(),
                     use_sqlite = use_sqlite)
 
 # Geocode the cities in the db if necessary 
-geo_code_in_db(conn = pool,
+geo_code_in_db(pool = pool,
                use_sqlite = use_sqlite)
 
 # Get the data from the db into memory

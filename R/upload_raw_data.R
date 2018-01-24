@@ -3,7 +3,7 @@
 #' Upload raw data to the databse, following a submission from the app
 #' @param pool A connection pool
 #' @param data A dataframe in either short or long format
-#' @param short Whether the data is in short or long format
+#' @param return_upload_results Whether to return the upload results
 #' @return Database is uploaded
 #' @import pool
 #' @import DBI
@@ -11,7 +11,8 @@
 #' @export
 
 upload_raw_data <- function(pool,
-                            data){
+                            data,
+                            return_upload_results = TRUE){
   
   # Define function for fixing date issues
   # necessary since people's spreadsheet programs may do some inconsistent formatting
@@ -90,9 +91,14 @@ upload_raw_data <- function(pool,
   dbSendQuery(conn,"drop table if exists public._temp_travel_uploads;") 
   
   # Geocode the cities table if it has been changed
-  geo_code_in_db(conn = conn, 
+  geo_code_in_db(pool = pool, 
                  use_sqlite = FALSE)
 
   # Return the connection pool
   poolReturn(conn)
+  
+  # Spit back upload_results
+  if(return_upload_results){
+    return(upload_results)
+  }
 }

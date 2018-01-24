@@ -263,6 +263,9 @@ body <- dashboardBody(
     tabItem(tabName = 'upload_data',
             fluidPage(
               fluidRow(
+                column(12,
+                       h3('Upload your own data to the dashboard'),
+                       p('You can upload your own data, which will be geocoded, formatted, and then integrated into the dashboard. To do see, follow the instructions to the left. If you want a sample data set (with the format for upload), click one of the buttons to the right (the "short" format should be suitable for most users).')),
                 column(6,
                        h4('Upload data'),
                        helpText('Upload a dataset from your computer. This should be either a .csv or .xls file.'),
@@ -314,17 +317,26 @@ server <- function(input, output, session) {
   })
   
   output$uploaded_table <- DT::renderDataTable({
-    x <- uploaded()
-    if(!is.null(x)){
-      prettify(x)
+    ur <- vals$upload_results
+    if(!is.null(ur)){
+      prettify(ur, download_options = TRUE)
     } else {
-      NULL
+      x <- uploaded()
+      if(!is.null(x)){
+        prettify(x)
+      } else {
+        NULL
+      }
     }
+    
   })
   
   output$your_data_text <- renderText({
+    ur <- vals$upload_results
     x <- uploaded()
-    if(!is.null(x)){
+    if(!is.null(ur)){
+      'Your uploaded data "results"'
+    } else if(!is.null(x)){
       'Your data'
     } else {
       NULL
@@ -527,33 +539,40 @@ server <- function(input, output, session) {
   
   # Reactive dataframe for the filtered table
   vals <- reactiveValues()
-  vals$Data<-filter_events(events = events,
+  vals$events<-filter_events(events = events,
                            visit_start = min(date_dictionary$date),
                            visit_end = max(date_dictionary$date))
+  vals$cities <- cities
+  vals$people <- people
+  vals$trip_meetings <- trip_meetings
+  vals$trips <- trips
+  vals$upload_results <- NULL
+  
   # Replace data with uploaded data
   observeEvent(input$submit, {
     new_data <- uploaded()
     message('new data has ', nrow(new_data), ' rows')
-    # Geocode the new data if applicable
-    new_data <- geo_code(new_data)
-    message('done geocoding')
+    # Upload the new data to the database
+    upload_results <- 
+      upload_raw_data(pool = pool,
+                      data = new_data,
+                      return_upload_results = TRUE)
+    message('Uploaded raw data')
     # Update the session
-    vals$Data <- new_data
-    message('overwrote vals$Data')
-    print(nrow(vals$Data))
-    # Update the underlying data
-    write_table(connection_object = pool,
-                table = 'dev_events',
-                schema = 'pd_wbgtravel',
-                value = new_data,
-                use_sqlite = use_sqlite)
-    message('Overwrote the database')
+    updated_data <- db_to_memory(pool = pool, return_list = TRUE)
+    vals$events <- updated_data$events
+    vals$cities <- updated_data$cities
+    vals$people <- updated_data$people
+    vals$trip_meetings <- updated_data$trip_meetings
+    vals$trips <- updated_data$trips
+    vals$upload_results <- upload_results
   })
   
   # After modification is confirmed, update the data stores
   observeEvent(input$submit2, {
+    # THIS NEEDS CHANGES
     message('Modification confirmed, geocoding and overwriting data.')
-    new_data <- vals$Data
+    new_data <- vals$events
     # Geocode if applicable
     new_data <- geo_code(new_data)
     # Update the underlying data 
@@ -572,12 +591,12 @@ server <- function(input, output, session) {
     submit_text('Data uploaded! Now click through other tabs to explore your data.')
   })
   observeEvent(input$Del_row_head, {
-    vals$Data <- vals$Data
+    vals$events <- vals$events
   })
   filtered_events <- reactive({
-    # x <- vals$Data
+    # x <- vals$events
     fd <- the_dates()
-    vd <- vals$Data
+    vd <- vals$events
     x <- filter_events(events = vd,
                        visit_start = fd[1],
                        visit_end = fd[2],
@@ -631,8 +650,6 @@ server <- function(input, output, session) {
                             places$Person,
                             'Unknown')
     
-    message('nrow places ', nrow(places))
-    message('nrow faces ', nrow(faces))
     # Join the files to the places data
     if(nrow(places) > 0){
       places <- 
@@ -793,14 +810,14 @@ server <- function(input, output, session) {
     })
   
   output$Main_table<-renderDataTable({
-    DT=vals$Data
-    DT[["Select"]]<-paste0('<input type="checkbox" name="row_selected" value="Row',1:nrow(vals$Data),'"><br>')
+    DT=vals$events
+    DT[["Select"]]<-paste0('<input type="checkbox" name="row_selected" value="Row',1:nrow(vals$events),'"><br>')
     
     DT[["Actions"]]<-
       paste0('
              <div class="btn-group" role="group" aria-label="Basic example">
-             <button type="button" class="btn btn-secondary delete" id=delete_',1:nrow(vals$Data),'>Delete</button>
-             <button type="button" class="btn btn-secondary modify"id=modify_',1:nrow(vals$Data),'>Modify</button>
+             <button type="button" class="btn btn-secondary delete" id=delete_',1:nrow(vals$events),'>Delete</button>
+             <button type="button" class="btn btn-secondary modify"id=modify_',1:nrow(vals$events),'>Modify</button>
              </div>
              
              ')
@@ -822,13 +839,13 @@ server <- function(input, output, session) {
       mutate(Lat = 31,
              Long = -65)
     new_row$Event <- 'Some event'
-    vals$Data<-bind_rows(new_row,vals$Data)
+    vals$events<-bind_rows(new_row,vals$events)
   })
   
   
   observeEvent(input$Del_row_head,{
     row_to_del=as.numeric(gsub("Row","",input$checked_rows))
-    vals$Data=vals$Data[-row_to_del,]}
+    vals$events=vals$events[-row_to_del,]}
   )
   
   ##Managing in row deletion
@@ -862,7 +879,7 @@ server <- function(input, output, session) {
                  if (input$lastClickId%like%"delete")
                  {
                    row_to_del=as.numeric(gsub("delete_","",input$lastClickId))
-                   vals$Data=vals$Data[-row_to_del,]
+                   vals$events=vals$events[-row_to_del,]
                  }
                  else if (input$lastClickId%like%"modify")
                  {
@@ -873,7 +890,7 @@ server <- function(input, output, session) {
   
   output$row_modif<-renderDataTable({
     selected_row=as.numeric(gsub("modify_","",input$lastClickId))
-    old_row=vals$Data[selected_row,]
+    old_row=vals$events[selected_row,]
     the_dates <- the_nums <- rep(FALSE, ncol(old_row))
     for(j in 1:ncol(old_row)){
       if(class(data.frame(old_row)[,j]) == 'Date'){
@@ -895,7 +912,7 @@ server <- function(input, output, session) {
       message(i)
       cn <- names(old_row)[i]
       message(cn)
-      if (is.numeric(vals$Data[[cn]])){
+      if (is.numeric(vals$events[[cn]])){
         message('ok')
         row_change[[i]]<-paste0('<input class="new_input" value="',
                                 copycat[1,cn],
@@ -959,8 +976,8 @@ server <- function(input, output, session) {
                  if(is.na(DF$Long)){
                    DF$Long <- 0
                  }
-                 new_classes <- lapply(vals$Data, class)
-                 vals$Data[as.numeric(gsub("modify_","",input$lastClickId)),]<-DF
+                 new_classes <- lapply(vals$events, class)
+                 vals$events[as.numeric(gsub("modify_","",input$lastClickId)),]<-DF
                })
   
   # On session end, close
