@@ -33,7 +33,7 @@ for(i in 1:length(functions)){
 }
 
 # Define whether using postgresql or sqlite
-use_sqlite <- TRUE
+use_sqlite <- FALSE
 if(use_sqlite){
   message('In "sqlite mode"')
 } else {
@@ -43,6 +43,47 @@ if(use_sqlite){
 # Create a connection pool
 pool <- create_pool(options_list = credentials_extract(),
                     use_sqlite = use_sqlite)
+
+# The database lay-out is as follows:
+#    Schema    |     Name      | Type  |  Owner  
+# --------------+---------------+-------+---------
+# pd_wbgtravel | cities        | table | joebrew
+# pd_wbgtravel | people        | table | joebrew
+# pd_wbgtravel | trip_meetings | table | joebrew
+# pd_wbgtravel | trips         | table | joebrew
+
+# Read in all tables
+tables <- dbListTables(pool)
+for (i in 1:length(tables)){
+  this_table <- tables[i]
+  message(paste0('Reading in the ', this_table, ' from the database and assigning to global environment.'))
+  x <- get_data(tab = this_table,
+                schema = 'pd_wbgtravel',
+                connection_object = pool,
+                use_sqlite = use_sqlite)
+  assign(this_table,
+         x,
+         envir = .GlobalEnv)
+}
+
+# Create an events table from the db tables
+# Person, Organization, City of visit, Country of visit, Counterpart, Visit start, Visit end, Lat, Long, Event
+
+# Combine trips and people
+x <- left_join(trips %>% dplyr::select(-time_created),
+               people %>% dplyr::select(-time_created),
+               by = 'person_id') %>%
+  # Get into on cities
+  left_join(cities, by = 'city_id') %>%
+  # Get info on counterparts
+  left_join(trip_meetings,
+            by = c('person_id'))
+  dplyr::rename(Person = short_name,
+                Organization = organization,
+                `City of visit` = city_name,
+                `Country of visit` = country_name,
+                Counterpart)
+  
 
 # Read in data from the database
 events <- get_data(tab = 'dev_events',
