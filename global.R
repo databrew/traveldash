@@ -51,6 +51,7 @@ pool <- create_pool(options_list = credentials_extract(),
 # pd_wbgtravel | people        | table | joebrew
 # pd_wbgtravel | trip_meetings | table | joebrew
 # pd_wbgtravel | trips         | table | joebrew
+# There is also an "events" view 
 
 # Read in all tables
 tables <- dbListTables(pool)
@@ -144,38 +145,6 @@ events <- get_data(tab = 'events',
   dplyr::select(Person, Organization, `City of visit`, `Country of visit`,
                 Counterpart, `Visit start`, `Visit end`, Lat, Long, Event)
 
-# Create an events table from the db tables
-# Person, Organization, City of visit, Country of visit, Counterpart, Visit start, Visit end, Lat, Long, Event
-
-# Create an events view
-# events <- trip_meetings %>%
-#   left_join(trips  %>% dplyr::select(-time_created),
-#             by = c('travelers_trip_id' = 'trip_id')) %>%
-#   left_join(people %>% dplyr::select(-time_created),
-#                by = 'person_id') %>%
-#   # Get into on cities
-#   left_join(cities, by = 'city_id') %>%
-#   dplyr::rename(Person = short_name,
-#                 Organization = organization,
-#                 `City of visit` = city_name,
-#                 `Country of visit` = country_name,
-#                 Counterpart = trip_reason,
-#                 `Visit start` = trip_start_date,
-#                 `Visit end` = trip_end_date,
-#                 Lat = latitude,
-#                 Long = longitude,
-#                 Event = topic) %>%
-#   dplyr::select(Person, Organization, `City of visit`, `Country of visit`, 
-#                 Counterpart, `Visit start`, `Visit end`, Lat, Long, Event)
-#   
-
-## Define static objects for selection
-# people <- sort(unique(events$Person))
-# organizations <- sort(unique(events$Organization))
-# cities <- sort(unique(events$`City of visit`))
-# counterparts <- sort(unique(events$Counterpart))
-# countries <- sort(unique(events$`Country of visit`))
-
 # Create a dataframe for dicting day numbers to dates
 date_dictionary <-
   data_frame(date = seq(as.Date('2017-01-01'),
@@ -208,10 +177,12 @@ get_end_date <- function(x){
   return(out)
 }
 
+# Read in short and long format examples
+short_format <- read_csv('short_format.csv')
+long_format <- read_csv('long_format.csv')
 
-# Example data
-example_upload_data <- read_csv('example-upload-data.csv')
+# Conditionally color the skin based on mode
+skin <- ifelse(use_sqlite, 'red', 'blue')
 
 message('############ Done with global.R')
 
-skin <- ifelse(use_sqlite, 'red', 'blue')

@@ -265,7 +265,7 @@ body <- dashboardBody(
               fluidRow(
                 column(6,
                        h4('Upload data'),
-                       helpText('Upload a dataset from your computer'),
+                       helpText('Upload a dataset from your computer. This should be either a .csv or .xls file.'),
                        fileInput('file1', 
                                  '',
                                  accept=c('text/csv', 
@@ -274,7 +274,8 @@ body <- dashboardBody(
                 column(6,
                        h4('Download sample dataset'),
                        helpText('Click the "Download" button to get a sample dataset.'),
-                       downloadButton("downloadData", "Download"))),
+                       downloadButton("download_short", "Download short format"),
+                       downloadButton("download_long", "Download long format"))),
               uiOutput('upload_ui'),
               fluidRow(
                 h3(textOutput('your_data_text')),
@@ -300,8 +301,11 @@ server <- function(input, output, session) {
   })
   
   # Column table
-  output$column_table <- renderTable({
-    events %>% sample_n(0)
+  output$column_table_short <- renderTable({
+    short_format %>% sample_n(0)
+  })
+  output$column_table_long <- renderTable({
+    long_format %>% sample_n(0)
   })
   
   output$uploaded_table <- DT::renderDataTable({
@@ -351,8 +355,11 @@ server <- function(input, output, session) {
       if(is.null(x)){
         fluidRow(
           column(8,
-                 helpText(paste0('Your uploaded data must include the below columns: ')),
-                 tableOutput('column_table')),
+                 helpText(paste0('Your uploaded data can be in either "short" format or "long" format.')),
+                 h4('Short format'),
+                 tableOutput('column_table_short'),
+                 h4('Long format'),
+                 tableOutput('column_table_long')),
           column(4)
         )
       } else {
@@ -368,12 +375,20 @@ server <- function(input, output, session) {
       }
     })
   
-  output$downloadData <- downloadHandler(
+  output$download_short <- downloadHandler(
     filename = function() {
-      'example-data.csv'
+      'short_format.csv'
     },
     content = function(file) {
-      write.csv(example_upload_data, file, row.names = FALSE)
+      write.csv(short_format, file, row.names = FALSE)
+    }
+  )
+  output$download_long <- downloadHandler(
+    filename = function() {
+      'long_format.csv'
+    },
+    content = function(file) {
+      write.csv(long_format, file, row.names = FALSE)
     }
   )
   
