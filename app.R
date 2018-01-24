@@ -424,11 +424,7 @@ server <- function(input, output, session) {
     starter(as.Date(input$date_range[1]))
     ender(as.Date(input$date_range[2]))
   })
-  # observeEvent(input$selected_date, {
-  #   dw <- date_width()
-  #   starter(as.Date(selected_date()))
-  #   ender(as.Date(starter() + dw))
-  # })
+
   observeEvent(input$action_forward, {
     dw <- date_width()
     if(!is.null(dw)){
