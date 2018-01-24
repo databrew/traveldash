@@ -8,12 +8,10 @@
 
 make_sank <- function(events){
   events_filtered <- events %>%
-    filter(!is.na(Person),
-           !is.na(Counterpart)) %>%
-    filter(nchar(Person) > 1,
-           nchar(Counterpart) > 2) %>%
-    mutate(Place = paste(`City of visit`,', ', `Country of visit`))
-  if(nrow(events) == 0){
+    filter(!is.na(Person)) %>%
+    filter(nchar(Person) > 1) %>%
+    mutate(Place = paste0(`City of visit`,', ', `Country of visit`))
+  if(nrow(events_filtered) == 0){
     return(NULL)
   } else {
     x <- events_filtered %>%
