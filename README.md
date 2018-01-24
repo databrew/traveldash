@@ -48,53 +48,14 @@ psql -d dev -f dev_database/pd_wbgtravel.sql
                List of relations
     Schema    |     Name      | Type  |  Owner  
 --------------+---------------+-------+---------
- pd_wbgtravel | agendas       | table | joebrew
  pd_wbgtravel | cities        | table | joebrew
- pd_wbgtravel | dev_events    | table | joebrew
  pd_wbgtravel | people        | table | joebrew
- pd_wbgtravel | trip_agendas  | table | joebrew
  pd_wbgtravel | trip_meetings | table | joebrew
  pd_wbgtravel | trips         | table | joebrew
-(7 rows)
+(4 rows)
 ```
 
-
-### PostgreSQL 
-
-To run the app locally, you must have a PostgreSQL database running. This database should be named `ARL`, have a schema named `pd_wbgtravel`, and have a table named `dev_events`. Here's how to create that from scratch.
-
-- Create a database named "ARL" by entering into an interactive PostgreSQL session (`psql`) and then running the following: `CREATE DATABASE "ARL";`
-- Connect to the database: `\connect ARL;`
-- Create a `pd_wbgtravel` schema: `create schema pd_wbgtravel;`
-- Create a table in the database via the following:
-```
-CREATE TABLE "pd_wbgtravel"."dev_events" (
-  "Person" varchar(255) COLLATE "pg_catalog"."default" NOT NULL,
-  "Organization" varchar(255) COLLATE "pg_catalog"."default",
-  "City of visit" varchar(255) COLLATE "pg_catalog"."default",
-  "Country of visit" varchar(255) COLLATE "pg_catalog"."default",
-  "Counterpart" varchar(255) COLLATE "pg_catalog"."default",
-  "Visit start" date,
-  "Visit end" date,
-  "Lat" numeric(255),
-  "Long" numeric(255),
-  "Event" varchar(255) COLLATE "pg_catalog"."default",
-  "event_id" serial2 NOT NULL,
-  CONSTRAINT "dev_events_pkey" PRIMARY KEY ("event_id"));
-```
-
-- Ctrl+d to get out of interactive psql session.
-- Run the code in `R/populate_dev_events.R` in order to populate the `dev_events` table.
-- Enter the `arl` database in an interactive psql session: `psql arl`.
-- Confirm that the table is there: `\dt pd_wbgtravel.*` should return:
-
-```
-            List of relations
-    Schema    |  Name  | Type  |  Owner  
---------------+--------+-------+---------
- pd_wbgtravel | events | table | joebrew
-
-```
+- To ensure that the database upload worked correctly, run the `upload_raw_data.R` script.
 
 ### SQLite
 
