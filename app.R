@@ -128,6 +128,16 @@ body <- dashboardBody(
       fluidPage(
         fluidRow(
           h3('Visualization of interaction between people and places during the selected period', align = 'center'),
+          fluidRow(
+            column(6,
+                   dateRangeInput('date_range_network',
+                                  'Filter for a specific date range:',
+                                  start = min(date_dictionary$date),
+                                  max = max(date_dictionary$date))),
+            column(6,
+                   textInput('search_network',
+                             'Or filter for specific events, people, places, etc.:'))
+          ),
           forceNetworkOutput('graph')
         )
       )
@@ -538,6 +548,10 @@ server <- function(input, output, session) {
     
   })
   
+  
+  
+  
+  
   # Reactive dataframe for the filtered table
   vals <- reactiveValues()
   vals$events<-filter_events(events = events,
@@ -640,10 +654,22 @@ server <- function(input, output, session) {
                 by = c('Person' = 'short_name'))
     places$is_wbg <- as.logical(places$is_wbg)
     
+    # Don't show more than one, if person shows up more than once in same place
+    places <- places %>%
+      group_by(Person, Organization, Lat, Long, is_wbg, 
+               Counterpart, 
+               `City of visit`, `Country of visit`) %>%
+      summarise(date_events = paste0(`Visit start`, 
+                                     '-', 
+                                     `Visit end`, 
+                                     ifelse(is.na(Event),
+                                            '',
+                                            paste0(' for ',
+                                                   Event, collapse = '')), collapse = '; '))
     popups <- paste0(places$Person, ' of the ', 
                      places$Organization, ' in ',
                      places$`City of visit`, ' on ',
-                     format(places$`Visit start`, '%B %d, %Y'))
+                     places$date_events)
     
     # Get faces
     faces_dir <- paste0('www/headshots/circles/')
@@ -703,8 +729,28 @@ server <- function(input, output, session) {
     }
   })
   
+  
+  # Create a separate filtered events for network
+  filtered_events_network <- reactive({
+    fd <- input$date_range_network
+    vd <- vals$events
+    x <- filter_events(events = vd,
+                       visit_start = fd[1],
+                       visit_end = fd[2],
+                       search = input$search_network)
+    # Jitter if necessary
+    if(any(duplicated(x$Lat)) |
+       any(duplicated(x$Long))){
+      x <- x %>%
+        mutate(Long = jitter(Long, factor = 0.5),
+               Lat = jitter(Lat, factor = 0.5))
+    }
+    return(x)
+    
+  })
+  
   output$graph <- renderForceNetwork({
-    x <- filtered_events()
+    x <- filtered_events_network()
     show_graph <- FALSE
     if(!is.null(x)){
       if(nrow(x) > 0){
