@@ -58,7 +58,7 @@ body <- dashboardBody(
   useShinyjs(), # for hiding sidebar
   # useShinyalert(),
   # tags$head(
-  #   tags$link(rel = "stylesheet", type = "text/css", href = "custom.css")
+  #   tags$link(rel = "stylesheet", type = "text/css", href = "horizontal.css")
   # ),
   tabItems(
     tabItem(
@@ -120,6 +120,8 @@ body <- dashboardBody(
                  h4('Detailed visit information',
                     align = 'center'),
                  DT::dataTableOutput('visit_info_table'))
+                 # div(class = 'scroll',
+                 #     DT::dataTableOutput('visit_info_table')))
         )
       )
     ),
@@ -128,6 +130,16 @@ body <- dashboardBody(
       fluidPage(
         fluidRow(
           h3('Visualization of interaction between people and places during the selected period', align = 'center'),
+          fluidRow(
+            column(6,
+                   dateRangeInput('date_range_network',
+                                  'Filter for a specific date range:',
+                                  start = min(date_dictionary$date),
+                                  max = max(date_dictionary$date))),
+            column(6,
+                   textInput('search_network',
+                             'Or filter for specific events, people, places, etc.:'))
+          ),
           forceNetworkOutput('graph')
         )
       )
@@ -538,6 +550,10 @@ server <- function(input, output, session) {
     
   })
   
+  
+  
+  
+  
   # Reactive dataframe for the filtered table
   vals <- reactiveValues()
   vals$events<-filter_events(events = events,
@@ -618,7 +634,7 @@ server <- function(input, output, session) {
       addProviderTiles("Esri.WorldStreetMap") %>%
       setView(lng = mean(events$Long, na.rm = TRUE) - 5, lat = mean(events$Lat, na.rm = TRUE), zoom = 1) %>%
     leaflet.extras::addFullscreenControl() %>%
-      addLegend(position = 'topright', colors = c('red', 'blue'), labels = c('Meeting', 'No meeting'))
+      addLegend(position = 'topright', colors = c('orange', 'blue'), labels = c('WBG', 'Non-WBG'))
     # addDrawToolbar(
     #   targetGroup='draw',
     #   editOptions = editToolbarOptions(selectedPathOptions = selectedPathOptions()))  %>%
@@ -632,10 +648,30 @@ server <- function(input, output, session) {
   observeEvent(filtered_events(), {
     places <- filtered_events()
     
+    # Get whether wbg or not
+    places <- 
+      left_join(places,
+                people %>%
+                  dplyr::select(short_name, is_wbg),
+                by = c('Person' = 'short_name'))
+    places$is_wbg <- as.logical(places$is_wbg)
+    
+    # Don't show more than one, if person shows up more than once in same place
+    places <- places %>%
+      group_by(Person, Organization, Lat, Long, is_wbg, 
+               Counterpart, 
+               `City of visit`, `Country of visit`) %>%
+      summarise(date_events = paste0(`Visit start`, 
+                                     '-', 
+                                     `Visit end`, 
+                                     ifelse(is.na(Event),
+                                            '',
+                                            paste0(' for ',
+                                                   Event, collapse = '')), collapse = '; '))
     popups <- paste0(places$Person, ' of the ', 
                      places$Organization, ' in ',
                      places$`City of visit`, ' on ',
-                     format(places$`Visit start`, '%B %d, %Y'))
+                     places$date_events)
     
     # Get faces
     faces_dir <- paste0('www/headshots/circles/')
@@ -663,11 +699,11 @@ server <- function(input, output, session) {
     face_icons <- icons(places$file,
                         iconWidth = 25, iconHeight = 25)
     
-    # Define which are "events" vs not
-    cols <- ifelse(is.na(places$Event) | 
-                   places$Event == '',
-                   'blue',
-                   'red')
+    # Define colors
+    cols <- ifelse(is.na(places$is_wbg) | 
+                   !places$is_wbg,
+                   'orange',
+                   'blue')
     
     
     ## plot the subsetted ata
@@ -695,8 +731,28 @@ server <- function(input, output, session) {
     }
   })
   
+  
+  # Create a separate filtered events for network
+  filtered_events_network <- reactive({
+    fd <- input$date_range_network
+    vd <- vals$events
+    x <- filter_events(events = vd,
+                       visit_start = fd[1],
+                       visit_end = fd[2],
+                       search = input$search_network)
+    # Jitter if necessary
+    if(any(duplicated(x$Lat)) |
+       any(duplicated(x$Long))){
+      x <- x %>%
+        mutate(Long = jitter(Long, factor = 0.5),
+               Lat = jitter(Lat, factor = 0.5))
+    }
+    return(x)
+    
+  })
+  
   output$graph <- renderForceNetwork({
-    x <- filtered_events()
+    x <- filtered_events_network()
     show_graph <- FALSE
     if(!is.null(x)){
       if(nrow(x) > 0){
@@ -713,19 +769,24 @@ server <- function(input, output, session) {
   output$visit_info_table <- DT::renderDataTable({
     x <- filtered_events()
     x <- x %>%
-      mutate(Location = paste0(`City of visit`,
-                               ', ',
-                               toupper(substr(`Country of visit`, 1, 3)))) %>%
+      mutate(Location = `City of visit`) %>%
+      mutate(Dates = paste0(`Visit start`, ' - ', `Visit end`)) %>%
+      # mutate(Location = paste0(`City of visit`,
+      #                          ', ',
+      #                          toupper(substr(`Country of visit`, 1, 3)))) %>%
       dplyr::select(Person,
-                    Organization,
+                    # Organization,
                     Location,
                     Event,
-                    Counterpart,
-                    `Visit start`,
-                    `Visit end`)
+                    # Counterpart,
+                    Dates) %>%
+      dplyr::arrange(Dates)
+      #               `Visit start`,
+      #               `Visit end`) %>%
+      # arrange(`Visit start`)
     prettify(x,
-             download_options = TRUE) %>%
-      DT::formatStyle(columns = colnames(.), fontSize = '50%')
+             download_options = TRUE) #%>%
+      # DT::formatStyle(columns = colnames(.), fontSize = '50%')
   })
   
   output$timevis <-  renderTimevis({
