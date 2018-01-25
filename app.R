@@ -58,7 +58,7 @@ body <- dashboardBody(
   useShinyjs(), # for hiding sidebar
   # useShinyalert(),
   # tags$head(
-  #   tags$link(rel = "stylesheet", type = "text/css", href = "custom.css")
+  #   tags$link(rel = "stylesheet", type = "text/css", href = "horizontal.css")
   # ),
   tabItems(
     tabItem(
@@ -120,6 +120,8 @@ body <- dashboardBody(
                  h4('Detailed visit information',
                     align = 'center'),
                  DT::dataTableOutput('visit_info_table'))
+                 # div(class = 'scroll',
+                 #     DT::dataTableOutput('visit_info_table')))
         )
       )
     ),
@@ -767,19 +769,24 @@ server <- function(input, output, session) {
   output$visit_info_table <- DT::renderDataTable({
     x <- filtered_events()
     x <- x %>%
-      mutate(Location = paste0(`City of visit`,
-                               ', ',
-                               toupper(substr(`Country of visit`, 1, 3)))) %>%
+      mutate(Location = `City of visit`) %>%
+      mutate(Dates = paste0(`Visit start`, ' - ', `Visit end`)) %>%
+      # mutate(Location = paste0(`City of visit`,
+      #                          ', ',
+      #                          toupper(substr(`Country of visit`, 1, 3)))) %>%
       dplyr::select(Person,
-                    Organization,
+                    # Organization,
                     Location,
                     Event,
-                    Counterpart,
-                    `Visit start`,
-                    `Visit end`)
+                    # Counterpart,
+                    Dates) %>%
+      dplyr::arrange(Dates)
+      #               `Visit start`,
+      #               `Visit end`) %>%
+      # arrange(`Visit start`)
     prettify(x,
-             download_options = TRUE) %>%
-      DT::formatStyle(columns = colnames(.), fontSize = '50%')
+             download_options = TRUE) #%>%
+      # DT::formatStyle(columns = colnames(.), fontSize = '50%')
   })
   
   output$timevis <-  renderTimevis({
