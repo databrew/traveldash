@@ -54,11 +54,22 @@ filter_events <- function(events,
   if(!is.null(visit_end)){
     x <- x %>% filter(`Visit end`<= visit_end)
   }
-
+  
   # filter for search
   if(!is.null(search)){
-    keeps <- apply(mutate_all(.tbl = x, .funs = function(x){grepl(tolower(search), tolower(x))}),1, any)
-    x <- x[keeps,]
+    if(nchar(search) > 0){
+      # Get all the search items (seperated by commas, which function as "or" statements)
+      search_items <- unlist(strsplit(search, split = ','))
+      search_items <- trimws(search_items, which = 'both')
+      keeps <- c()
+      for(i in 1:length(search_items)){
+        these_keeps <- apply(mutate_all(.tbl = x, .funs = function(x){grepl(tolower(search_items[i]), tolower(x))}),1, any)
+        these_keeps <- which(these_keeps)
+        keeps <- c(keeps, these_keeps)
+      }
+      keeps <- sort(unique(keeps))
+      x <- x[keeps,]
+    }
   }
   return(x)
 }
