@@ -931,15 +931,20 @@ server <- function(input, output, session) {
   
   output$timevis <-  renderTimevis({
     fe <- filtered_events_timeline()
-    fe$start <- fe$`Visit start`
-    fe$content <- paste0(fe$Person, ' in ', fe$`City of visit`)
-    fe$end <- fe$`Visit end`
-    fe$id <- 1:nrow(fe)
-    fe$type <- ifelse(as.numeric(fe$end - fe$start) == 0, 'box', 'range')
-    fe$title <- paste0(fe$Person, ' in ', fe$`City of visit`, ' from',
-                       fe$start, ' through ' , fe$end)
-    x <- timevis(data = fe)
-    return(x)
+    if(nrow(fe) > 0){
+      fe$start <- fe$`Visit start`
+      fe$content <- paste0(fe$Person, ' in ', fe$`City of visit`)
+      fe$end <- fe$`Visit end`
+      fe$id <- 1:nrow(fe)
+      fe$type <- ifelse(as.numeric(fe$end - fe$start) == 0, 'box', 'range')
+      fe$title <- paste0(fe$Person, ' in ', fe$`City of visit`, ' from',
+                         fe$start, ' through ' , fe$end)
+      x <- timevis(data = fe)
+      return(x)
+    } else {
+      return(NULL)
+    }
+    
   })
   
 #   output$g_calendar <- renderGvis({
