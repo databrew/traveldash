@@ -22,6 +22,8 @@ db_to_memory <- function(pool,
   
   # Read in all tables
   tables <- dbListTables(pool)
+  # Add the views to the tables
+  tables <- c(tables, 'view_trip_coincidences')
   for (i in 1:length(tables)){
     this_table <- tables[i]
     message(paste0('Reading in the ', this_table, ' from the database and assigning to global environment.'))
@@ -39,7 +41,7 @@ db_to_memory <- function(pool,
     }
   }
   
-  # Get the events view too
+  # Get the events view too (we do this separately since we modify its format)
   message(paste0('Reading in the events view from the database and assigning to global environment.'))
   events <- get_data(tab = 'events',
                      schema = 'pd_wbgtravel',
