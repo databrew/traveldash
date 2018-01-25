@@ -618,7 +618,7 @@ server <- function(input, output, session) {
       addProviderTiles("Esri.WorldStreetMap") %>%
       setView(lng = mean(events$Long, na.rm = TRUE) - 5, lat = mean(events$Lat, na.rm = TRUE), zoom = 1) %>%
     leaflet.extras::addFullscreenControl() %>%
-      addLegend(position = 'topright', colors = c('red', 'blue'), labels = c('Meeting', 'No meeting'))
+      addLegend(position = 'topright', colors = c('orange', 'blue'), labels = c('WBG', 'Non-WBG'))
     # addDrawToolbar(
     #   targetGroup='draw',
     #   editOptions = editToolbarOptions(selectedPathOptions = selectedPathOptions()))  %>%
@@ -631,6 +631,14 @@ server <- function(input, output, session) {
   # Leaflet proxy for the points
   observeEvent(filtered_events(), {
     places <- filtered_events()
+    
+    # Get whether wbg or not
+    places <- 
+      left_join(places,
+                people %>%
+                  dplyr::select(short_name, is_wbg),
+                by = c('Person' = 'short_name'))
+    places$is_wbg <- as.logical(places$is_wbg)
     
     popups <- paste0(places$Person, ' of the ', 
                      places$Organization, ' in ',
@@ -663,11 +671,11 @@ server <- function(input, output, session) {
     face_icons <- icons(places$file,
                         iconWidth = 25, iconHeight = 25)
     
-    # Define which are "events" vs not
-    cols <- ifelse(is.na(places$Event) | 
-                   places$Event == '',
-                   'blue',
-                   'red')
+    # Define colors
+    cols <- ifelse(is.na(places$is_wbg) | 
+                   !places$is_wbg,
+                   'orange',
+                   'blue')
     
     
     ## plot the subsetted ata
