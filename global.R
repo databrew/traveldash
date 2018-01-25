@@ -24,6 +24,7 @@ library(RSQLite)
 library(timevis)
 library(lubridate)
 library(readxl)
+library(htmlTable)
 
 message('############ Done with package loading')
 #setwd("C:/Users/SHeitmann/WBG/Sinja Buri - FIG SSA MEL/MEL Program Operations/Knowledge Products/Dashboards & Viz/WBG Travel/GitHub/traveldash")

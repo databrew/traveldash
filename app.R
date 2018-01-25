@@ -687,22 +687,26 @@ server <- function(input, output, session) {
                 by = c('Person' = 'short_name'))
     places$is_wbg <- as.logical(places$is_wbg)
     
-    # Don't show more than one, if person shows up more than once in same place
-    places <- places %>%
-      group_by(Person, Organization, Lat, Long, is_wbg, 
+    # Get a id
+    places <- places %>% 
+      mutate(id = paste0(Person, Organization, Lat, Long, is_wbg, 
                Counterpart, 
-               `City of visit`, `Country of visit`) %>%
-      summarise(date_events = paste0(`Visit start`, 
-                                     '-', 
-                                     `Visit end`, 
-                                     ifelse(is.na(Event),
-                                            '',
-                                            paste0(' for ',
-                                                   Event, collapse = '')), collapse = '; '))
-    popups <- paste0(places$Person, ' of the ', 
-                     places$Organization, ' in ',
-                     places$`City of visit`, ' on ',
-                     places$date_events)
+               `City of visit`, `Country of visit`, collapse = NULL)) %>%
+      mutate(id = as.numeric(factor(id))) %>%
+      dplyr::select(-Event) %>%
+      dplyr::mutate(Event = Counterpart)
+    
+    pops <- places %>%
+      filter(!duplicated(id))
+    
+    popups = lapply(rownames(pops), function(row){ 
+      this_id <- pops[row,'id']
+      x <- places %>% filter(id == this_id) %>%
+        dplyr::select(Person, `City of visit`,Event)
+      htmlTable(x,
+                rnames = FALSE)
+      })
+    
     
     # Get faces
     faces_dir <- paste0('www/headshots/circles/')
@@ -714,33 +718,33 @@ server <- function(input, output, session) {
     faces$joiner <- ifelse(is.na(faces$joiner) | faces$joiner == 'NA', 
                            'Unknown', 
                            faces$joiner)
-    places$joiner <- ifelse(places$Person %in% faces$joiner, 
-                            places$Person,
+    pops$joiner <- ifelse(pops$Person %in% faces$joiner, 
+                          pops$Person,
                             'Unknown')
     
     # Join the files to the places data
-    if(nrow(places) > 0){
-      places <- 
-        left_join(places,
+    if(nrow(pops) > 0){
+      pops <- 
+        left_join(pops,
                   faces,
                   by = 'joiner')
       # Define colors
-      cols <- ifelse(is.na(places$is_wbg) | 
-                       !places$is_wbg,
+      cols <- ifelse(is.na(pops$is_wbg) | 
+                       !pops$is_wbg,
                      'orange',
                      'blue')
     } else {
-      places <- events[0,]
+      pops <- events[0,]
     }
-    face_icons <- icons(places$file,
+    face_icons <- icons(pops$file,
                         iconWidth = 25, iconHeight = 25)
     
     ## plot the subsetted ata
     leafletProxy("leafy") %>%
       clearMarkers() %>%
-      addCircleMarkers(data = places, lng =~Long, lat = ~Lat,
+      addCircleMarkers(data = pops, lng =~Long, lat = ~Lat,
                        col = cols, radius = 14) %>%
-      addMarkers(data = places, lng =~Long, lat = ~Lat,
+      addMarkers(data = pops, lng =~Long, lat = ~Lat,
                  popup = popups,
                  icon = face_icons) 
   })
