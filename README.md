@@ -32,6 +32,10 @@ The development database is resembles the production database, but is named `dev
 - Create a database named "ARL" by entering into an interactive PostgreSQL session (`psql`) and then running the following: `CREATE DATABASE "dev";`
 - Connect to the database: `\connect dev;`
 - Create a `pd_wbgtravel` schema: `create schema pd_wbgtravel;`
+- Define a function for uploading data:
+```
+psql -d dev -f dev_database/create_function_travel_uploads.sql
+```
 - Create and populate the tables by running the following: 
 
 ```
@@ -56,6 +60,14 @@ psql -d dev -f dev_database/pd_wbgtravel.sql
 
 ```
 psql -d dev -f dev_database/create_events_view.sql
+```
+- Next, create a view_trip_coincidences view by running the following:
+```
+psql -d dev -f dev_database/create_view_trip_coincidences.sql
+```
+- Next, create a sql function for handling uploads by running the following:
+```
+psql -d dev -f dev_database/create_function_travel_uploads.sql
 ```
 
 
