@@ -7,24 +7,31 @@
 #' @export
 
 make_sank <- function(events){
-  events <- events %>%
-    filter(!is.na(Person),
-           !is.na(Counterpart)) %>%
-    filter(nchar(Person) > 1,
-           nchar(Counterpart) > 2)
-  if(nrow(events) == 0){
+  events_filtered <- events %>%
+    filter(!is.na(Person)) %>%
+    filter(nchar(Person) > 1) %>%
+    mutate(Place = paste0(`City of visit`,', ', `Country of visit`))
+  if(nrow(events_filtered) == 0){
     return(NULL)
   } else {
-    x <- events %>%
-      group_by(Person, Counterpart) %>%
+    x <- events_filtered %>%
+      group_by(Person, Place) %>%
       tally %>%
       ungroup %>%
       mutate(Person = as.numeric(factor(Person)),
-             Counterpart = as.numeric(factor(Counterpart)))
-    # Remove those without a person/counterpart
+             Place = as.numeric(factor(Place)))
+    
+    # x <- events_filtered %>%
+    #   group_by(Person, Counterpart) %>%
+    #   tally %>%
+    #   ungroup %>%
+    #   mutate(Person = as.numeric(factor(Person)),
+    #          Counterpart = as.numeric(factor(Counterpart)))
+    # 
+
     nodes = data.frame("name" = 
-                         c(sort(unique(events$Person)),
-                           sort(unique(events$Counterpart))))
+                         c(sort(unique(events_filtered$Person)),
+                           sort(unique(events_filtered$Place))))
     
     # Replacer
     replacer <- function(x){
@@ -35,13 +42,13 @@ make_sank <- function(events){
     }
     links = bind_rows(
       # Person to counterpart
-      events %>% group_by(Person, Counterpart) %>%
+      events_filtered %>% group_by(Person, Place) %>%
         tally %>%
         ungroup %>%
         mutate(Person = replacer(Person),
-               Counterpart = replacer(Counterpart)) %>%
+               Place = replacer(Place)) %>%
         rename(a = Person,
-               b = Counterpart)
+               b = Place)
     )
     
     
