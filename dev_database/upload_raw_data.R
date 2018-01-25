@@ -57,26 +57,25 @@ dbDisconnect(c_ob)
 end_time <- Sys.time()
 print(paste0("Database upload time: ", end_time - start_time))
      
-if(interactive()){
-  View(upload_results)
-} else {
-  print(upload_results)
-} 
-
+# if(interactive()){
+#   View(upload_results)
+# } else {
+#   print(upload_results)
+# } 
 
 c_ob <- credentials_connect(options_list = credentials,
                             use_sqlite = FALSE)
 
 get_geo <- function(city_id,q) 
 {
-  geo <- geocode_OSM(q,as.data.frame=F)
+  geo <- tmaptools::geocode_OSM(q,as.data.frame=F)
   if (is.null(geo)) df <- data.frame(city_id=city_id,query=q,latitude=NA,longitude=NA,stringsAsFactors=F)
   else df <- data.frame(city_id=city_id,query=q,latitude=geo$coords[["y"]],longitude=geo$coords[["x"]],stringsAsFactors=F)
   return (df)
 }
 cities <- dbGetQuery(c_ob,"select city_id,city_name,country_name from pd_wbgtravel.cities where latitude is null or longitude is null or ceiling(latitude*100) = floor(latitude*100) or ceiling(longitude*100)=floor(longitude*100)")
 
-geo_cities <- ldply(mapply(get_geo,city_id=cities$city_id,q=paste0(cities$city_name,", ",cities$country_name),SIMPLIFY =F))
+geo_cities <- plyr::ldply(mapply(get_geo,city_id=cities$city_id,q=paste0(cities$city_name,", ",cities$country_name),SIMPLIFY =F))
 
 geo_errors <- subset(geo_cities,is.na(geo_cities$latitude) | is.na(geo_cities$longitude))
 geo_cities <- subset(geo_cities,!is.na(geo_cities$latitude) & !is.na(geo_cities$longitude))
