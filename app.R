@@ -661,22 +661,7 @@ server <- function(input, output, session) {
   })
   
   output$leafy <- renderLeaflet({
-    l <- leaflet() %>%
-      addProviderTiles("Esri.WorldStreetMap") %>%
-      setView(lng = mean(events$Long, na.rm = TRUE) - 5, lat = mean(events$Lat, na.rm = TRUE), zoom = 1) %>%
-    leaflet.extras::addFullscreenControl() %>%
-      addLegend(position = 'topright', colors = c('orange', 'blue'), labels = c('WBG', 'Non-WBG'))
-    # addDrawToolbar(
-    #   targetGroup='draw',
-    #   editOptions = editToolbarOptions(selectedPathOptions = selectedPathOptions()))  %>%
-      # addLayersControl(overlayGroups = c('draw'), options =
-      #                    layersControlOptions(collapsed=FALSE)) %>%
-      # addStyleEditor()
-    l
-  })
-  
-  # Leaflet proxy for the points
-  observeEvent(filtered_events(), {
+
     places <- filtered_events()
     
     # Get whether wbg or not
@@ -690,8 +675,8 @@ server <- function(input, output, session) {
     # Get a id
     places <- places %>% 
       mutate(id = paste0(Person, Organization, Lat, Long, is_wbg, 
-               Counterpart, 
-               `City of visit`, `Country of visit`, collapse = NULL)) %>%
+                         Counterpart, 
+                         `City of visit`, `Country of visit`, collapse = NULL)) %>%
       mutate(id = as.numeric(factor(id))) %>%
       dplyr::rename(City = `City of visit`) %>%
       dplyr::rename(Date = `Visit start`) %>%
@@ -706,7 +691,7 @@ server <- function(input, output, session) {
         dplyr::select(Date, Person, City, Event)
       htmlTable(x,
                 rnames = FALSE)
-      })
+    })
     
     
     # Get faces
@@ -721,7 +706,7 @@ server <- function(input, output, session) {
                            faces$joiner)
     pops$joiner <- ifelse(pops$Person %in% faces$joiner, 
                           pops$Person,
-                            'Unknown')
+                          'Unknown')
     
     # Join the files to the places data
     if(nrow(pops) > 0){
@@ -741,14 +726,104 @@ server <- function(input, output, session) {
                         iconWidth = 25, iconHeight = 25)
     
     ## plot the subsetted ata
-    leafletProxy("leafy") %>%
-      clearMarkers() %>%
+    # leafletProxy("leafy") %>%
+      # clearMarkers() %>%
+      # setView(lng = mean(pops$Long, na.rm = TRUE), lat = mean(pops$Lat, na.rm = TRUE)) %>%
+    l <- leaflet() %>%
+      addProviderTiles("Esri.WorldStreetMap") %>%
+      # setView(lng = mean(events$Long, na.rm = TRUE) - 5, lat = mean(events$Lat, na.rm = TRUE), zoom = 1) %>%
+      leaflet.extras::addFullscreenControl() %>%
+      addLegend(position = 'topright', colors = c('orange', 'blue'), labels = c('WBG', 'Non-WBG')) %>%
       addCircleMarkers(data = pops, lng =~Long, lat = ~Lat,
                        col = cols, radius = 14) %>%
       addMarkers(data = pops, lng =~Long, lat = ~Lat,
                  popup = popups,
                  icon = face_icons) 
+    
+    # addDrawToolbar(
+    #   targetGroup='draw',
+    #   editOptions = editToolbarOptions(selectedPathOptions = selectedPathOptions()))  %>%
+      # addLayersControl(overlayGroups = c('draw'), options =
+      #                    layersControlOptions(collapsed=FALSE)) %>%
+      # addStyleEditor()
+    l
   })
+  
+  # # Leaflet proxy for the points
+  # observeEvent(filtered_events(), {
+  #   places <- filtered_events()
+  #   
+  #   # Get whether wbg or not
+  #   places <- 
+  #     left_join(places,
+  #               people %>%
+  #                 dplyr::select(short_name, is_wbg),
+  #               by = c('Person' = 'short_name'))
+  #   places$is_wbg <- as.logical(places$is_wbg)
+  #   
+  #   # Get a id
+  #   places <- places %>% 
+  #     mutate(id = paste0(Person, Organization, Lat, Long, is_wbg, 
+  #              Counterpart, 
+  #              `City of visit`, `Country of visit`, collapse = NULL)) %>%
+  #     mutate(id = as.numeric(factor(id))) %>%
+  #     dplyr::rename(City = `City of visit`) %>%
+  #     dplyr::rename(Date = `Visit start`) %>%
+  #     mutate(Date = format(Date, '%b %d, %Y'))
+  #   
+  #   pops <- places %>%
+  #     filter(!duplicated(id))
+  #   
+  #   popups = lapply(rownames(pops), function(row){ 
+  #     this_id <- pops[row,'id']
+  #     x <- places %>% filter(id == this_id) %>%
+  #       dplyr::select(Date, Person, City, Event)
+  #     htmlTable(x,
+  #               rnames = FALSE)
+  #     })
+  #   
+  #   
+  #   # Get faces
+  #   faces_dir <- paste0('www/headshots/circles/')
+  #   faces <- dir(faces_dir)
+  #   faces <- data_frame(joiner = gsub('.png', '', faces, fixed = TRUE),
+  #                       file = paste0(faces_dir, faces))
+  #   
+  #   # Create a join column
+  #   faces$joiner <- ifelse(is.na(faces$joiner) | faces$joiner == 'NA', 
+  #                          'Unknown', 
+  #                          faces$joiner)
+  #   pops$joiner <- ifelse(pops$Person %in% faces$joiner, 
+  #                         pops$Person,
+  #                           'Unknown')
+  #   
+  #   # Join the files to the places data
+  #   if(nrow(pops) > 0){
+  #     pops <- 
+  #       left_join(pops,
+  #                 faces,
+  #                 by = 'joiner')
+  #     # Define colors
+  #     cols <- ifelse(is.na(pops$is_wbg) | 
+  #                      !pops$is_wbg,
+  #                    'orange',
+  #                    'blue')
+  #   } else {
+  #     pops <- events[0,]
+  #   }
+  #   face_icons <- icons(pops$file,
+  #                       iconWidth = 25, iconHeight = 25)
+  #   
+  #   ## plot the subsetted ata
+  #   leafletProxy("leafy") %>%
+  #     clearMarkers() %>%
+  #     setView(lng = mean(pops$Long, na.rm = TRUE), lat = mean(pops$Lat, na.rm = TRUE)) %>%
+  #     addCircleMarkers(data = pops, lng =~Long, lat = ~Lat,
+  #                      col = cols, radius = 14) %>%
+  #     addMarkers(data = pops, lng =~Long, lat = ~Lat,
+  #                popup = popups,
+  #                icon = face_icons) 
+  # })
   
   output$sank <- renderSankeyNetwork({
     x <- filtered_view_trip_coincidences()
