@@ -2,6 +2,7 @@
 #'
 #' Filter the events table per various dimensions
 #' @param events An events dataframe
+#' @param people A people dataframe
 #' @param person A character vector of any length; if NULL, ignored
 #' @param organization A character vector of any length; if NULL, ignored
 #' @param city A character vector of any length; if NULL, ignored
@@ -10,12 +11,14 @@
 #' @param visit_start A date
 #' @param visit_end A date 
 #' @param search A character vector of length 1; if NULL, ignored
+#' @param wbg_only Whether only wbg employs should be included
 #' @return A dataframe
 #' @import dplyr
 #' @export
 
 
 filter_events <- function(events,
+                          people = NULL,
                           person = NULL,
                           organization = NULL,
                           city = NULL,
@@ -23,8 +26,23 @@ filter_events <- function(events,
                           counterpart = NULL,
                           visit_start = NULL,
                           visit_end = NULL,
-                          search = NULL){
+                          search = NULL,
+                          wbg_only = FALSE){
   x <- events
+  
+  # Filter for wbg only
+  if(wbg_only){
+    if(is.null(people)){
+      stop('You must provided a "people" table if filtering for wbg_only')
+    }
+    x <- left_join(x,
+                        people %>%
+                          dplyr::select(short_name, is_wbg),
+                        by = c('Person' = 'short_name'))
+    x$is_wbg <- as.logical(x$is_wbg)
+    x <- x %>% filter(is_wbg) %>%
+      dplyr::select(-is_wbg)
+  }
   
   # filter for person
   if(!is.null(person)){

@@ -107,7 +107,10 @@ body <- dashboardBody(
           column(1),
           column(6,
                  leafletOutput('leafy'),
-                 fluidRow(column(3),
+                 fluidRow(column(3,
+                                 checkboxInput('wbg_only',
+                                               'WBG only?',
+                                               value = FALSE)),
                           column(9,
                                  textInput('search',
                                            'Filter for people, events, places, organizations, etc. (separate items with a comma)'))))),
@@ -627,9 +630,11 @@ server <- function(input, output, session) {
     fd <- the_dates()
     vd <- vals$events
     x <- filter_events(events = vd,
+                       people = vals$people,
                        visit_start = fd[1],
                        visit_end = fd[2],
-                       search = input$search)
+                       search = input$search,
+                       wbg_only = input$wbg_only)
     # Jitter if necessary
     if(any(duplicated(x$Lat)) |
        any(duplicated(x$Long))){
