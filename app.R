@@ -148,6 +148,16 @@ body <- dashboardBody(
       tabName = 'timeline',
       fluidPage(
         fluidRow(
+          column(6,
+                 dateRangeInput('date_range_timeline',
+                                'Filter for a specific date range:',
+                                start = min(date_dictionary$date),
+                                max = max(date_dictionary$date))),
+          column(6,
+                 textInput('search_timeline',
+                           'Or filter for specific events, people, places, etc.:'))
+        ),
+        fluidRow(
           timevisOutput('timevis')
         )
       )
@@ -631,6 +641,17 @@ server <- function(input, output, session) {
     
   })
   
+  filtered_events_timeline <- reactive({
+    fd <- input$date_range_timeline
+    vd <- vals$events
+    x <- filter_events(events = vd,
+                       visit_start = fd[1],
+                       visit_end = fd[2],
+                       search = input$search_timeline)
+    return(x)
+    
+  })
+  
   # Create a filtered view_trip_coincidences
   filtered_view_trip_coincidences <- reactive({
     fd <- the_dates()
@@ -909,7 +930,7 @@ server <- function(input, output, session) {
   })
   
   output$timevis <-  renderTimevis({
-    fe <- filtered_events()
+    fe <- filtered_events_timeline()
     fe$start <- fe$`Visit start`
     fe$content <- paste0(fe$Person, ' in ', fe$`City of visit`)
     fe$end <- fe$`Visit end`
