@@ -694,15 +694,21 @@ server <- function(input, output, session) {
     places <- 
       left_join(places,
                 people %>%
-                  dplyr::select(short_name, is_wbg),
+                  dplyr::select(short_name, is_wbg) %>%
+                  dplyr::filter(!duplicated(short_name)),
                 by = c('Person' = 'short_name'))
     places$is_wbg <- as.logical(places$is_wbg)
     
+    # Overwrite event with the "counterpart" if event is NA
+    places$Event <- ifelse(is.na(places$Event),
+                           places$Counterpart,
+                           places$Event)
+    
     # Get a id
     places <- places %>% 
-      mutate(id = paste0(Person, Organization, Lat, Long, is_wbg, 
-                         Counterpart, 
-                         `City of visit`, `Country of visit`, collapse = NULL)) %>%
+      mutate(id = paste0(Person, Organization, is_wbg, 
+                         Event, 
+                         `City of visit`, collapse = NULL)) %>%
       mutate(id = as.numeric(factor(id))) %>%
       dplyr::rename(City = `City of visit`) %>%
       dplyr::rename(Date = `Visit start`) %>%
@@ -761,10 +767,12 @@ server <- function(input, output, session) {
       leaflet.extras::addFullscreenControl() %>%
       addLegend(position = 'topright', colors = c('orange', 'blue'), labels = c('Non-WBG', 'WBG')) %>%
       addCircleMarkers(data = pops, lng =~Long, lat = ~Lat,
-                       col = cols, radius = 14) %>%
+                       col = cols, radius = 14,
+                       clusterOptions = markerClusterOptions()) %>%
       addMarkers(data = pops, lng =~Long, lat = ~Lat,
                  popup = popups,
-                 icon = face_icons) 
+                 icon = face_icons,
+                 clusterOptions = markerClusterOptions()) 
     
     # addDrawToolbar(
     #   targetGroup='draw',
