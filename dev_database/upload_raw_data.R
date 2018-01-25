@@ -1,7 +1,11 @@
+# Should be run from parent directory (traveldash)
+
 library(openxlsx)
 library(RPostgreSQL)
 library(yaml)
 library(DBI)
+
+# Define whether on Joe's computer (dev) or elsewhere (prod)
 joe <- grepl('joebrew', getwd())
 
 if(joe){
@@ -17,7 +21,7 @@ for(i in 1:length(functions)){
   source(paste0('R/', functions[i]), chdir = TRUE)
 }
 
-file <- paste0(getwd(),"/travel_meeting_data.xlsx")
+file <- paste0(getwd(),"/dev_database/travel_meeting_data.xlsx")
 travels <- read.xlsx(xlsxFile=file,sheet=1)
 
 travels[["Start"]] <- as.character(convertToDate(travels[["Start"]]))  

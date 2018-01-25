@@ -9,12 +9,12 @@
 
 make_graph <- function(events){
   
-  events <- events %>%
-    filter(!is.na(Person),
-           !is.na(Counterpart)) %>%
-    filter(nchar(Person) > 1,
-           nchar(Counterpart) > 2)
-  if(nrow(events) == 0){
+  events_filtered <- events %>%
+    filter(!is.na(Person)) %>%
+    filter(nchar(Person) > 1) %>%
+    mutate(Place = paste0(`City of visit`,', ', `Country of visit`))
+  
+  if(nrow(events_filtered) == 0){
     return(NULL)
   } else {
     # Replacer
@@ -24,40 +24,55 @@ make_graph <- function(events){
       out <- left_join(x, out)
       return(out$y)
     }
-    x <- events %>% group_by(Person, Counterpart) %>%
-      tally %>%
-      ungroup %>%
-      mutate(Person = as.numeric(factor(Person)),
-             Counterpart = as.numeric(factor(Counterpart)))
-    nodes = data.frame("name" = 
-                         c(sort(unique(events$Person)),
-                           sort(unique(events$Counterpart))))
-    nodes$group <-replacer(nodes$name)
-    noder <- events %>% group_by(x = Person) %>% tally
-    noderb <- events %>% group_by(x = Counterpart) %>% tally
-    noder<- bind_rows(noder, noderb) %>%
-      group_by(name = x) %>% summarise(size = sum(n))
-    nodes <- left_join(nodes, noder, by = 'name')
+    events_filtered <- 
+      events_filtered %>%
+      dplyr::select(Person, Place) %>%
+      left_join(people %>% dplyr::select(short_name, is_wbg) %>%
+                  mutate(is_wbg = as.logical(is_wbg)) %>%
+                  dplyr::rename(Person = short_name),
+                by = 'Person')
+    
+    nodes <- data.frame(name = 
+                          c(sort(unique(events_filtered$Place)),
+                            sort(unique(events_filtered$Person))))
+    nodes$group <- replacer(nodes$name)
+    nodes$size <- sample(1:3, nrow(nodes), replace = TRUE)
+    
+
     links = bind_rows(
-      # Person to counterpart
-      events %>% group_by(Person, Counterpart) %>%
+      # Person to place
+      events_filtered %>% group_by(Person, Place) %>%
         tally %>%
         ungroup %>%
         mutate(Person = replacer(Person),
-               Counterpart = replacer(Counterpart)) %>%
+               Place = replacer(Place)) %>%
         rename(a = Person,
-               b = Counterpart)
+               b = Place)
     )
+    # Assign color based on whether it's a place, wb person, or non wb person
+    nodes <- nodes %>% left_join(people %>% dplyr::select(short_name, is_wbg) %>%
+                         mutate(is_wbg = as.logical(is_wbg)) %>%
+                         dplyr::rename(name = short_name))
+    nodes <- nodes %>%
+      mutate(color = ifelse(is.na(is_wbg), 'Location',
+                            ifelse(is_wbg, 'WBG',
+                                   'Non-WBG')))
     
-    nodes$size <- 1
+    nodes$size <- ifelse(nodes$name %in% sort(unique(events_filtered$Place)),
+                         10,
+                         1)
+    
     names(links) = c("source", "target", "value")
     # Plot
     forceNetwork(Links = links, 
                  Nodes = nodes,
                  Value = 'value',
-                 NodeID = "name", Group = "group",
+                 NodeID = "name", 
+                 Group = "color", # used to be group
                  Nodesize="size",                                                    # column names that gives the size of nodes
-                 radiusCalculation = JS(" d.nodesize^2+10"),                         # How to use this column to calculate radius of nodes? (Java script expression)
+                 radiusCalculation = JS(" d.nodesize^6"),                         # How to use this column to calculate radius of nodes? (Java script expression)
+                 
+                 # radiusCalculation = JS(" d.nodesize^2+10"),                         # How to use this column to calculate radius of nodes? (Java script expression)
                  opacity = 1,                                                      # Opacity of nodes when you hover it
                  opacityNoHover = 0.8,                                               # Opacity of nodes you do not hover
                  colourScale = JS("d3.scaleOrdinal(d3.schemeCategory10);"),          # Javascript expression, schemeCategory10 and schemeCategory20 work
@@ -78,7 +93,7 @@ make_graph <- function(events){
                  height = NULL,                                                      # height of frame area in pixels
                  width = NULL,
                  zoom = TRUE,                                                        # Can you zoom on the figure
-                 # legend = TRUE,                                                      # add a legend?
+                 legend = TRUE,                                                      # add a legend?
                  bounded = F, 
                  clickAction = NULL)
   }
