@@ -20,9 +20,9 @@ make_graph <- function(trip_coincidences){
     dplyr::rename(Person = person_name,
                   Counterpart = coincidence_person_name) %>%
     # remove those where the person and counterpart are the same
-    dplyr::filter(Counterpart != Person) %>%
+    dplyr::filter(Counterpart != Person) #%>%
     # Rename the counterpart to avoid loop-arounds
-    mutate(Counterpart = paste0(Counterpart, ' '))
+    # mutate(Counterpart = paste0(Counterpart, ' '))
   # Replacer
   replacer <- function(x){
     out <- data.frame(x = nodes$name, y = (1:nrow(nodes))-1)
@@ -36,8 +36,8 @@ make_graph <- function(trip_coincidences){
     mutate(Person = as.numeric(factor(Person)),
            Counterpart = as.numeric(factor(Counterpart)))
   nodes = data.frame("name" = 
-                       c(sort(unique(tc$Person)),
-                         sort(unique(tc$Counterpart))))
+                       sort(unique(c(sort(unique(tc$Person)),
+                         sort(unique(tc$Counterpart))))))
   nodes$group <-replacer(nodes$name)
   noder <- tc %>% group_by(x = Person) %>% tally
   noderb <- tc %>% group_by(x = Counterpart) %>% tally
