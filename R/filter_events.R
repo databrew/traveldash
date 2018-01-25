@@ -11,7 +11,7 @@
 #' @param visit_start A date
 #' @param visit_end A date 
 #' @param search A character vector of length 1; if NULL, ignored
-#' @param wbg_only Whether only wbg employs should be included
+#' @param wbg_only Whether to have "Everyone", "WBG only" or "Non-WBG only"
 #' @return A dataframe
 #' @import dplyr
 #' @export
@@ -27,11 +27,11 @@ filter_events <- function(events,
                           visit_start = NULL,
                           visit_end = NULL,
                           search = NULL,
-                          wbg_only = FALSE){
+                          wbg_only = "Everyone"){
   x <- events
   
   # Filter for wbg only
-  if(wbg_only){
+  if(wbg_only %in% c('WBG only', 'Non-WBG only')){
     if(is.null(people)){
       stop('You must provided a "people" table if filtering for wbg_only')
     }
@@ -40,8 +40,15 @@ filter_events <- function(events,
                           dplyr::select(short_name, is_wbg),
                         by = c('Person' = 'short_name'))
     x$is_wbg <- as.logical(x$is_wbg)
-    x <- x %>% filter(is_wbg) %>%
-      dplyr::select(-is_wbg)
+    if(wbg_only == 'WBG only'){
+      x <- x %>% filter(is_wbg) %>%
+        dplyr::select(-is_wbg)
+    }
+    if(wbg_only == 'Non-WBG only'){
+      x <- x %>% filter(!is_wbg) %>%
+        dplyr::select(-is_wbg)
+    }
+    
   }
   
   # filter for person
