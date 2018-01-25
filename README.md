@@ -79,6 +79,17 @@ psql -d dev -f dev_database/create_view_trip_coincidences.sql
 psql -d dev -f dev_database/create_function_travel_uploads.sql
 ```
 
+- Confirm that all the views are there. Run `psql dev`, and then within the psql console, run `\dv pd_wbgtravel.*`. It should return the following:
+
+```
+                   List of relations
+    Schema    |          Name          | Type |  Owner  
+--------------+------------------------+------+---------
+ pd_wbgtravel | events                 | view | joebrew
+ pd_wbgtravel | view_trip_coincidences | view | joebrew
+(2 rows)
+```
+
 ### SQLite
 
 AS an alternative to PostgreSQL, we use SQLite for quick testing, development iterations, and deployment to shinyapps.io. Below are the instructions for setting up the app database for use with SQLite.
