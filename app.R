@@ -635,11 +635,9 @@ server <- function(input, output, session) {
   filtered_view_trip_coincidences <- reactive({
     fd <- the_dates()
     vd <- vals$view_trip_coincidences
-    print(head(vd))
     x <- vd %>%
       dplyr::filter(fd[1] <= trip_end_date,
                     fd[2] >= trip_start_date)
-    print(head(x))
     return(x)
   })
   
@@ -747,26 +745,36 @@ server <- function(input, output, session) {
   
   
   # Create a separate filtered events for network
-  filtered_events_network <- reactive({
+  filtered_view_trip_coincidences_network <- reactive({
     fd <- input$date_range_network
-    vd <- vals$events
-    x <- filter_events(events = vd,
-                       visit_start = fd[1],
-                       visit_end = fd[2],
-                       search = input$search_network)
-    # Jitter if necessary
-    if(any(duplicated(x$Lat)) |
-       any(duplicated(x$Long))){
-      x <- x %>%
-        mutate(Long = jitter(Long, factor = 0.5),
-               Lat = jitter(Lat, factor = 0.5))
+    vd <- vals$view_trip_coincidences
+    # filter for dates
+    x <- vd %>%
+    dplyr::filter(fd[1] <= trip_end_date,
+                  fd[2] >= trip_start_date)
+    # Filter for search box too
+    if(!is.null(input$search_network)){
+      if(nchar(input$search_network) > 0){
+        search <- input$search_network
+        search_items <- unlist(strsplit(search, split = ','))
+        search_items <- trimws(search_items, which = 'both')
+        keeps <- c()
+        for(i in 1:length(search_items)){
+          these_keeps <- apply(mutate_all(.tbl = x, .funs = function(x){grepl(tolower(search_items[i]), tolower(x))}),1, any)
+          these_keeps <- which(these_keeps)
+          keeps <- c(keeps, these_keeps)
+        }
+        keeps <- sort(unique(keeps))
+        x <- x[keeps,]
+      }
     }
+
     return(x)
     
   })
   
   output$graph <- renderForceNetwork({
-    x <- filtered_events_network()
+    x <- filtered_view_trip_coincidences_network()
     show_graph <- FALSE
     if(!is.null(x)){
       if(nrow(x) > 0){
@@ -774,7 +782,7 @@ server <- function(input, output, session) {
       }
     }
     if(show_graph){
-      make_graph(events = x)
+      make_graph(trip_coincidences = x)
     } else {
       return(NULL)
     }
