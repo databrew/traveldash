@@ -1,37 +1,34 @@
 #' Make a sankey chart
 #'
 #' Make an interactive sankey chart
-#' @param events A dataframe in the form of the events table
+#' @param trip_coincidences A dataframe in the form of the trip_coincidences view
 #' @return An html widget
 #' @import nd3
 #' @export
 
-make_sank <- function(events){
-  events_filtered <- events %>%
-    filter(!is.na(Person)) %>%
-    filter(nchar(Person) > 1) %>%
-    mutate(Place = paste0(`City of visit`,', ', `Country of visit`))
-  if(nrow(events_filtered) == 0){
+make_sank <- function(trip_coincidences){
+  tc <- trip_coincidences %>%
+    dplyr::select(person_name, 
+                  is_wbg,
+                  city_name,
+                  country_name,
+                  trip_start_date,
+                  trip_end_date,
+                  coincidence_person_name,
+                  coincidence_is_wbg) %>%
+    dplyr::rename(Person = person_name,
+                  Counterpart = coincidence_person_name) %>%
+    # remove those where the person and counterpart are the same
+    dplyr::filter(Counterpart != Person) %>%
+    # Rename the counterpart to avoid loop-arounds
+    mutate(Counterpart = paste0(Counterpart, ' '))
+
+  if(nrow(tc) == 0){
     return(NULL)
   } else {
-    x <- events_filtered %>%
-      group_by(Person, Place) %>%
-      tally %>%
-      ungroup %>%
-      mutate(Person = as.numeric(factor(Person)),
-             Place = as.numeric(factor(Place)))
-    
-    # x <- events_filtered %>%
-    #   group_by(Person, Counterpart) %>%
-    #   tally %>%
-    #   ungroup %>%
-    #   mutate(Person = as.numeric(factor(Person)),
-    #          Counterpart = as.numeric(factor(Counterpart)))
-    # 
-
     nodes = data.frame("name" = 
-                         c(sort(unique(events_filtered$Person)),
-                           sort(unique(events_filtered$Place))))
+                         c(sort(unique(tc$Person)),
+                           sort(unique(tc$Counterpart))))
     
     # Replacer
     replacer <- function(x){
@@ -42,13 +39,13 @@ make_sank <- function(events){
     }
     links = bind_rows(
       # Person to counterpart
-      events_filtered %>% group_by(Person, Place) %>%
+      tc %>% group_by(Person, Counterpart) %>%
         tally %>%
         ungroup %>%
         mutate(Person = replacer(Person),
-               Place = replacer(Place)) %>%
+               Counterpart = replacer(Counterpart)) %>%
         rename(a = Person,
-               b = Place)
+               b = Counterpart)
     )
     
     
@@ -63,4 +60,3 @@ make_sank <- function(events){
                        fontSize= 12, nodeWidth = 30)
   }
 }
-

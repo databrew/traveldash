@@ -563,6 +563,7 @@ server <- function(input, output, session) {
   vals$people <- people
   vals$trip_meetings <- trip_meetings
   vals$trips <- trips
+  vals$view_trip_coincidences <- view_trip_coincidences
   vals$upload_results <- NULL
   
   # Replace data with uploaded data
@@ -582,6 +583,7 @@ server <- function(input, output, session) {
     vals$people <- updated_data$people
     vals$trip_meetings <- updated_data$trip_meetings
     vals$trips <- updated_data$trips
+    vals$view_trip_coincidences <- updated_data$view_trip_coincidences
     vals$upload_results <- upload_results
   })
   
@@ -627,6 +629,18 @@ server <- function(input, output, session) {
     }
     return(x)
     
+  })
+  
+  # Create a filtered view_trip_coincidences
+  filtered_view_trip_coincidences <- reactive({
+    fd <- the_dates()
+    vd <- vals$view_trip_coincidences
+    print(head(vd))
+    x <- vd %>%
+      dplyr::filter(fd[1] <= trip_end_date,
+                    fd[2] >= trip_start_date)
+    print(head(x))
+    return(x)
   })
   
   output$leafy <- renderLeaflet({
@@ -717,7 +731,7 @@ server <- function(input, output, session) {
   })
   
   output$sank <- renderSankeyNetwork({
-    x <- filtered_events()
+    x <- filtered_view_trip_coincidences()
     show_sankey <- FALSE
     if(!is.null(x)){
       if(nrow(x) > 0){
@@ -725,7 +739,7 @@ server <- function(input, output, session) {
       }
     }
     if(show_sankey){
-      make_sank(events = x)
+      make_sank(trip_coincidences = x)
     } else {
       return(NULL)
     }
