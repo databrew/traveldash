@@ -705,18 +705,16 @@ server <- function(input, output, session) {
         left_join(places,
                   faces,
                   by = 'joiner')
+      # Define colors
+      cols <- ifelse(is.na(places$is_wbg) | 
+                       !places$is_wbg,
+                     'orange',
+                     'blue')
     } else {
       places <- events[0,]
     }
     face_icons <- icons(places$file,
                         iconWidth = 25, iconHeight = 25)
-    
-    # Define colors
-    cols <- ifelse(is.na(places$is_wbg) | 
-                   !places$is_wbg,
-                   'orange',
-                   'blue')
-    
     
     ## plot the subsetted ata
     leafletProxy("leafy") %>%
