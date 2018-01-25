@@ -754,7 +754,7 @@ server <- function(input, output, session) {
       addProviderTiles("Esri.WorldStreetMap") %>%
       # setView(lng = mean(events$Long, na.rm = TRUE) - 5, lat = mean(events$Lat, na.rm = TRUE), zoom = 1) %>%
       leaflet.extras::addFullscreenControl() %>%
-      addLegend(position = 'topright', colors = c('orange', 'blue'), labels = c('WBG', 'Non-WBG')) %>%
+      addLegend(position = 'topright', colors = c('orange', 'blue'), labels = c('Non-WBG', 'WBG')) %>%
       addCircleMarkers(data = pops, lng =~Long, lat = ~Lat,
                        col = cols, radius = 14) %>%
       addMarkers(data = pops, lng =~Long, lat = ~Lat,
