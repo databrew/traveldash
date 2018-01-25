@@ -110,7 +110,7 @@ body <- dashboardBody(
                  fluidRow(column(3),
                           column(9,
                                  textInput('search',
-                                           'Filter for people, events, places, organizations, etc.'))))),
+                                           'Filter for people, events, places, organizations, etc. (separate items with a comma)'))))),
         fluidRow(
           column(6,
                  h4('Interactions during selected period:',
