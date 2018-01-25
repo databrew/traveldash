@@ -914,8 +914,12 @@ server <- function(input, output, session) {
   output$visit_info_table <- DT::renderDataTable({
     x <- filtered_events()
     x <- x %>%
+      arrange(`Visit start`) %>%
       mutate(Location = `City of visit`) %>%
-      mutate(Dates = paste0(`Visit start`, ' - ', `Visit end`)) %>%
+      mutate(Dates = paste0(
+        format(`Visit start`, '%b %d, %Y'), 
+        ' - ', 
+        format(`Visit end`, '%b %d, %Y'))) %>%
       # mutate(Location = paste0(`City of visit`,
       #                          ', ',
       #                          toupper(substr(`Country of visit`, 1, 3)))) %>%
@@ -924,8 +928,7 @@ server <- function(input, output, session) {
                     Location,
                     Event,
                     # Counterpart,
-                    Dates) %>%
-      dplyr::arrange(Dates)
+                    Dates)
       #               `Visit start`,
       #               `Visit end`) %>%
       # arrange(`Visit start`)
