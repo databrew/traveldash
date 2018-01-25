@@ -693,8 +693,7 @@ server <- function(input, output, session) {
                Counterpart, 
                `City of visit`, `Country of visit`, collapse = NULL)) %>%
       mutate(id = as.numeric(factor(id))) %>%
-      dplyr::select(-Event) %>%
-      dplyr::mutate(Event = Counterpart)
+      dplyr::rename(City = `City of visit`)
     
     pops <- places %>%
       filter(!duplicated(id))
@@ -702,7 +701,7 @@ server <- function(input, output, session) {
     popups = lapply(rownames(pops), function(row){ 
       this_id <- pops[row,'id']
       x <- places %>% filter(id == this_id) %>%
-        dplyr::select(Person, `City of visit`,Event)
+        dplyr::select(Person, City, Event)
       htmlTable(x,
                 rnames = FALSE)
       })
