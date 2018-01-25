@@ -72,9 +72,15 @@ upload_raw_data <- function(pool,
                  trip_id="int4",
                  meeting_person_id="int4")
   
-  # Create the connection
+    # Create the connection
   conn <- poolCheckout(pool)
 
+  # Delete fields is relevant
+  if(long){
+    # delete_rows <- which(data$STATUS == 'DELETE')
+    # dbSendQuery(conn,"delete from pd_wbgtravel.trips where cascade;")
+  }
+  
   # Drop a previous temporary table if it's around
   dbSendQuery(conn,"drop table if exists public._temp_travel_uploads;") 
   

@@ -278,7 +278,8 @@ body <- dashboardBody(
                        h4('Download sample dataset'),
                        helpText('Click the "Download" button to get a sample dataset.'),
                        downloadButton("download_short", "Download short format"),
-                       downloadButton("download_long", "Download long format"))),
+                       downloadButton("download_long", "Download long format"),
+                       fluidRow(p('If in "long format" mode, you can enter the word "UPDATE" or "DELETE" in the "STATUS" column in order to change the database.')))),
               uiOutput('upload_ui'),
               fluidRow(
                 h3(textOutput('your_data_text')),
