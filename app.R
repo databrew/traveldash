@@ -83,7 +83,15 @@ body <- dashboardBody(
                                 actionButton("action_forward", "Forward", icon=icon("arrow-circle-right"))),
                          column(4),
                          style='text-align: center;')
-                   )#,
+                   ),
+                   br(),
+                   div(
+                   fluidRow(radioButtons('wbg_only',
+                                         'Filter by affiliation',
+                                         choices = c('Everyone', 'WBG only', 'Non-WBG only'),
+                                         inline = TRUE)),
+                   fluidRow(textInput('search',
+                                      'Filter for people, events, places, organizations, etc. (separate items with a comma)')), style='text-align: center;')
                    # fluidRow(
                    #   fluidRow(
                    #     column(1),
@@ -100,20 +108,13 @@ body <- dashboardBody(
                    #   #       style = 'text-align: center;')
                    #   # )
                    #   )
-                   )
-                   
-                   
+                 )
+                 
+                 
           ),
           column(1),
           column(6,
-                 leafletOutput('leafy'),
-                 fluidRow(column(3,
-                                 radioButtons('wbg_only',
-                                               'Filter by affiliation',
-                                               choices = c('Everyone', 'WBG only', 'Non-WBG only'))),
-                          column(9,
-                                 textInput('search',
-                                           'Filter for people, events, places, organizations, etc. (separate items with a comma)'))))),
+                 leafletOutput('leafy'))),
         fluidRow(
           column(6,
                  h4('Interactions during selected period:',
@@ -123,8 +124,8 @@ body <- dashboardBody(
                  h4('Detailed visit information',
                     align = 'center'),
                  DT::dataTableOutput('visit_info_table'))
-                 # div(class = 'scroll',
-                 #     DT::dataTableOutput('visit_info_table')))
+          # div(class = 'scroll',
+          #     DT::dataTableOutput('visit_info_table')))
         )
       )
     ),
@@ -310,7 +311,7 @@ body <- dashboardBody(
                 h3(textOutput('your_data_text')),
                 DT::dataTableOutput('uploaded_table')
               )
-
+              
             ))
   ))
 message('Done defining UI')
@@ -354,8 +355,8 @@ server <- function(input, output, session) {
         NULL
       }
     }
-    
   })
+  
   
   output$your_data_text <- renderText({
     ur <- vals$upload_results
@@ -462,7 +463,7 @@ server <- function(input, output, session) {
     starter(as.Date(input$date_range[1]))
     ender(as.Date(input$date_range[2]))
   })
-
+  
   observeEvent(input$action_forward, {
     dw <- date_width()
     if(!is.null(dw)){
@@ -485,7 +486,7 @@ server <- function(input, output, session) {
   })
   
   # selected_date <- reactive({input$selected_date})
-
+  
   seld <- reactive({
     x <- starter()
     x <- as.Date(x, 
@@ -570,8 +571,8 @@ server <- function(input, output, session) {
   # Reactive dataframe for the filtered table
   vals <- reactiveValues()
   vals$events<-filter_events(events = events,
-                           visit_start = min(date_dictionary$date),
-                           visit_end = max(date_dictionary$date))
+                             visit_start = min(date_dictionary$date),
+                             visit_end = max(date_dictionary$date))
   vals$cities <- cities
   vals$people <- people
   vals$trip_meetings <- trip_meetings
@@ -687,8 +688,20 @@ server <- function(input, output, session) {
   })
   
   output$leafy <- renderLeaflet({
-
+    
+    # Get filtered place
     places <- filtered_events()
+    
+    # Get row selection (if applicable) from datatable
+    s <- input$visit_info_table_rows_selected
+
+    # Subset places if rows are selected
+    if(!is.null(s)){
+      if(length(s) > 0){
+        places <- places[s,]
+      }
+    }
+    print(head(places))
     
     # Get whether wbg or not
     places <- 
@@ -759,8 +772,8 @@ server <- function(input, output, session) {
     
     ## plot the subsetted ata
     # leafletProxy("leafy") %>%
-      # clearMarkers() %>%
-      # setView(lng = mean(pops$Long, na.rm = TRUE), lat = mean(pops$Lat, na.rm = TRUE)) %>%
+    # clearMarkers() %>%
+    # setView(lng = mean(pops$Long, na.rm = TRUE), lat = mean(pops$Lat, na.rm = TRUE)) %>%
     l <- leaflet() %>%
       addProviderTiles("Esri.WorldStreetMap") %>%
       # setView(lng = mean(events$Long, na.rm = TRUE) - 5, lat = mean(events$Lat, na.rm = TRUE), zoom = 1) %>%
@@ -777,9 +790,9 @@ server <- function(input, output, session) {
     # addDrawToolbar(
     #   targetGroup='draw',
     #   editOptions = editToolbarOptions(selectedPathOptions = selectedPathOptions()))  %>%
-      # addLayersControl(overlayGroups = c('draw'), options =
-      #                    layersControlOptions(collapsed=FALSE)) %>%
-      # addStyleEditor()
+    # addLayersControl(overlayGroups = c('draw'), options =
+    #                    layersControlOptions(collapsed=FALSE)) %>%
+    # addStyleEditor()
     l
   })
   
@@ -881,8 +894,8 @@ server <- function(input, output, session) {
     vd <- vals$view_trip_coincidences
     # filter for dates
     x <- vd %>%
-    dplyr::filter(fd[1] <= trip_end_date,
-                  fd[2] >= trip_start_date)
+      dplyr::filter(fd[1] <= trip_end_date,
+                    fd[2] >= trip_start_date)
     # Filter for search box too
     if(!is.null(input$search_network)){
       if(nchar(input$search_network) > 0){
@@ -899,7 +912,7 @@ server <- function(input, output, session) {
         x <- x[keeps,]
       }
     }
-
+    
     return(x)
     
   })
@@ -922,27 +935,24 @@ server <- function(input, output, session) {
   output$visit_info_table <- DT::renderDataTable({
     x <- filtered_events()
     x <- x %>%
-      arrange(`Visit start`) %>%
+      # arrange(`Visit start`) %>%
       mutate(Location = `City of visit`) %>%
       mutate(Dates = paste0(
         format(`Visit start`, '%b %d, %Y'), 
         ' - ', 
         format(`Visit end`, '%b %d, %Y'))) %>%
-      # mutate(Location = paste0(`City of visit`,
-      #                          ', ',
-      #                          toupper(substr(`Country of visit`, 1, 3)))) %>%
       dplyr::select(Person,
                     # Organization,
                     Location,
                     Event,
                     # Counterpart,
                     Dates)
-      #               `Visit start`,
-      #               `Visit end`) %>%
-      # arrange(`Visit start`)
+    #               `Visit start`,
+    #               `Visit end`) %>%
+    # arrange(`Visit start`)
     prettify(x,
              download_options = TRUE) #%>%
-      # DT::formatStyle(columns = colnames(.), fontSize = '50%')
+    # DT::formatStyle(columns = colnames(.), fontSize = '50%')
   })
   
   output$timevis <-  renderTimevis({
@@ -963,40 +973,40 @@ server <- function(input, output, session) {
     
   })
   
-#   output$g_calendar <- renderGvis({
-#     
-#     fd <- the_dates()
-#     if(is.null(fd)){
-#       return(NULL)
-#     } else {
-#       fills <- ifelse(date_dictionary$date >= fd[1] &
-#                         date_dictionary$date <= fd[2],
-#                       1,
-#                       0)
-#       dd <- date_dictionary %>%
-#         mutate(num = fills)
-#       gvisCalendar(data = dd, 
-#                    datevar = 'date',
-#                    numvar = 'num',
-#                    options=list(
-#                      width=400,
-#                      height = 160,
-#                      # legendPosition = 'bottom',
-#                      # legendPosition = 'none',
-#                      # legend = "{position:'none'}",
-#                      calendar="{yearLabel: { fontName: 'Helvetica',
-#                      fontSize: 14, color: 'black', bold: false},
-#                      cellSize: 5,
-#                      cellColor: { stroke: 'black', strokeOpacity: 0.2 },
-#                      focusedCellColor: {stroke:'red'}}",
-#                      gvis.listener.jscode = "
-#                      var selected_date = data.getValue(chart.getSelection()[0].row,0);
-#                      var parsed_date = selected_date.getFullYear()+'-'+(selected_date.getMonth()+1)+'-'+selected_date.getDate();
-#                      Shiny.onInputChange('selected_date',parsed_date)"))
-#       
-#       
-# }
-# })
+  #   output$g_calendar <- renderGvis({
+  #     
+  #     fd <- the_dates()
+  #     if(is.null(fd)){
+  #       return(NULL)
+  #     } else {
+  #       fills <- ifelse(date_dictionary$date >= fd[1] &
+  #                         date_dictionary$date <= fd[2],
+  #                       1,
+  #                       0)
+  #       dd <- date_dictionary %>%
+  #         mutate(num = fills)
+  #       gvisCalendar(data = dd, 
+  #                    datevar = 'date',
+  #                    numvar = 'num',
+  #                    options=list(
+  #                      width=400,
+  #                      height = 160,
+  #                      # legendPosition = 'bottom',
+  #                      # legendPosition = 'none',
+  #                      # legend = "{position:'none'}",
+  #                      calendar="{yearLabel: { fontName: 'Helvetica',
+  #                      fontSize: 14, color: 'black', bold: false},
+  #                      cellSize: 5,
+  #                      cellColor: { stroke: 'black', strokeOpacity: 0.2 },
+  #                      focusedCellColor: {stroke:'red'}}",
+  #                      gvis.listener.jscode = "
+  #                      var selected_date = data.getValue(chart.getSelection()[0].row,0);
+  #                      var parsed_date = selected_date.getFullYear()+'-'+(selected_date.getMonth()+1)+'-'+selected_date.getDate();
+  #                      Shiny.onInputChange('selected_date',parsed_date)"))
+  #       
+  #       
+  # }
+  # })
   
   output$MainBody<-renderUI({
     fluidPage(
@@ -1026,7 +1036,7 @@ server <- function(input, output, session) {
       tags$script("$(document).on('click', '#Main_table button', function () {
                   Shiny.onInputChange('lastClickId',this.id);
                   Shiny.onInputChange('lastClick', Math.random())
-                  });")
+});")
 
       )
       )
