@@ -70,6 +70,7 @@ trip_coincidence_meetings as
 (
 	select 
 	tc.*, 
+	'YES' as has_coincidence,
 	case when tm.meeting_person_id is not null then 'YES' else 'NO' end as has_meeting,
 	case when tm.meeting_person_id is not null then tc.coincidence_person_name else NULL end as meeting_person_name,
 	tm.topic
@@ -77,12 +78,14 @@ trip_coincidence_meetings as
 	left join pd_wbgtravel.trip_meetings tm on 
 		(tm.travelers_trip_id = tc.trip_id and tm.meeting_person_id = tc.coincidence_person_id) or -- Meeting already scheduled with coincidence person
 		(tm.travelers_trip_id = tc.coincidence_trip_id and tm.meeting_person_id = tc.person_id)    -- Reciprocally, if A meets B then B meets A 
-)
+),
 -- (4) For trips that don't overlap with anyone, do they have meetings scheduled?
 -- Note: we're not able to do a left-join in step 3 to get all trips to join meetings onto because not all meetings are scheduled with
 -- people that have trips explicitly entered into the system.   That is, people on trips schedule meetings with other people (who may or may not 
 -- have a trip defined).  Therefore, pulling all people on trips doesn't pull all people who are having meetings.
 --select * from trip_coincidence_meetings
+all_trips_meetings_coincidences as
+(
 select 
 tcp.trip_id,
 tcp.city_id,
@@ -102,14 +105,18 @@ null as coincidence_is_wbg,
 null as coincidence_city_name,
 null as coincidence_country_name,
 null as coincidence_trip_reason,
+'NO' as has_coincidence,
 case when tm.meeting_person_id is not null then 'YES' else 'NO' end as has_meeting,
 pe.short_name as meeting_person_name,
 tm.topic
 from trips_cities_people tcp
 left join pd_wbgtravel.trip_meetings tm on tm.travelers_trip_id = tcp.trip_id
 left join pd_wbgtravel.people pe on pe.person_id = tm.meeting_person_id
-where not exists(select * from trip_coincidence_meetings tcm where tcm.trip_id = tcp.trip_id)
+where not exists(select * from trip_coincidence_meetings tcm where tcm.trip_id = tcp.trip_id and tcm.coincidence_person_id = tm.meeting_person_id)
 
 union all
 
-select * from trip_coincidence_meetings;
+select * from trip_coincidence_meetings
+)
+select *,dense_rank () over(order by trip_id,topic) * case when has_meeting = 'YES' then 1 else null end  as trip_meeting_group_id
+from all_trips_meetings_coincidences;
