@@ -87,8 +87,8 @@ trip_coincidence_meetings as
 	tc.coincidence_city_name,
 	tc.coincidence_country_name,
 	tc.coincidence_trip_reason,
-	'YES' as has_coincidence,
-	case when tm.meeting_person_id is not null then 'YES' else 'NO' end as has_meeting,
+	'YES'::varchar(3) as has_coincidence,
+	case when tm.meeting_person_id is not null then 'YES' else 'NO' end::varchar(3) as has_meeting,
 	case when tm.meeting_person_id is not null then tc.coincidence_person_name else NULL end as meeting_person_name,
 	tm.topic
 	from trip_coincidences tc
@@ -122,8 +122,8 @@ null as coincidence_is_wbg,
 null as coincidence_city_name,
 null as coincidence_country_name,
 null as coincidence_trip_reason,
-'NO' as has_coincidence,
-case when tm.meeting_person_id is not null then 'YES' else 'NO' end as has_meeting,
+'NO'::varchar(3) as has_coincidence,
+case when tm.meeting_person_id is not null then 'YES' else 'NO' end::varchar(3) as has_meeting,
 pe.short_name as meeting_person_name,
 tm.topic
 from trips_cities_people tcp
@@ -182,5 +182,5 @@ select
 	atcm.has_meeting,
 	atcm.meeting_person_name,
 	atcm.topic,
-	dense_rank () over(order by trip_id,topic) * case when has_meeting = 'YES' then 1 else null end  as trip_meeting_group_id
+	dense_rank () over(order by trip_id,topic) * case when has_meeting = 'YES' then 1 else null end::int4  as trip_meeting_group_id
 from all_trips_meetings_coincidences atcm; 
