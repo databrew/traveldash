@@ -694,6 +694,7 @@ server <- function(input, output, session) {
     
     # Get row selection (if applicable) from datatable
     s <- input$visit_info_table_rows_selected
+    print(s)
 
     # Subset places if rows are selected
     if(!is.null(s)){
@@ -701,7 +702,9 @@ server <- function(input, output, session) {
         places <- places[s,]
       }
     }
-    print(head(places))
+
+    # Get number of rows of places
+    nrp <- nrow(places)
     
     # Get whether wbg or not
     places <- 
@@ -786,6 +789,14 @@ server <- function(input, output, session) {
                  popup = popups,
                  # clusterOptions = markerClusterOptions(),
                  icon = face_icons) 
+    
+    # Zoom out a bit if only 1 city or person
+    if(nrp == 1 | length(unique(places$City)) == 1){
+      l <- l %>%
+        setView(lng = mean(places$Long, na.rm = TRUE),
+                lat = mean(places$Lat, na.rm = TRUE),
+                zoom = 7)
+    }
     
     # addDrawToolbar(
     #   targetGroup='draw',
