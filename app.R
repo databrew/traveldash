@@ -767,12 +767,12 @@ server <- function(input, output, session) {
       leaflet.extras::addFullscreenControl() %>%
       addLegend(position = 'topright', colors = c('orange', 'blue'), labels = c('Non-WBG', 'WBG')) %>%
       addCircleMarkers(data = pops, lng =~Long, lat = ~Lat,
-                       col = cols, radius = 14,
-                       clusterOptions = markerClusterOptions()) %>%
+                       # clusterOptions = markerClusterOptions(),
+                       col = cols, radius = 14) %>%
       addMarkers(data = pops, lng =~Long, lat = ~Lat,
                  popup = popups,
-                 icon = face_icons,
-                 clusterOptions = markerClusterOptions()) 
+                 # clusterOptions = markerClusterOptions(),
+                 icon = face_icons) 
     
     # addDrawToolbar(
     #   targetGroup='draw',
