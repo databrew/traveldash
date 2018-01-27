@@ -1,3 +1,4 @@
+library(RColorBrewer)
 library(maps)
 library(tidyverse)
 library(sp)
@@ -91,6 +92,84 @@ long_format <- read_csv('long_format.csv')
 
 # Conditionally color the skin based on mode
 skin <- ifelse(use_sqlite, 'red', 'blue')
+
+# Timevis data prep
+# Get all "events" - which are any period in which someone is at a place continuously
+expand_trips <- function(trips, cities, people){
+  out <- list()
+  for(i in 1:nrow(trips)){
+    dates <- seq(trips$trip_start_date[i],
+                 trips$trip_end_date[i],
+                 by = 1)
+    df <- trips[i,] %>% dplyr::select(trip_id, person_id, city_id)
+    df1 <- df
+    while(length(dates) > nrow(df)){
+      df <- bind_rows(df, df1)
+    }
+    df$date <- dates
+    out[[i]] <- df
+  }
+  df <- bind_rows(out)
+  # Get rid of dulicates
+  df <- df %>% dplyr::distinct(city_id, date) %>%
+    arrange(city_id, date)
+  # Get gap between previous days
+  df <- df %>%
+    group_by(city_id) %>%
+    mutate(date_dif = date - dplyr::lag(date, 1)) %>% ungroup
+  # Get a "event_id"
+  df$event_id <- NA
+  df$event_id[1] <- 1
+  for(i in 2:nrow(df)){
+    df$event_id[i] <- 
+      ifelse(any(is.na(df$date_dif[i]), df$date_dif[i] > 1),
+             df$event_id[i-1] + 1,
+             df$event_id[i-1])
+  }
+  # Group by event id and get start / end
+  df <- df %>%
+    group_by(city_id, event_id) %>%
+    summarise(start = min(date),
+              end = max(date)) %>%
+    ungroup
+  # Get the cities (events)
+  df <- left_join(df,
+                  cities %>% 
+                    dplyr::select(city_id, city_name),
+                  by = 'city_id') %>%
+    dplyr::mutate(content = city_name) %>%
+    mutate(type = 'range',
+           title = city_name) %>%
+    mutate(group = 1)
+  # Get the meetings in each event
+  meetings <- trips %>%
+    dplyr::select(person_id, city_id, trip_reason,
+                  trip_start_date,
+                  trip_end_date) %>%
+    left_join(people %>% dplyr::select(person_id, 
+                                       short_name),
+              by = 'person_id') %>%
+    dplyr::mutate(content = paste0(short_name, ': ', trip_reason)) %>%
+    left_join(df %>% dplyr::select(-content,
+                                   -type)) %>%
+    # Keep only those dates which fall in the range
+    filter(trip_start_date >= start,
+           trip_end_date <= end) %>%
+    mutate(group = 2) %>%
+    mutate(type = 'point')
+  meetings <- meetings[,names(df)]
+  # Combine everything
+  df <- bind_rows(df, meetings)
+  df$id <- 1:nrow(df)
+  df$subgroup <- df $event_id
+  cols <- colorRampPalette(brewer.pal(9, 'Spectral'))(length(unique(df$subgroup)))
+  df$style <- paste0('color: ', cols[df$subgroup], ';')
+  return(df)
+}
+expanded_trips = expand_trips(trips = trips,
+                              cities = cities,
+                              people = people)
+
 
 message('############ Done with global.R')
 

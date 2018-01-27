@@ -647,15 +647,27 @@ server <- function(input, output, session) {
     
   })
   
-  filtered_events_timeline <- reactive({
+  # filtered_events_timeline <- reactive({
+  #   fd <- input$date_range_timeline
+  #   vd <- vals$events
+  #   x <- filter_events(events = vd,
+  #                      visit_start = fd[1],
+  #                      visit_end = fd[2],
+  #                      search = input$search_timeline)
+  #   return(x)
+  # })
+  
+  filtered_expanded_trips <- reactive({
     fd <- input$date_range_timeline
-    vd <- vals$events
-    x <- filter_events(events = vd,
-                       visit_start = fd[1],
-                       visit_end = fd[2],
-                       search = input$search_timeline)
-    return(x)
-    
+    search <- input$search_timeline
+    out <- expanded_trips %>%
+      filter(end >= fd[1],
+             start <= fd[2])
+    out <- out %>% 
+      filter(grepl(tolower(search), tolower(city_name)) |
+               grepl(tolower(search), tolower(title)) |
+               grepl(tolower(search), tolower(content)))
+    out
   })
   
   # Create a filtered view_trip_coincidences
@@ -967,21 +979,29 @@ server <- function(input, output, session) {
   })
   
   output$timevis <-  renderTimevis({
-    fe <- filtered_events_timeline()
-    if(nrow(fe) > 0){
-      fe$start <- fe$`Visit start`
-      fe$content <- paste0(fe$Person, ' in ', fe$`City of visit`)
-      fe$end <- fe$`Visit end`
-      fe$id <- 1:nrow(fe)
-      fe$type <- ifelse(as.numeric(fe$end - fe$start) == 0, 'box', 'range')
-      fe$title <- paste0(fe$Person, ' in ', fe$`City of visit`, ' from',
-                         fe$start, ' through ' , fe$end)
-      x <- timevis(data = fe)
-      return(x)
-    } else {
-      return(NULL)
+    # fe <- filtered_events_timeline()
+    # if(nrow(fe) > 0){
+    #   fe$start <- fe$`Visit start`
+    #   fe$content <- paste0(fe$Person, ' in ', fe$`City of visit`)
+    #   fe$end <- fe$`Visit end`
+    #   fe$id <- 1:nrow(fe)
+    #   fe$type <- ifelse(as.numeric(fe$end - fe$start) == 0, 'box', 'range')
+    #   fe$title <- paste0(fe$Person, ' in ', fe$`City of visit`, ' from',
+    #                      fe$start, ' through ' , fe$end)
+    #   x <- timevis(data = fe)
+    #   return(x)
+    # } else {
+    #   return(NULL)
+    # }
+    out <- NULL
+    fet <- filtered_expanded_trips()
+    if(!is.null(fet)){
+      if(nrow(fet) > 0){
+        out <- timevis(data = ,
+                       groups = data.frame(id = 1:2, content = c('Event', 'Meetings')))
+      }
     }
-    
+    return(out)
   })
   
   #   output$g_calendar <- renderGvis({
