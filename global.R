@@ -162,8 +162,13 @@ expand_trips <- function(trips, cities, people){
   df <- bind_rows(df, meetings)
   df$id <- 1:nrow(df)
   df$subgroup <- df $event_id
-  cols <- colorRampPalette(brewer.pal(9, 'Spectral'))(length(unique(df$subgroup)))
+  cols <- colorRampPalette(brewer.pal(8, 'Dark2'))(length(unique(df$subgroup)))
   df$style <- paste0('color: ', cols[df$subgroup], ';')
+  df <- df %>% arrange(start, city_name)
+  # Make 23 hour event for those which are events
+  df$start <- as.POSIXct(df$start)
+  df$end <- as.POSIXct(df$end)
+  df$end[df$group == 1] <- df$end[df$group == 1] + hours(23)
   return(df)
 }
 expanded_trips = expand_trips(trips = trips,

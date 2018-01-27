@@ -60,6 +60,24 @@ body <- dashboardBody(
   # tags$head(
   #   tags$link(rel = "stylesheet", type = "text/css", href = "horizontal.css")
   # ),
+  
+  # Css for box coloring
+  tags$style(HTML("
+
+
+.box.box-solid.box-primary>.box-header {
+  color:#fff;
+  background:#666666
+                    }
+
+.box.box-solid.box-primary{
+border-bottom-color:#666666;
+border-left-color:#666666;
+border-right-color:#666666;
+border-top-color:#666666;
+}
+
+                                    ")),
   tabItems(
     tabItem(
       tabName="main",
@@ -997,8 +1015,10 @@ server <- function(input, output, session) {
     fet <- filtered_expanded_trips()
     if(!is.null(fet)){
       if(nrow(fet) > 0){
-        out <- timevis(data = ,
-                       groups = data.frame(id = 1:2, content = c('Event', 'Meetings')))
+        out <- timevis(data = fet,
+                       groups = data.frame(id = 1:2, content = c('Event', 'Meetings'),
+                                           title = c('Event', 'Meeting'),
+                                           style = paste0('color: ', c('blue', 'red'))))
       }
     }
     return(out)
