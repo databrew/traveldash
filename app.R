@@ -60,6 +60,7 @@ body <- dashboardBody(
   # tags$head(
   #   tags$link(rel = "stylesheet", type = "text/css", href = "horizontal.css")
   # ),
+  
   tabItems(
     tabItem(
       tabName="main",
@@ -152,12 +153,19 @@ body <- dashboardBody(
       tabName = 'timeline',
       fluidPage(
         fluidRow(
-          column(6,
+          column(3,
                  dateRangeInput('date_range_timeline',
                                 'Filter for a specific date range:',
                                 start = min(date_dictionary$date),
                                 max = max(date_dictionary$date))),
-          column(6,
+          column(3,
+                 actionButton('timevis_clear',
+                              'Clear selection')),
+          column(3,
+                 checkboxInput('show_meetings',
+                               'Show meetings',
+                               value = FALSE)),
+          column(3,
                  textInput('search_timeline',
                            'Or filter for specific events, people, places, etc.:'))
         ),
@@ -655,8 +663,78 @@ server <- function(input, output, session) {
                        visit_end = fd[2],
                        search = input$search_timeline)
     return(x)
-    
   })
+  
+  selected_timevis <- reactiveVal(value = NULL)
+  observeEvent(input$timevis_selected,
+               selected_timevis(input$timevis_selected))
+  observeEvent(input$timevis_clear,
+               selected_timevis(NULL))
+  
+  filtered_expanded_trips <- reactive({
+    sm<- input$show_meetings
+    fd <- input$date_range_timeline
+    search_string <- input$search_timeline
+    out <- expanded_trips %>%
+      filter(end >= fd[1],
+             start <= fd[2])
+    keeps <- c()
+    search_string <- trimws(unlist(strsplit(search_string, ',')), 'both')
+    search_string <- tolower(search_string)
+    if(!is.null(search_string)){
+      if(length(search_string) > 0){
+        for(i in 1:length(search_string)){
+          search <- search_string[i]
+          keep_this <- which(grepl(search, tolower(out$city_name)) |
+                               grepl(search, tolower(out$title)) |
+                               grepl(search, tolower(out$content)))
+          keeps <- c(keeps, keep_this)
+        }
+        keeps <- sort(unique(keeps))
+        out <- out[keeps,]
+      }
+    }
+    
+    if(nrow(out) > 0){
+      # events only
+      if(!sm){
+        out <- out %>% filter(group == 1)
+      }
+      if(nrow(out) > 0){
+        # Capture the selection if it exists
+        selected <- selected_timevis()
+        selected <- as.numeric(selected)
+        if(!is.null(selected)){
+          if(length(selected) > 0){
+            # Get whether a meeting or event has been selected
+            selected_row <- out %>% filter(id == selected)
+            # Deal with bug in which a selected meeting gets disappeared
+            if(nrow(selected_row) != 1){
+              srei <- unique(expanded_trips$id)
+            } else {
+              # Get the selected row event id
+              srei <- selected_row$event_id
+            }
+
+            # Keep everything with same event id
+            out <- out %>%
+              filter(event_id %in% srei)
+          }
+        }
+      } else {
+        out <- NULL
+      }
+      
+      
+    } else {
+      out <- NULL
+    }
+    
+    
+    return(out)
+  })
+  
+  
   
   # Create a filtered view_trip_coincidences
   filtered_view_trip_coincidences <- reactive({
@@ -967,21 +1045,43 @@ server <- function(input, output, session) {
   })
   
   output$timevis <-  renderTimevis({
-    fe <- filtered_events_timeline()
-    if(nrow(fe) > 0){
-      fe$start <- fe$`Visit start`
-      fe$content <- paste0(fe$Person, ' in ', fe$`City of visit`)
-      fe$end <- fe$`Visit end`
-      fe$id <- 1:nrow(fe)
-      fe$type <- ifelse(as.numeric(fe$end - fe$start) == 0, 'box', 'range')
-      fe$title <- paste0(fe$Person, ' in ', fe$`City of visit`, ' from',
-                         fe$start, ' through ' , fe$end)
-      x <- timevis(data = fe)
-      return(x)
-    } else {
-      return(NULL)
+    # fe <- filtered_events_timeline()
+    # if(nrow(fe) > 0){
+    #   fe$start <- fe$`Visit start`
+    #   fe$content <- paste0(fe$Person, ' in ', fe$`City of visit`)
+    #   fe$end <- fe$`Visit end`
+    #   fe$id <- 1:nrow(fe)
+    #   fe$type <- ifelse(as.numeric(fe$end - fe$start) == 0, 'box', 'range')
+    #   fe$title <- paste0(fe$Person, ' in ', fe$`City of visit`, ' from',
+    #                      fe$start, ' through ' , fe$end)
+    #   x <- timevis(data = fe)
+    #   return(x)
+    # } else {
+    #   return(NULL)
+    # }
+    fet <- filtered_expanded_trips()
+    out <- NULL
+    
+    if(!is.null(fet)){
+      if(nrow(fet) > 0){
+        sm<- input$show_meetings
+        if(!sm){
+          out <- timevis(data = fet,
+                         groups = data.frame(id = 1, content = c('Event'),
+                                             title = c('Event'),
+                                             style = paste0('color: ', c('blue'))),
+                         showZoom = FALSE,
+                         fit = TRUE)
+        } else {
+          out <- timevis(data = fet,
+                         groups = data.frame(id = 1:2, content = c('Event', 'Meetings'),
+                                             title = c('Event', 'Meeting'),
+                                             style = paste0('color: ', c('blue', 'red'))))
+        }
+      }
     }
     
+    return(out)
   })
   
   #   output$g_calendar <- renderGvis({
