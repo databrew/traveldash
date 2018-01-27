@@ -61,23 +61,6 @@ body <- dashboardBody(
   #   tags$link(rel = "stylesheet", type = "text/css", href = "horizontal.css")
   # ),
   
-  # Css for box coloring
-  tags$style(HTML("
-
-
-.box.box-solid.box-primary>.box-header {
-  color:#fff;
-  background:#666666
-                    }
-
-.box.box-solid.box-primary{
-border-bottom-color:#666666;
-border-left-color:#666666;
-border-right-color:#666666;
-border-top-color:#666666;
-}
-
-                                    ")),
   tabItems(
     tabItem(
       tabName="main",
