@@ -139,8 +139,8 @@ body <- dashboardBody(
             column(6,
                    dateRangeInput('date_range_network',
                                   'Filter for a specific date range:',
-                                  start = min(date_dictionary$date),
-                                  max = max(date_dictionary$date))),
+                                  start = min(date_dictionary$date, na.rm = TRUE),
+                                  max = max(date_dictionary$date, na.rm = TRUE))),
             column(6,
                    textInput('search_network',
                              'Or filter for specific events, people, places, etc.:'))
@@ -531,8 +531,8 @@ server <- function(input, output, session) {
     
     sliderInput("dates",
                 "Or set the date range using the below slider:",
-                min = date_dictionary$date[1], 
-                max = date_dictionary$date[length(date_dictionary$date)], 
+                min = min(date_dictionary$date, na.rm = TRUE), 
+                max = max(date_dictionary$date, na.rm = TRUE), 
                 value = c(starty, endy)
     )
     
@@ -775,12 +775,13 @@ server <- function(input, output, session) {
     
     # Make only one head per person/place
     places <- places %>%
-      group_by(id, Person, Organization, City, `Country of visit`) %>%
+      group_by(Person, Organization, City, `Country of visit`) %>%
       summarise(Date = paste0(Date, collapse = ';'),
                 Lat = dplyr::first(Lat),
                 Long = dplyr::first(Long),
                 Event = paste0(Event, collapse = ';'),
-                is_wbg = dplyr::first(is_wbg)) %>% ungroup
+                is_wbg = dplyr::first(is_wbg),
+                id = paste0(id, collapse = ';')) %>% ungroup
     
     pops <- places %>%
       filter(!duplicated(id))
@@ -788,7 +789,7 @@ server <- function(input, output, session) {
     popups = lapply(rownames(pops), function(row){ 
       this_id <- unlist(pops[row,'id'])
       x <- places %>% dplyr::filter(id == this_id) %>%
-        dplyr::select(Date, Person, City, Event)
+        dplyr::select(Date, Person, City, Event, id)
       htmlTable(x,
                 rnames = FALSE)
     })
