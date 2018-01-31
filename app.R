@@ -772,7 +772,6 @@ server <- function(input, output, session) {
     
     # Get row selection (if applicable) from datatable
     s <- input$visit_info_table_rows_selected
-    print(s)
 
     # Subset places if rows are selected
     if(!is.null(s)){
@@ -808,12 +807,23 @@ server <- function(input, output, session) {
       dplyr::rename(Date = `Visit start`) %>%
       mutate(Date = format(Date, '%b %d, %Y'))
     
+    # Make only one head per person/place
+    places <- places %>%
+      group_by(Person, Organization, City, `Country of visit`) %>%
+      summarise(Date = paste0(Date, collapse = ';'),
+                Lat = dplyr::first(Lat),
+                Long = dplyr::first(Long),
+                Event = paste0(Event, collapse = ';'),
+                is_wbg = dplyr::first(is_wbg),
+                id = dplyr::first(id))
+    places <- places %>% ungroup
+    
     pops <- places %>%
       filter(!duplicated(id))
     
     popups = lapply(rownames(pops), function(row){ 
-      this_id <- pops[row,'id']
-      x <- places %>% filter(id == this_id) %>%
+      this_id <- unlist(pops[row,'id'])
+      x <- places %>% dplyr::filter(id == this_id) %>%
         dplyr::select(Date, Person, City, Event)
       htmlTable(x,
                 rnames = FALSE)
