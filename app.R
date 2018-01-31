@@ -775,14 +775,12 @@ server <- function(input, output, session) {
     
     # Make only one head per person/place
     places <- places %>%
-      group_by(Person, Organization, City, `Country of visit`) %>%
+      group_by(id, Person, Organization, City, `Country of visit`) %>%
       summarise(Date = paste0(Date, collapse = ';'),
                 Lat = dplyr::first(Lat),
                 Long = dplyr::first(Long),
                 Event = paste0(Event, collapse = ';'),
-                is_wbg = dplyr::first(is_wbg),
-                id = dplyr::first(id))
-    places <- places %>% ungroup
+                is_wbg = dplyr::first(is_wbg)) %>% ungroup
     
     pops <- places %>%
       filter(!duplicated(id))
