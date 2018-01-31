@@ -139,8 +139,8 @@ body <- dashboardBody(
             column(6,
                    dateRangeInput('date_range_network',
                                   'Filter for a specific date range:',
-                                  min = min(date_dictionary$date, na.rm = TRUE),
-                                  max = max(date_dictionary$date, na.rm = TRUE))),
+                                  start = min(date_dictionary$date, na.rm = TRUE),
+                                  end = max(date_dictionary$date, na.rm = TRUE))),
             column(6,
                    textInput('search_network',
                              'Or filter for specific events, people, places, etc.:'))
@@ -776,7 +776,10 @@ server <- function(input, output, session) {
       dplyr::rename(Date = `Visit start`) %>%
       mutate(Date = format(Date, '%b %d, %Y'))
     
+    
+    
     # Make only one head per person/place
+    full_places <- places %>% arrange(Date)
     places <- places %>%
       group_by(Person, Organization, City, `Country of visit`) %>%
       summarise(Date = paste0(Date, collapse = ';'),
@@ -791,10 +794,27 @@ server <- function(input, output, session) {
     
     popups = lapply(rownames(pops), function(row){ 
       this_id <- unlist(pops[row,'id'])
-      x <- places %>% dplyr::filter(id == this_id) %>%
-        dplyr::select(Date, Person, City, Event, id)
-      htmlTable(x,
-                rnames = FALSE)
+      # Get the original rows from full places for each of the ids
+      ids <- unlist(lapply(strsplit(this_id, ';'), as.numeric))
+      out_list <- list()
+      for(i in 1:length(ids)){
+        message(i)
+        this_id <- ids[i]
+        x <- full_places %>% dplyr::filter(id == this_id) %>%
+          dplyr::select(Date, Person, City, Event, id)
+        out_list[[i]] <- x
+      }
+      x <- bind_rows(out_list) 
+      # if(nrow(x) > 1){
+      #   x$Person[2:nrow(x)] <- ''
+      #   x$City[2:nrow(x)] <- ''
+      # }
+      y <- x %>%
+        dplyr::select(-id, -Person, -City)
+      htmlTable(y,
+                rnames = FALSE,
+                caption = paste0(x$Person[1], ' in ', x$City[1]),
+                align = paste(rep("l", ncol(y)), collapse = ''))
     })
     
     
