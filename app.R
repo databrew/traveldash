@@ -139,7 +139,7 @@ body <- dashboardBody(
             column(6,
                    dateRangeInput('date_range_network',
                                   'Filter for a specific date range:',
-                                  start = min(date_dictionary$date, na.rm = TRUE),
+                                  min = min(date_dictionary$date, na.rm = TRUE),
                                   max = max(date_dictionary$date, na.rm = TRUE))),
             column(6,
                    textInput('search_network',
@@ -494,6 +494,9 @@ server <- function(input, output, session) {
       endy <- starty + 14
     } else {
       endy <- starty + dw
+    }
+    if(is.na(endy)){
+      endy <- max(date_dictionary$date, na.rm = TRUE)
     }
     dateRangeInput('date_range',
                    'Set a date range for analysis of itineraries',
