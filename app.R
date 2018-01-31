@@ -805,6 +805,7 @@ server <- function(input, output, session) {
         out_list[[i]] <- x
       }
       x <- bind_rows(out_list) 
+      x <- x %>% distinct(Date, Person, City, Event, .keep_all = TRUE)
       # if(nrow(x) > 1){
       #   x$Person[2:nrow(x)] <- ''
       #   x$City[2:nrow(x)] <- ''
