@@ -200,22 +200,6 @@ body <- dashboardBody(
         br(),
         fluidRow(
           shinydashboard::box(
-            title = 'Lesley Sarah Denyes',
-            fluidPage(
-              fluidRow(
-                div(a(img(src='about/Lesley Sarah Denyes.jpg', 
-                          align = "center",
-                          height = '80'),
-                      href="mailto:LDenyes@ifc.org"), 
-                    style="text-align: center;")
-              ),
-              fluidRow(h5('MCF Program Manager'),
-                       h5('Johannesburg, ', 
-                          a(href = 'mailto:LDenyes@ifc.org',
-                            'LDenyes@ifc.org')))
-            ),
-            width = 4),
-          shinydashboard::box(
             title = 'Soren Heitmann',
             fluidPage(
               fluidRow(
@@ -225,7 +209,7 @@ body <- dashboardBody(
                       href="mailto:sheitmann@ifc.org"), 
                     style="text-align: center;")
               ),
-              fluidRow(h5('Research Manager'),
+              fluidRow(h5('Project Lead'),
                        h5('Johannesburg, ', 
                           a(href = 'mailto:sheitmann@ifc.org',
                             'sheitmann@ifc.org')))
@@ -241,14 +225,12 @@ body <- dashboardBody(
                       href="mailto:oanokhin@ifc.org"), 
                     style="text-align: center;")
               ),
-              fluidRow(h5('Dashboard Project Manager'),
+              fluidRow(h5('Project Specialist'),
                        h5('Washington, DC, ', 
                           a(href = 'mailto:oanokhin@ifc.org',
                             'oanokhin@ifc.org')))
             ),
-            width = 4)
-        ),
-        fluidRow(
+            width = 4),
           shinydashboard::box(
             title = 'Joe Brew',
             fluidPage(
@@ -263,22 +245,6 @@ body <- dashboardBody(
                        h5('Amsterdam, ', 
                           a(href = 'mailto:jbrew1@worldbank.org',
                             'jbrew1@worldbank.org')))
-            ),
-            width = 4),
-          shinydashboard::box(
-            title = 'Roman Zhukovskyi',
-            fluidPage(
-              fluidRow(
-                div(a(img(src='about/Roman Zhukovskyi.jpg', 
-                          align = "center",
-                          height = '80'),
-                      href="mailto:rzhukovskyi@worldbank.org"), 
-                    style="text-align: center;")
-              ),
-              fluidRow(h5('Consultant'),
-                       h5('Washington, DC, ', 
-                          a(href = 'mailto:rzhukovskyi@worldbank.org',
-                            'rzhukovskyi@worldbank.org')))
             ),
             width = 4)
         ),
