@@ -120,6 +120,9 @@ body <- dashboardBody(
           column(6,
                  h4('Interactions during selected period:',
                     align = 'center'),
+                 checkboxInput('sankey_meeting',
+                               'Show meetings only (as opposed to meetings and travel overlaps)',
+                               TRUE),
                  sankeyNetworkOutput('sank')),
           column(6,
                  h4('Detailed visit information',
@@ -969,7 +972,8 @@ server <- function(input, output, session) {
       }
     }
     if(show_sankey){
-      make_sank(trip_coincidences = x)
+      make_sank(trip_coincidences = x,
+                meeting = input$sankey_meeting)
     } else {
       return(NULL)
     }

@@ -2,22 +2,39 @@
 #'
 #' Make an interactive sankey chart
 #' @param trip_coincidences A dataframe in the form of the trip_coincidences view
+#' @param meeting Use explicit meetings rather than just trip coincidences
 #' @return An html widget
 #' @import nd3
 #' @export
 
-make_sank <- function(trip_coincidences){
-  tc <- trip_coincidences %>%
-    dplyr::select(person_name, 
-                  is_wbg,
-                  city_name,
-                  country_name,
-                  trip_start_date,
-                  trip_end_date,
-                  coincidence_person_name,
-                  coincidence_is_wbg) %>%
-    dplyr::rename(Person = person_name,
-                  Counterpart = coincidence_person_name) %>%
+make_sank <- function(trip_coincidences,
+                      meeting = TRUE){
+  if(meeting){
+    tc <- trip_coincidences %>%
+      dplyr::select(person_name, 
+                    is_wbg,
+                    city_name,
+                    country_name,
+                    trip_start_date,
+                    trip_end_date,
+                    meeting_person_name,
+                    coincidence_is_wbg) %>%
+      dplyr::rename(Person = person_name,
+                    Counterpart = meeting_person_name) 
+  } else {
+    tc <- trip_coincidences %>%
+      dplyr::select(person_name, 
+                    is_wbg,
+                    city_name,
+                    country_name,
+                    trip_start_date,
+                    trip_end_date,
+                    coincidence_person_name,
+                    coincidence_is_wbg) %>%
+      dplyr::rename(Person = person_name,
+                    Counterpart = coincidence_person_name) 
+  }
+  tc <- tc %>%
     # remove those where the person and counterpart are the same
     dplyr::filter(Counterpart != Person) %>%
     # Rename the counterpart to avoid loop-arounds
