@@ -70,7 +70,7 @@ get_start_date <- function(x){
   if(day > 15){
     out <- floor_date(x, unit = 'month')
   } else {
-    out <- floor_date(x - months(1), unit = 'month')
+    out <- floor_date(x %m-% months(1), unit = 'month')
   }
   return(out)
 }
@@ -79,9 +79,9 @@ get_end_date <- function(x){
   month <- as.numeric(format(x, '%m'))
   year <- as.numeric(format(x, '%Y'))
   if(day > 15){
-    out <- ceiling_date(x + months(1), unit = 'month') - 1
+    out <- ceiling_date(x %m+% months(1), unit = 'month') - 1
   } else {
-    out <- ceiling_date(x, unit = 'month')
+    out <- ceiling_date(x, unit = 'month') -1 
   }
   return(out)
 }
