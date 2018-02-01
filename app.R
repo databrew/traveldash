@@ -780,7 +780,6 @@ server <- function(input, output, session) {
       mutate(Date = format(Date, '%b %d, %Y'))
     
     
-    
     # Make only one head per person/place
     full_places <- places %>% arrange(Date)
     places <- places %>%

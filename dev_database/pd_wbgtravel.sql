@@ -169,7 +169,7 @@ CREATE TABLE "pd_wbgtravel"."people" (
 -- ----------------------------
 INSERT INTO "pd_wbgtravel"."people" VALUES (30, NULL, 'Paul Romer', NULL, 'World Bank', NULL, 'headshots/circles/Paul Romer.png', 1, '2018-01-23 02:23:34.018005');
 INSERT INTO "pd_wbgtravel"."people" VALUES (31, NULL, 'Kristalina Georgieva', NULL, 'World Bank', NULL, 'headshots/circles/Kristalina Georgieva.png', 1, '2018-01-23 02:23:34.018005');
-INSERT INTO "pd_wbgtravel"."people" VALUES (32, NULL, 'Jim Yong Kim', NULL, 'World Bank', NULL, 'headshots/circles/Jim Yong Kim.png', 1, '2018-01-23 02:23:34.018005');
+INSERT INTO "pd_wbgtravel"."people" VALUES (32, NULL, 'Jim Kim', NULL, 'World Bank', NULL, 'headshots/circles/Jim Yong Kim.png', 1, '2018-01-23 02:23:34.018005');
 INSERT INTO "pd_wbgtravel"."people" VALUES (33, NULL, 'Philippe Le Houerou', NULL, 'IFC', NULL, 'headshots/circles/Philippe Le Houerou.png', 1, '2018-01-23 02:23:34.018005');
 INSERT INTO "pd_wbgtravel"."people" VALUES (34, NULL, 'Joaquim Levy', NULL, 'World Bank', NULL, 'headshots/circles/Joaquim Levy.png', 1, '2018-01-23 02:23:34.018005');
 INSERT INTO "pd_wbgtravel"."people" VALUES (35, NULL, 'Theresa May', NULL, 'Unknown', NULL, NULL, 0, '2018-01-23 02:23:34.018005');
@@ -182,7 +182,6 @@ INSERT INTO "pd_wbgtravel"."people" VALUES (41, NULL, 'Michel Temer', NULL, 'Unk
 INSERT INTO "pd_wbgtravel"."people" VALUES (42, NULL, 'Emmanuel Macron', NULL, 'Unknown', NULL, NULL, 0, '2018-01-23 02:23:34.018005');
 INSERT INTO "pd_wbgtravel"."people" VALUES (43, NULL, 'Antonio Guterres', NULL, 'Unknown', NULL, NULL, 0, '2018-01-23 02:23:34.018005');
 INSERT INTO "pd_wbgtravel"."people" VALUES (60, NULL, 'Donald Trump', NULL, 'US Government', NULL, NULL, 0, '2018-01-23 18:48:51.430671');
-INSERT INTO "pd_wbgtravel"."people" VALUES (61, NULL, 'Jim Kim', NULL, 'US Government', NULL, NULL, 0, '2018-01-23 18:48:51.430671');
 INSERT INTO "pd_wbgtravel"."people" VALUES (62, NULL, 'Jim Kim', NULL, 'World Bank', NULL, NULL, 0, '2018-01-23 18:48:51.430671');
 INSERT INTO "pd_wbgtravel"."people" VALUES (63, NULL, 'John Sullivan', NULL, 'US Government', NULL, NULL, 0, '2018-01-23 18:48:51.430671');
 INSERT INTO "pd_wbgtravel"."people" VALUES (64, NULL, 'Mark Green', NULL, 'US Government', NULL, NULL, 0, '2018-01-23 18:48:51.430671');

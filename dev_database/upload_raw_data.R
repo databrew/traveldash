@@ -21,7 +21,7 @@ for(i in 1:length(functions)){
   source(paste0('R/', functions[i]), chdir = TRUE)
 }
 
-file <- paste0(getwd(),"/dev_database/travel_meeting_data.xlsx")
+file <- paste0(getwd(),"/dev_database/Travel Event Dashboard_DATA.xlsx")
 travels <- read.xlsx(xlsxFile=file,sheet=1)
 
 travels[["Start"]] <- as.character(convertToDate(travels[["Start"]]))  

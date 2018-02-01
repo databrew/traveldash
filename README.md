@@ -90,6 +90,7 @@ psql -d dev -f dev_database/create_function_travel_uploads.sql
 (2 rows)
 ```
 
+
 ### SQLite
 
 AS an alternative to PostgreSQL, we use SQLite for quick testing, development iterations, and deployment to shinyapps.io. Below are the instructions for setting up the app database for use with SQLite.
