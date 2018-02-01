@@ -121,7 +121,7 @@ body <- dashboardBody(
                  h4('Interactions during selected period:',
                     align = 'center'),
                  radioButtons('sankey_meeting',
-                               'Show meetings only vs. any trip overlaps',choices = c('Meetings only', 'Trip overlaps'),
+                               'Show meetings only or any trip overlaps',choices = c('Meetings only', 'Trip overlaps'),
                               selected = 'Meetings only',
                               inline = TRUE),
                  sankeyNetworkOutput('sank')),
@@ -140,12 +140,17 @@ body <- dashboardBody(
         fluidRow(
           h3('Visualization of interaction between people and places during the selected period', align = 'center'),
           fluidRow(
-            column(6,
+            column(4,
+                   radioButtons('network_meeting',
+                                'Show meetings only or any trip overlaps',choices = c('Meetings only', 'Trip overlaps'),
+                                selected = 'Meetings only',
+                                inline = TRUE)),
+            column(4,
                    dateRangeInput('date_range_network',
                                   'Filter for a specific date range:',
                                   start = min(date_dictionary$date, na.rm = TRUE),
                                   end = max(date_dictionary$date, na.rm = TRUE))),
-            column(6,
+            column(4,
                    textInput('search_network',
                              'Or filter for specific events, people, places, etc.:'))
           ),
@@ -1026,8 +1031,15 @@ server <- function(input, output, session) {
         show_graph <- TRUE
       }
     }
+    if(input$network_meeting == 'Meetings only'){
+      meeting <- TRUE
+    } else {
+      meeting <- FALSE
+    }
+    
     if(show_graph){
-      make_graph(trip_coincidences = x)
+      make_graph(trip_coincidences = x,
+                 meeting = meeting)
     } else {
       return(NULL)
     }
