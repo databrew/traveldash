@@ -120,9 +120,10 @@ body <- dashboardBody(
           column(6,
                  h4('Interactions during selected period:',
                     align = 'center'),
-                 checkboxInput('sankey_meeting',
-                               'Show meetings only (as opposed to meetings and travel overlaps)',
-                               TRUE),
+                 radioButtons('sankey_meeting',
+                               'Show meetings only or any trip overlaps',choices = c('Meetings only', 'Trip overlaps'),
+                              selected = 'Meetings only',
+                              inline = TRUE),
                  sankeyNetworkOutput('sank')),
           column(6,
                  h4('Detailed visit information',
@@ -139,12 +140,17 @@ body <- dashboardBody(
         fluidRow(
           h3('Visualization of interaction between people and places during the selected period', align = 'center'),
           fluidRow(
-            column(6,
+            column(4,
+                   radioButtons('network_meeting',
+                                'Show meetings only or any trip overlaps',choices = c('Meetings only', 'Trip overlaps'),
+                                selected = 'Meetings only',
+                                inline = TRUE)),
+            column(4,
                    dateRangeInput('date_range_network',
                                   'Filter for a specific date range:',
                                   start = min(date_dictionary$date, na.rm = TRUE),
                                   end = max(date_dictionary$date, na.rm = TRUE))),
-            column(6,
+            column(4,
                    textInput('search_network',
                              'Or filter for specific events, people, places, etc.:'))
           ),
@@ -215,7 +221,8 @@ body <- dashboardBody(
               fluidRow(h5('Project Lead'),
                        h5('Johannesburg, ', 
                           a(href = 'mailto:sheitmann@ifc.org',
-                            'sheitmann@ifc.org')))
+                            'sheitmann@ifc.org'))),
+              fluidRow(helpText("Soren has a background in database management, software engineering and web technology. He manages the applied research and integrated monitoring, evaluation and learning program for the IFC-MasterCard Foundation Partnership for Financial Inclusion. He works at the nexus of data-driven research and technology to help drive learning and innovation within IFC’s Digital Financial Services projects in Sub-Saharan Africa."))
             ),
             width = 4),
           shinydashboard::box(
@@ -231,7 +238,8 @@ body <- dashboardBody(
               fluidRow(h5('Project Specialist'),
                        h5('Washington, DC, ', 
                           a(href = 'mailto:oanokhin@ifc.org',
-                            'oanokhin@ifc.org')))
+                            'oanokhin@ifc.org'))),
+              fluidRow(helpText("Oleksiy focuses on data-driven visualization solutions for international development. He is passionate about using programmatic tools (such as interactive dashboards) for better planning and implementation of projects, as well as for effective communication of projects results to various stakeholders."))
             ),
             width = 4),
           shinydashboard::box(
@@ -247,7 +255,8 @@ body <- dashboardBody(
               fluidRow(h5('Data Scientist'),
                        h5('Amsterdam, ', 
                           a(href = 'mailto:jbrew1@worldbank.org',
-                            'jbrew1@worldbank.org')))
+                            'jbrew1@worldbank.org'))),
+              fluidRow(helpText("Joe is a data scientist with a background in epidemiology and development economics. He works in both industry as a consultant as well as academia. His research focuses on the economics of malaria elimination programs in Sub-Saharan Africa."))
             ),
             width = 4)
         ),
@@ -971,8 +980,14 @@ server <- function(input, output, session) {
       }
     }
     if(show_sankey){
+      if(input$sankey_meeting == 'Meetings only'){
+        meeting <- TRUE
+      } else {
+        meeting <- FALSE
+      }
+      
       make_sank(trip_coincidences = x,
-                meeting = input$sankey_meeting)
+                meeting = meeting)
     } else {
       return(NULL)
     }
@@ -1016,8 +1031,15 @@ server <- function(input, output, session) {
         show_graph <- TRUE
       }
     }
+    if(input$network_meeting == 'Meetings only'){
+      meeting <- TRUE
+    } else {
+      meeting <- FALSE
+    }
+    
     if(show_graph){
-      make_graph(trip_coincidences = x)
+      make_graph(trip_coincidences = x,
+                 meeting = meeting)
     } else {
       return(NULL)
     }
