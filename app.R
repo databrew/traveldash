@@ -78,13 +78,14 @@ body <- dashboardBody(
                               column(3)),
                      div(column(1),
                          column(2,
-                                actionButton("action_back", "Back", icon = icon('arrow-circle-left'))),
+                                actionButton("action_back", "Back", icon=icon("arrow-circle-right")),
+                                shinyjs::hidden(p(id = "text1", "Processing..."))),
                          column(3),
-                         column(2,
-                                actionButton("action_forward", "Forward", icon=icon("arrow-circle-right"))),
-                         column(4),
+                         column(2, actionButton("action_forward", "Forward", icon=icon("arrow-circle-right")),
+                                shinyjs::hidden(p(id = "text2", "Processing...")),
+                                column(4),
                          style='text-align: center;')
-                   ),
+                   )),
                    br(),
                    div(
                    fluidRow(radioButtons('wbg_only',
@@ -428,12 +429,14 @@ server <- function(input, output, session) {
   
   starter <- reactiveVal(value = as.numeric(get_start_date(Sys.Date())))
   ender <- reactiveVal(value = as.numeric(get_end_date(Sys.Date())))
-  the_dates <- reactive(
+  the_dates <- reactive({
+    message('Creating the_dates()')
     c(starter(),
       ender())
-  )
+  })
   
   date_width <- reactive({
+    message('Calculating date_width()')
     fd <- the_dates()
     if(is.null(fd)){
       14
@@ -543,7 +546,6 @@ server <- function(input, output, session) {
     } else {
       endy <- starty + dw
     }
-    
     sliderInput("dates",
                 "Or set the date range using the below slider:",
                 min = min(date_dictionary$date, na.rm = TRUE), 
@@ -552,10 +554,6 @@ server <- function(input, output, session) {
     )
     
   })
-  
-  
-  
-  
   
   # Reactive dataframe for the filtered table
   vals <- reactiveValues()
@@ -892,6 +890,10 @@ server <- function(input, output, session) {
     # addLayersControl(overlayGroups = c('draw'), options =
     #                    layersControlOptions(collapsed=FALSE)) %>%
     # addStyleEditor()
+    shinyjs::enable("action_forward")
+    shinyjs::hide("text1")
+    shinyjs::enable("action_back")
+    shinyjs::hide("text2")
     l
   })
   
@@ -1350,6 +1352,24 @@ server <- function(input, output, session) {
                  vals$events[as.numeric(gsub("modify_","",input$lastClickId)),]<-DF
                })
   
+  plotReady <- reactiveValues(ok = FALSE)
+  
+  observeEvent(input$action_back, {
+    shinyjs::disable("action_back")
+    shinyjs::show("text1")
+    plotReady$ok <- FALSE
+    Sys.sleep(1)
+    plotReady$ok <- TRUE
+  })  
+  observeEvent(input$action_forward, {
+    shinyjs::disable("action_forward")
+    shinyjs::show("text2")
+    plotReady$ok <- FALSE
+    Sys.sleep(1)
+    plotReady$ok <- TRUE
+  })  
+  
+
   # On session end, close
   session$onSessionEnded(function() {
     message('Session ended. Closing the connection pool.')
