@@ -1358,14 +1358,14 @@ server <- function(input, output, session) {
     shinyjs::disable("action_back")
     shinyjs::show("text1")
     plotReady$ok <- FALSE
-    Sys.sleep(1)
+    Sys.sleep(0.1)
     plotReady$ok <- TRUE
   })  
   observeEvent(input$action_forward, {
     shinyjs::disable("action_forward")
     shinyjs::show("text2")
     plotReady$ok <- FALSE
-    Sys.sleep(1)
+    Sys.sleep(0.1)
     plotReady$ok <- TRUE
   })  
   
