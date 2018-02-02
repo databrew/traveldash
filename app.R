@@ -1051,9 +1051,11 @@ server <- function(input, output, session) {
       # arrange(`Visit start`) %>%
       mutate(Location = `City of visit`) %>%
       mutate(Dates = paste0(
-        format(`Visit start`, '%b %d, %Y'), 
-        ' - ', 
-        format(`Visit end`, '%b %d, %Y'))) %>%
+        `Visit start`, ifelse(`Visit start` != `Visit end`, ' through ', ''), 
+        ifelse(`Visit start` != `Visit end`, as.character(`Visit end`), ''))) %>%
+        # format(`Visit start`, '%b %d, %Y'), 
+        # ' - ', 
+        # format(`Visit end`, '%b %d, %Y'))) %>%
       dplyr::select(Person,
                     # Organization,
                     Location,
