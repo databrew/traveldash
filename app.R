@@ -257,7 +257,7 @@ body <- dashboardBody(
                        h5('Amsterdam, ', 
                           a(href = 'mailto:jbrew1@worldbank.org',
                             'jbrew1@worldbank.org'))),
-              fluidRow(helpText("Joe is a data scientist with a background in epidemiology and development economics. He works in both industry as a consultant as well as academia. His research focuses on the economics of malaria elimination programs in Sub-Saharan Africa."))
+              fluidRow(helpText("Joe is a data scientist for", a(href = 'http://databrew.cc/', 'DataBrew.'), "He has a background in epidemiology and development economics. He works in both industry as a consultant as well as academia. His research focuses on the economics of malaria elimination programs in Sub-Saharan Africa."))
             ),
             width = 4)
         ),
