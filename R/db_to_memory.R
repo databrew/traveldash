@@ -21,9 +21,10 @@ db_to_memory <- function(pool,
   out_list <- list()
   
   # Read in all tables
-  tables <- dbListTables(pool)
+  # tables <- unique(dbListTables(pool))
+  tables <- c('cities', 'people', 'trip_meetings', 'trips')
   # Add the views to the tables
-  tables <- c(tables, 'view_trip_coincidences')
+  tables <- c(tables, 'view_trip_coincidences', 'events')
   for (i in 1:length(tables)){
     this_table <- tables[i]
     message(paste0('Reading in the ', this_table, ' from the database and assigning to global environment.'))
@@ -42,11 +43,8 @@ db_to_memory <- function(pool,
   }
   
   # Get the events view too (we do this separately since we modify its format)
-  message(paste0('Reading in the events view from the database and assigning to global environment.'))
-  events <- get_data(tab = 'events',
-                     schema = 'pd_wbgtravel',
-                     connection_object = pool,
-                     use_sqlite = use_sqlite) %>%
+  message(paste0('Restructuring events table'))
+  events <- events %>%
     # Restructure like the events table
     dplyr::rename(Person = short_name,
                   Organization = organization,

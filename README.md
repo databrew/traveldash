@@ -91,6 +91,21 @@ psql -d dev -f dev_database/create_function_travel_uploads.sql
 ```
 
 
+## Database set-up on AWS
+
+- Open a psql session within our AWS DB instance.
+```
+psql --host=databrewdb.cfejspjhdciw.us-east-2.rds.amazonaws.com --port=5432 --username=worldbank --dbname=dev 
+```
+
+- Restore a locally created dump from within psql
+``` 
+\i /home/joebrew/Desktop/dev.sql
+```
+
+- Use the code in `grant_privileges.sql` to grant privileges to the `worldbank` user (password in credentials file).
+
+
 ### SQLite
 
 AS an alternative to PostgreSQL, we use SQLite for quick testing, development iterations, and deployment to shinyapps.io. Below are the instructions for setting up the app database for use with SQLite.
