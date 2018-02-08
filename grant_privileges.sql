@@ -1,3 +1,6 @@
+CREATE USER worlbank WITH PASSWORD 'jimkim';
+ALTER ROLE "worldbank" WITH LOGIN;
+
 REVOKE ALL ON DATABASE dev FROM public;  -- shut out the general pd_wbgtravel
 CREATE GROUP mygrp;
 GRANT CONNECT ON DATABASE dev TO mygrp;  -- since we revoked from pd_wbgtravel
