@@ -57,7 +57,9 @@ db_to_memory <- function(pool,
                   Long = longitude,
                   Event = meeting_topic) %>%
     dplyr::select(Person, Organization, `City of visit`, `Country of visit`,
-                  Counterpart, `Visit start`, `Visit end`, Lat, Long, Event)
+                  Counterpart, `Visit start`, `Visit end`, Lat, Long, Event) %>%
+    distinct(Person, Organization, `City of visit`, `Country of visit`,
+             Counterpart, `Visit start`, `Visit end`,Event, .keep_all = TRUE)
   if(return_list){
     i <- length(tables) + 1
     out_list[[i]] <- events
