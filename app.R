@@ -155,10 +155,13 @@ body <- dashboardBody(
                    textInput('search_network',
                              'Or filter for specific events, people, places, etc.:'))
           ),
-          forceNetworkOutput('graph')
+          fluidRow(column(8,
+                          forceNetworkOutput('graph')),
+                   column(4,
+                           fluidRow(DT::dataTableOutput('click_table'))))
+          )
         )
-      )
-    ),
+      ),
     tabItem(
       tabName = 'timeline',
       fluidPage(
@@ -1368,6 +1371,84 @@ server <- function(input, output, session) {
     Sys.sleep(0.1)
     plotReady$ok <- TRUE
   })  
+  
+  # Test table for graph
+  output$click_table <- DT::renderDataTable({
+    
+    # Data used for network
+    x <- filtered_view_trip_coincidences_network()
+    show_graph <- FALSE
+    if(!is.null(x)){
+      if(nrow(x) > 0){
+        show_graph <- TRUE
+      }
+    }
+    if(input$network_meeting == 'Meetings only'){
+      meeting <- TRUE
+    } else {
+      meeting <- FALSE
+    }
+    
+    if(show_graph){
+      
+      if(meeting){
+        tc <- x %>%
+          dplyr::select(person_name, 
+                        is_wbg,
+                        city_name,
+                        country_name,
+                        trip_start_date,
+                        trip_end_date,
+                        meeting_person_name,
+                        coincidence_is_wbg) %>%
+          dplyr::rename(Person = person_name,
+                        Counterpart = meeting_person_name)  %>%
+          filter(!is.na(Counterpart))
+      } else {
+        tc <- x %>%
+          dplyr::select(person_name, 
+                        is_wbg,
+                        city_name,
+                        country_name,
+                        trip_start_date,
+                        trip_end_date,
+                        coincidence_person_name,
+                        coincidence_is_wbg) %>%
+          dplyr::rename(Person = person_name,
+                        Counterpart = coincidence_person_name) 
+      }
+      
+      # Extract the clicked id
+      ii <- input$id
+      if(!is.null(ii)){
+        tc <- tc %>% filter(Person == ii | Counterpart == ii)
+          # Keep only one of each
+        tc <- tc %>%
+          dplyr::distinct(Person, city_name, trip_start_date, trip_end_date, Counterpart, .keep_all = TRUE) 
+        tc$date <- paste0(tc$trip_start_date, 
+                          ifelse(tc$trip_start_date == tc$trip_end_date, '', ' through ')
+                          , 
+                          ifelse(tc$trip_start_date == tc$trip_end_date, 
+                                 '', as.character(tc$trip_end_date)))
+        tc <- tc %>%
+          dplyr::select(-is_wbg, -coincidence_is_wbg, -country_name, -trip_start_date, -trip_end_date) %>%
+          arrange(date)
+        names(tc) <- Hmisc::capitalize(gsub('_', ' ', names(tc)))
+        DT::datatable(tc,
+                      escape=F,
+                      options=list(dom='t',
+                                   ordering=F,
+                                   pageLength = nrow(tc)),
+                      selection="none",
+                      rownames = FALSE)
+      } else {
+        NULL
+      }
+      
+    } else {
+      return(NULL)
+    }
+  })
   
 
   # On session end, close

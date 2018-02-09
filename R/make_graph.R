@@ -95,14 +95,14 @@ make_graph <- function(trip_coincidences,
                linkWidth = "function(d) { return (d.value^5)*0.4}",
                
                # layout
-               linkDistance = 250,                                                 # link size, if higher, more space between nodes
-               charge = -100,                                                       # if highly negative, more space betqeen nodes
+               linkDistance = 150,                                                 # link size, if higher, more space between nodes
+               charge = -75,                                                       # if highly negative, more space betqeen nodes
                
                # -- general parameters
                height = NULL,                                                      # height of frame area in pixels
                width = NULL,
                zoom = TRUE,                                                        # Can you zoom on the figure
                # legend = TRUE,                                                      # add a legend?
-               bounded = F, 
-               clickAction = NULL)
+               bounded = TRUE, 
+               clickAction = 'Shiny.onInputChange("id", d.name)')
 }
