@@ -32,6 +32,26 @@ db_to_memory <- function(pool,
                   schema = 'pd_wbgtravel',
                   connection_object = pool,
                   use_sqlite = use_sqlite)
+    # Re-shape events before assigning to global environment
+    if(this_table == 'events'){
+      message(paste0('Restructuring events table'))
+      x <- x %>%
+        # Restructure like the events table
+        dplyr::rename(Person = short_name,
+                      Organization = organization,
+                      `City of visit` = city_name,
+                      `Country of visit` = country_name,
+                      Counterpart = trip_reason,
+                      `Visit start` = trip_start_date,
+                      `Visit end` = trip_end_date,
+                      Lat = latitude,
+                      Long = longitude,
+                      Event = meeting_topic) %>%
+        dplyr::select(Person, Organization, `City of visit`, `Country of visit`,
+                      Counterpart, `Visit start`, `Visit end`, Lat, Long, Event) %>%
+        distinct(Person, Organization, `City of visit`, `Country of visit`,
+                 Counterpart, `Visit start`, `Visit end`,Event, .keep_all = TRUE)
+    }
     if(return_list){
       out_list[[i]] <- x
       names(out_list)[i] <- this_table
@@ -43,23 +63,6 @@ db_to_memory <- function(pool,
   }
   
   # Get the events view too (we do this separately since we modify its format)
-  message(paste0('Restructuring events table'))
-  events <- events %>%
-    # Restructure like the events table
-    dplyr::rename(Person = short_name,
-                  Organization = organization,
-                  `City of visit` = city_name,
-                  `Country of visit` = country_name,
-                  Counterpart = trip_reason,
-                  `Visit start` = trip_start_date,
-                  `Visit end` = trip_end_date,
-                  Lat = latitude,
-                  Long = longitude,
-                  Event = meeting_topic) %>%
-    dplyr::select(Person, Organization, `City of visit`, `Country of visit`,
-                  Counterpart, `Visit start`, `Visit end`, Lat, Long, Event) %>%
-    distinct(Person, Organization, `City of visit`, `Country of visit`,
-             Counterpart, `Visit start`, `Visit end`,Event, .keep_all = TRUE)
   if(return_list){
     i <- length(tables) + 1
     out_list[[i]] <- events
