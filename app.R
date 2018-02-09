@@ -1417,34 +1417,38 @@ server <- function(input, output, session) {
           dplyr::rename(Person = person_name,
                         Counterpart = coincidence_person_name) 
       }
+      tc <- tc %>% dplyr::filter(!is.na(Counterpart))
       
-      # Extract the clicked id
-      ii <- input$id
-      if(!is.null(ii)){
-        tc <- tc %>% filter(Person == ii | Counterpart == ii)
+      if(nrow(tc) > 0){
+        # Extract the clicked id
+        ii <- input$id
+        if(!is.null(ii)){
+          tc <- tc %>% filter(Person == ii | Counterpart == ii)
           # Keep only one of each
-        tc <- tc %>%
-          dplyr::distinct(Person, city_name, trip_start_date, trip_end_date, Counterpart, .keep_all = TRUE) 
-        tc$date <- paste0(tc$trip_start_date, 
-                          ifelse(tc$trip_start_date == tc$trip_end_date, '', ' through ')
-                          , 
-                          ifelse(tc$trip_start_date == tc$trip_end_date, 
-                                 '', as.character(tc$trip_end_date)))
-        tc <- tc %>%
-          dplyr::select(-is_wbg, -coincidence_is_wbg, -country_name, -trip_start_date, -trip_end_date) %>%
-          arrange(date)
-        names(tc) <- Hmisc::capitalize(gsub('_', ' ', names(tc)))
-        DT::datatable(tc,
-                      escape=F,
-                      options=list(dom='t',
-                                   ordering=F,
-                                   pageLength = nrow(tc)),
-                      selection="none",
-                      rownames = FALSE)
+          tc <- tc %>%
+            dplyr::distinct(Person, city_name, trip_start_date, trip_end_date, Counterpart, .keep_all = TRUE) 
+          tc$date <- paste0(tc$trip_start_date, 
+                            ifelse(tc$trip_start_date == tc$trip_end_date, '', ' through ')
+                            , 
+                            ifelse(tc$trip_start_date == tc$trip_end_date, 
+                                   '', as.character(tc$trip_end_date)))
+          tc <- tc %>%
+            dplyr::select(-is_wbg, -coincidence_is_wbg, -country_name, -trip_start_date, -trip_end_date) %>%
+            arrange(date)
+          names(tc) <- Hmisc::capitalize(gsub('_', ' ', names(tc)))
+          DT::datatable(tc,
+                        escape=F,
+                        options=list(dom='t',
+                                     ordering=F,
+                                     pageLength = nrow(tc)),
+                        selection="none",
+                        rownames = FALSE)
+        } else {
+          NULL
+        }
       } else {
-        NULL
+        return(NULL)
       }
-      
     } else {
       return(NULL)
     }
