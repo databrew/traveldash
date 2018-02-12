@@ -307,6 +307,11 @@ server <- function(input, output, session) {
     dr <- as.Date(dr)
     print(dr)
     dr <- format(dr, '%m/%d/%Y')
+    
+    # # goes inline below
+    # \"startDate\": \"02/06/2018\",
+    #       \"endDate\": \"02/12/2018\",
+    
     tags$div(
       HTML(
         paste0(
@@ -318,9 +323,15 @@ server <- function(input, output, session) {
        </div>   
           <script type=\"text/javascript\">
           $(function() {
-          $('input[name=\"daterange\"]').daterangepicker();
-// the below two lines were written by joe, trying to get the input list
-// to get updated, but it's not working
+          $('input[name=\"daterange\"]').daterangepicker({
+
+          \"linkedCalendars\": false,
+          \"alwaysShowCalendars\": true,
+          \"autoApply\": true,
+          \"opens\": \"center\",
+
+          });
+// JOE:
           document.getElementById(\"joe\").onchange = function() {
         var time = document.getElementById(\"joe\").value;
         Shiny.onInputChange(\"daterange\", time);

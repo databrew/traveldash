@@ -48,10 +48,10 @@
         this.timePickerSeconds = false;
         this.linkedCalendars = true;
         this.autoUpdateInput = true;
-        this.alwaysShowCalendars = false;
+        this.alwaysShowCalendars = true;
         this.ranges = {};
 
-        this.opens = 'center';
+        this.opens = 'right';
         if (this.element.hasClass('pull-right'))
             this.opens = 'left';
 
@@ -1145,6 +1145,7 @@
             this.container.hide();
             this.element.trigger('hide.daterangepicker', this);
             this.isShowing = false;
+
         },
 
         toggle: function(e) {
