@@ -61,6 +61,13 @@ body <- dashboardBody(
   #   tags$link(rel = "stylesheet", type = "text/css", href = "horizontal.css")
   # ),
   
+  # Date range picker stuff
+  # tags$head(tags$script(src = 'jquery.min.js')),
+  tags$head(tags$script(src = 'moment.min.js')),
+  # tags$head(tags$link(rel = "stylesheet", type = "text/css", href = "bootstrap.css")),
+  tags$head(tags$script(src = 'daterangepicker.js')),
+  tags$head(tags$link(rel = "stylesheet", type = "text/css", href = "daterangepicker.css")),
+  
   tabItems(
     tabItem(
       tabName="main",
@@ -68,52 +75,21 @@ body <- dashboardBody(
         fluidRow(
           column(1),
           column(4,
-                 fluidRow(
-                   div(uiOutput('datey'),
-                       uiOutput('dater'), style='text-align: center;'),
-                   fluidRow(
-                     fluidRow(column(1),
-                              column(8,
-                                     h6('Or click forward or back to move over time', align = 'center')),
-                              column(3)),
-                     div(column(1),
-                         column(2,
-                                actionButton("action_back", "Back", icon=icon("arrow-circle-right")),
-                                shinyjs::hidden(p(id = "text1", "Processing..."))),
-                         column(3),
-                         column(2, actionButton("action_forward", "Forward", icon=icon("arrow-circle-right")),
-                                shinyjs::hidden(p(id = "text2", "Processing...")),
-                                column(4),
-                         style='text-align: center;')
-                   )),
-                   br(),
-                   div(
-                   fluidRow(radioButtons('wbg_only',
-                                         'Filter by affiliation',
-                                         choices = c('Everyone', 'WBG only', 'Non-WBG only'),
-                                         inline = TRUE)),
-                   fluidRow(textInput('search',
-                                      'Filter for people, events, places, organizations, etc. (separate items with a comma)')), style='text-align: center;')
-                   # fluidRow(
-                   #   fluidRow(
-                   #     column(1),
-                   #     column(8,
-                   #            h6('Or click on any date below to jump around:',
-                   #               align = 'center')),
-                   #     column(3)
-                   #   )#,
-                   #   # fluidRow(
-                   #   #   div(
-                   #   #     # column(1),
-                   #   #     column(12,
-                   #   #            htmlOutput('g_calendar')),
-                   #   #       style = 'text-align: center;')
-                   #   # )
-                   #   )
-                 )
-                 
-                 
-          ),
+                 align = 'center',
+                 uiOutput('date_ui'),
+                 actionButton('reset_date_range', 'Reset', icon = icon('undo'),style='padding:3px; font-size:80%'),
+                 br(),
+                 br(),
+                 br(),
+                 div(radioButtons('wbg_only',
+                              'Filter by affiliation',
+                              choices = c('Everyone', 'WBG only', 'Non-WBG only'),
+                              inline = TRUE), style='text-align: center;'),
+                 br(),
+                 div(textInput('search',
+                           'Filter for people, events, places, organizations, etc. (separate items with a comma)'
+                           
+                 ), style='text-align: center;')),
           column(1),
           column(6,
                  leafletOutput('leafy'))),
@@ -130,8 +106,6 @@ body <- dashboardBody(
                  h4('Detailed visit information',
                     align = 'center'),
                  DT::dataTableOutput('visit_info_table'))
-          # div(class = 'scroll',
-          #     DT::dataTableOutput('visit_info_table')))
         )
       )
     ),
@@ -309,6 +283,57 @@ ui <- dashboardPage(header, sidebar, body, skin=skin)
 
 server <- function(input, output, session) {
   
+  # Date picker
+  
+  date_range <- reactiveVal(c(Sys.Date() - 7,
+                              Sys.Date() + 14))
+  
+  observeEvent(input$daterange, {
+    message('input date range is ', input$daterange)
+    idr <- input$daterange
+    idr <- unlist(strsplit(idr, ' - '))
+    idr <- as.Date(idr, format = '%m/%d/%Y')
+    date_range(idr)
+  })
+  
+  observeEvent(input$reset_date_range, {
+    # reset
+    date_range(c(Sys.Date() - 7,
+                 Sys.Date() + 14))
+  })
+
+  output$date_ui <- renderUI({
+    dr <- date_range()
+    dr <- as.Date(dr)
+    print(dr)
+    dr <- format(dr, '%m/%d/%Y')
+    tags$div(
+      HTML(
+        paste0(
+          " 
+
+<div class=\"form-group shiny-input-container\" style=\"width: 60%; \">
+<label for=\"date_range\">Pick a date range for analysis</label>
+          <input type=\"text\" class=\"form-control\" id = \"joe\" name=\"daterange\" value=\"", dr[1], " - ", dr[2], "\" />
+       </div>   
+          <script type=\"text/javascript\">
+          $(function() {
+          $('input[name=\"daterange\"]').daterangepicker();
+// the below two lines were written by joe, trying to get the input list
+// to get updated, but it's not working
+          document.getElementById(\"joe\").onchange = function() {
+        var time = document.getElementById(\"joe\").value;
+        Shiny.onInputChange(\"daterange\", time);
+    };
+          });
+          </script>"
+        )
+      )
+    )
+  })
+  
+  
+  
   # Create a reactive data frame from the user upload 
   uploaded <- reactive({
     inFile <- input$file1
@@ -427,137 +452,6 @@ server <- function(input, output, session) {
     }
   )
   
-  # hide sidebar by default
-  # addClass(selector = "body", class = "sidebar-collapse")
-  
-  starter <- reactiveVal(value = as.numeric(get_start_date(Sys.Date())))
-  ender <- reactiveVal(value = as.numeric(get_end_date(Sys.Date())))
-  the_dates <- reactive({
-    message('Creating the_dates()')
-    c(starter(),
-      ender())
-  })
-  
-  date_width <- reactive({
-    message('Calculating date_width()')
-    fd <- the_dates()
-    if(is.null(fd)){
-      14
-    } else {
-      as.numeric(fd[2] - fd[1])
-    }
-  })  
-  observeEvent(input$dates, {
-    starter(as.Date(input$dates[1]))
-    ender(as.Date(input$dates[2]))
-  })
-  observeEvent(input$date_range, {
-    starter(as.Date(input$date_range[1]))
-    ender(as.Date(input$date_range[2]))
-  })
-  
-  observeEvent(input$action_forward, {
-    dw <- date_width()
-    if(!is.null(dw)){
-      starter(starter() + dw)
-      ender(ender() + dw)
-    } else {
-      starter(starter() + 1)
-      ender(ender() + 1)
-    }
-  })
-  observeEvent(input$action_back, {
-    dw <- date_width()
-    if(!is.null(dw)){
-      starter(starter() - dw)
-      ender(ender() - dw)
-    } else {
-      starter(starter() - 1)
-      ender(ender() - 1)
-    }
-  })
-  
-  # selected_date <- reactive({input$selected_date})
-  
-  seld <- reactive({
-    x <- starter()
-    x <- as.Date(x, 
-                 origin = '1970-01-01')
-    x <- as.character(x)
-    x
-  })
-  
-  output$datey <- renderUI({
-    seldy <- seld()
-    have_selection <- FALSE
-    if(exists('seldy')){
-      if(!is.null(seldy)){
-        have_selection <- TRUE
-      }
-    }
-    if(!have_selection){
-      x <- input$date
-      if(is.null(x)){
-        starty <- date_dictionary$date[1]
-      } else {
-        starty <- x[1]
-      }
-      
-    } else {
-      starty <- as.Date(seldy)
-    }
-    
-    dw <- date_width()
-    if(is.null(dw)){
-      endy <- starty + 14
-    } else {
-      endy <- starty + dw
-    }
-    if(is.na(endy)){
-      endy <- max(date_dictionary$date, na.rm = TRUE)
-    }
-    dateRangeInput('date_range',
-                   'Set a date range for analysis of itineraries',
-                   start = starty,
-                   end = endy)
-  })
-  
-  # Date input
-  output$dater <- renderUI({
-    seldy <- seld()
-    have_selection <- FALSE
-    if(exists('seldy')){
-      if(!is.null(seldy)){
-        have_selection <- TRUE
-      }
-    }
-    if(!have_selection){
-      x <- input$date
-      if(is.null(x)){
-        starty <- date_dictionary$date[1]
-      } else {
-        starty <- x[1]
-      }
-      
-    } else {
-      starty <- as.Date(seldy)
-    }
-    
-    dw <- date_width()
-    if(is.null(dw)){
-      endy <- starty + 14
-    } else {
-      endy <- starty + dw
-    }
-    sliderInput("dates",
-                "Or set the date range using the below slider:",
-                min = min(date_dictionary$date, na.rm = TRUE), 
-                max = max(date_dictionary$date, na.rm = TRUE), 
-                value = c(starty, endy)
-    )
-    
-  })
-  
   # Reactive dataframe for the filtered table
   vals <- reactiveValues()
   vals$events<-filter_events(events = events,
@@ -618,7 +512,7 @@ server <- function(input, output, session) {
   })
   filtered_events <- reactive({
     # x <- vals$events
-    fd <- the_dates()
+    fd <- date_range()
     vd <- vals$events
     x <- filter_events(events = vd,
                        people = vals$people,
@@ -720,7 +614,7 @@ server <- function(input, output, session) {
   
   # Create a filtered view_trip_coincidences
   filtered_view_trip_coincidences <- reactive({
-    fd <- the_dates()
+    fd <- date_range()
     vd <- vals$view_trip_coincidences
     x <- vd %>%
       dplyr::filter(fd[1] <= trip_end_date,
@@ -1117,7 +1011,7 @@ server <- function(input, output, session) {
   
   #   output$g_calendar <- renderGvis({
   #     
-  #     fd <- the_dates()
+  #     fd <- date_range()
   #     if(is.null(fd)){
   #       return(NULL)
   #     } else {
