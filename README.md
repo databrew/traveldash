@@ -95,7 +95,7 @@ psql -d dev -f dev_database/create_function_travel_uploads.sql
 
 - Open a psql session within our AWS DB instance.
 ```
-psql --host=databrewdb.cfejspjhdciw.us-east-2.rds.amazonaws.com --port=5432 --username=worldbank --dbname=dev 
+psql --host=databrewdb.cfejspjhdciw.us-east-2.rds.amazonaws.com --port=8080 --username=worldbank --dbname=dev 
 ```
 
 - Restore a locally created dump from within psql

@@ -354,7 +354,7 @@ server <- function(input, output, session) {
     } else {
       if(grepl('csv', inFile$datapath)){
         x <- read_csv(inFile$datapath)
-      } else if(grepl('xls', inFile$datapath)){
+      } else if(grepl('xls', tolower(inFile$datapath))){
         x <- read_excel(inFile$datapath)
       }
       x
