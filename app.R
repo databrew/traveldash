@@ -1,15 +1,16 @@
 library(shiny)
 library(shinydashboard)
-source('global.R')
-the_width <- 270
+# source('global.R')
+# the_width <- 270
 
 # Header
-header <- dashboardHeader(title="Travel event dashboard",
-                          titleWidth = the_width)
+header <- dashboardHeader(title="Travel event dashboard")#,
+# titleWidth = the_width)
 
+header <- dashboardHeader(title="Date picker")
 # Sidebar
 sidebar <- dashboardSidebar(
-  width = the_width,
+  # width = the_width,
   sidebarMenu(
     menuItem(
       text="Dashboard",
@@ -53,61 +54,80 @@ sidebar <- dashboardSidebar(
   )
 )
 
-# UI body
 body <- dashboardBody(
-  useShinyjs(), # for hiding sidebar
-  # useShinyalert(),
-  # tags$head(
-  #   tags$link(rel = "stylesheet", type = "text/css", href = "horizontal.css")
-  # ),
+  useShinyjs(),
   
-  # Date range picker stuff
-  # tags$head(tags$script(src = 'jquery.min.js')),
-  tags$head(tags$script(src = 'moment.min.js')),
-  # tags$head(tags$link(rel = "stylesheet", type = "text/css", href = "bootstrap.css")),
-  tags$head(tags$script(src = 'daterangepicker.js')),
-  tags$head(tags$link(rel = "stylesheet", type = "text/css", href = "daterangepicker.css")),
+  # jquery daterange picker: # Using https://longbill.github.io/jquery-date-range-picker/
   
+  tags$head(tags$link(rel = 'stylesheet', type = 'text/css', href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css')),
+  tags$head(tags$link(rel = 'stylesheet', type = 'text/css', href = 'dist/daterangepicker.min.css')),
+  # Commenting out the below, since jquery is already included in shinydashboard
+  # tags$head(tags$script(src = 'https://cdnjs.cloudflare.com/ajax/libs/jquery/1.12.4/jquery.min.js', type = 'text/javascript')),
+  tags$head(tags$script(src = 'https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.16.0/moment.min.js', type = 'text/javascript')),
+  tags$head(tags$script(src = 'src/jquery.daterangepicker.js')),
+  tags$head(tags$script(src = 'demo.js')),
+  tags$head(tags$script(src = 'src/jquery.daterangepicker.js')),
+  
+  tags$head(tags$style(HTML("
+                            
+                            #wrapper
+                            {
+                            width:600px;
+                            margin:0 auto;
+                            color:#333;
+                            font-family:Tahoma,Verdana,sans-serif;
+                            line-height:1.5;
+                            font-size:14px;
+                            }
+                            .demo { margin:30px 0;}
+                            .date-picker-wrapper .month-wrapper table .day.lalala { background-color:orange; }
+                            .options { display:none; border-left:6px solid #8ae; padding:10px; font-size:12px; line-height:1.4; background-color:#eee; border-radius:4px;}
+                            
+                            "))),
+  # 
   tabItems(
-    tabItem(
-      tabName="main",
-      fluidPage(
-        fluidRow(
-          column(1),
-          column(4,
-                 align = 'center',
-                 uiOutput('date_ui'),
-                 actionButton('reset_date_range', 'Reset', icon = icon('undo'),style='padding:3px; font-size:80%'),
-                 br(),
-                 br(),
-                 br(),
-                 div(radioButtons('wbg_only',
-                              'Filter by affiliation',
-                              choices = c('Everyone', 'WBG only', 'Non-WBG only'),
-                              inline = TRUE), style='text-align: center;'),
-                 br(),
-                 div(textInput('search',
-                           'Filter for people, events, places, organizations, etc. (separate items with a comma)'
-                           
-                 ), style='text-align: center;')),
-          column(1),
-          column(6,
-                 leafletOutput('leafy'))),
-        fluidRow(
-          column(6,
-                 h4('Interactions during selected period:',
-                    align = 'center'),
-                 radioButtons('sankey_meeting',
-                               'Show meetings only or any trip overlaps',choices = c('Meetings only', 'Trip overlaps'),
-                              selected = 'Meetings only',
-                              inline = TRUE),
-                 sankeyNetworkOutput('sank')),
-          column(6,
-                 h4('Detailed visit information',
-                    align = 'center'),
-                 DT::dataTableOutput('visit_info_table'))
-        )
-      )
+    tabItem(tabName = 'main',
+            
+            fluidPage(
+              fluidRow(
+                column(6,
+                       align = 'center',
+                       uiOutput('date_ui'),
+                       actionButton('reset_date_range', 'Reset', icon = icon('undo'),style='padding:3px; font-size:80%'),
+                       # br(),
+                       
+                       div(radioButtons('wbg_only',
+                                        'Filter by affiliation',
+                                        choices = c('Everyone', 'WBG only', 'Non-WBG only'),
+                                        inline = TRUE), style='text-align: center;'),
+                       # br(),
+                       
+                       
+                       div(textInput('search',
+                                     'Filter for people, events, places, organizations, etc. (separate items with a comma)',
+                                     placeholder = 'For example: Davos, Kim, Trump',
+                                     width = '100%'
+                                     
+                       ), style='text-align: center;')
+                ),
+                column(6,
+                       leafletOutput('leafy'))),
+              fluidRow(
+                column(6,
+                       h4('Interactions during selected period:',
+                          align = 'center'),
+                       radioButtons('sankey_meeting',
+                                    'Show meetings only or any trip overlaps',choices = c('Meetings only', 'Trip overlaps'),
+                                    selected = 'Meetings only',
+                                    inline = TRUE),
+                       sankeyNetworkOutput('sank')),
+                column(6,
+                       h4('Detailed visit information',
+                          align = 'center'),
+                       DT::dataTableOutput('visit_info_table'))
+              )
+            )
+            
     ),
     tabItem(
       tabName = 'network',
@@ -132,10 +152,10 @@ body <- dashboardBody(
           fluidRow(column(8,
                           forceNetworkOutput('graph')),
                    column(4,
-                           fluidRow(DT::dataTableOutput('click_table'))))
-          )
+                          fluidRow(DT::dataTableOutput('click_table'))))
         )
-      ),
+      )
+    ),
     tabItem(
       tabName = 'timeline',
       fluidPage(
@@ -277,23 +297,24 @@ body <- dashboardBody(
               )
               
             ))
-  ))
-message('Done defining UI')
-ui <- dashboardPage(header, sidebar, body, skin=skin)
+  )
+  )
 
+
+ui <- dashboardPage(header, sidebar, body)
+
+# Define server
 server <- function(input, output, session) {
   
-  # Date picker
-  
-  date_range <- reactiveVal(c(Sys.Date() - 7,
-                              Sys.Date() + 14))
-  
-  observeEvent(input$daterange, {
-    message('input date range is ', input$daterange)
-    idr <- input$daterange
-    idr <- unlist(strsplit(idr, ' - '))
-    idr <- as.Date(idr, format = '%m/%d/%Y')
-    date_range(idr)
+  date_range <- reactiveVal(c(Sys.Date() - 14,
+                              Sys.Date() + 7 ))
+  observeEvent(input$daterange12,{
+    date_input <- input$daterange12
+    message('Dates changed. They are: ')
+    print(input$daterange12)
+    new_dates <- unlist(strsplit(date_input, split = ' to '))
+    new_dates <- as.Date(new_dates)
+    date_range(new_dates)
   })
   
   observeEvent(input$reset_date_range, {
@@ -301,51 +322,47 @@ server <- function(input, output, session) {
     date_range(c(Sys.Date() - 7,
                  Sys.Date() + 14))
   })
-
-  output$date_ui <- renderUI({
-    dr <- date_range()
-    dr <- as.Date(dr)
-    print(dr)
-    dr <- format(dr, '%m/%d/%Y')
-    
-    # # goes inline below
-    # \"startDate\": \"02/06/2018\",
-    #       \"endDate\": \"02/12/2018\",
-    
-    tags$div(
-      HTML(
-        paste0(
-          " 
-
-<div class=\"form-group shiny-input-container\" style=\"width: 60%; \">
-<label for=\"date_range\">Pick a date range for analysis</label>
-          <input type=\"text\" class=\"form-control\" id = \"joe\" name=\"daterange\" value=\"", dr[1], " - ", dr[2], "\" />
-       </div>   
-          <script type=\"text/javascript\">
-          $(function() {
-          $('input[name=\"daterange\"]').daterangepicker({
-
-          \"linkedCalendars\": false,
-          \"alwaysShowCalendars\": true,
-          \"autoApply\": true,
-          \"opens\": \"center\",
-
-          });
-// JOE:
-          document.getElementById(\"joe\").onchange = function() {
-        var time = document.getElementById(\"joe\").value;
-        Shiny.onInputChange(\"daterange\", time);
-    };
-          });
-          </script>"
-        )
-      )
-    )
+  
+  output$dr_text <- renderText({
+    paste0('The date_range() object is ', paste0(date_range(), collapse = ', '))
   })
   
   
+  output$date_ui <- renderUI({
+    dr <- date_range()
+    dr <- paste0(as.character(dr[1]), ' to ', as.character(dr[2]))
+    fluidPage(
+      tags$div(HTML("
+                    <label for=\"daterange12container\">Pick a date range for analysis</label>
+                    
+                    <div id='daterange12container' style=\"width:456px;\">
+                    <input id=\"daterange12\" name=\"joe\" type=\"hidden\" class=\"form-control\" value=\"",dr, "\"/>
+                    
+                    </div>
+                    <script type=\"text/javascript\">
+                    $(function() {
+                    $('#daterange12').dateRangePicker({
+                    inline: true,
+                    container: '#daterange12container',
+                    alwaysOpen: true
+                    });
+                    
+                    // Observe changes and update:
+                    
+                    $('#daterange12').on('datepicker-change', function(event, changeObject) {
+                    // changeObject has properties value, date1 and date2.
+                    Shiny.onInputChange('daterange12', changeObject.value);
+                    });
+                    });
+                    </script>
+                    
+                    "))
+      )
+})
   
-  # Create a reactive data frame from the user upload 
+  
+  ################################
+  # Create a reactive data frame from the user upload
   uploaded <- reactive({
     inFile <- input$file1
     
@@ -480,7 +497,7 @@ server <- function(input, output, session) {
     new_data <- uploaded()
     message('new data has ', nrow(new_data), ' rows')
     # Upload the new data to the database
-    upload_results <- 
+    upload_results <-
       upload_raw_data(pool = pool,
                       data = new_data,
                       return_upload_results = TRUE)
@@ -503,7 +520,7 @@ server <- function(input, output, session) {
     new_data <- vals$events
     # Geocode if applicable
     new_data <- geo_code(new_data)
-    # Update the underlying data 
+    # Update the underlying data
     # Update the underlying data
     write_table(connection_object = pool,
                 table = 'dev_events',
@@ -602,7 +619,7 @@ server <- function(input, output, session) {
               # Get the selected row event id
               srei <- selected_row$event_id
             }
-
+            
             # Keep everything with same event id
             out <- out %>%
               filter(event_id %in% srei)
@@ -659,19 +676,19 @@ server <- function(input, output, session) {
     
     # Get row selection (if applicable) from datatable
     s <- input$visit_info_table_rows_selected
-
+    
     # Subset places if rows are selected
     if(!is.null(s)){
       if(length(s) > 0){
         places <- places[s,]
       }
     }
-
+    
     # Get number of rows of places
     nrp <- nrow(places)
     
     # Get whether wbg or not
-    places <- 
+    places <-
       left_join(places,
                 people %>%
                   dplyr::select(short_name, is_wbg) %>%
@@ -685,9 +702,9 @@ server <- function(input, output, session) {
                            places$Event)
     
     # Get a id
-    places <- places %>% 
-      mutate(id = paste0(Person, Organization, is_wbg, 
-                         Event, 
+    places <- places %>%
+      mutate(id = paste0(Person, Organization, is_wbg,
+                         Event,
                          `City of visit`, collapse = NULL)) %>%
       mutate(id = as.numeric(factor(id))) %>%
       dplyr::rename(City = `City of visit`) %>%
@@ -709,7 +726,7 @@ server <- function(input, output, session) {
     pops <- places %>%
       filter(!duplicated(id))
     
-    popups = lapply(rownames(pops), function(row){ 
+    popups = lapply(rownames(pops), function(row){
       this_id <- unlist(pops[row,'id'])
       # Get the original rows from full places for each of the ids
       ids <- unlist(lapply(strsplit(this_id, ';'), as.numeric))
@@ -721,7 +738,7 @@ server <- function(input, output, session) {
           dplyr::select(Date, Person, City, Event, id)
         out_list[[i]] <- x
       }
-      x <- bind_rows(out_list) 
+      x <- bind_rows(out_list)
       x <- x %>% distinct(Date, Person, City, Event, .keep_all = TRUE)
       # if(nrow(x) > 1){
       #   x$Person[2:nrow(x)] <- ''
@@ -743,21 +760,21 @@ server <- function(input, output, session) {
                         file = paste0(faces_dir, faces))
     
     # Create a join column
-    faces$joiner <- ifelse(is.na(faces$joiner) | faces$joiner == 'NA', 
-                           'Unknown', 
+    faces$joiner <- ifelse(is.na(faces$joiner) | faces$joiner == 'NA',
+                           'Unknown',
                            faces$joiner)
-    pops$joiner <- ifelse(pops$Person %in% faces$joiner, 
+    pops$joiner <- ifelse(pops$Person %in% faces$joiner,
                           pops$Person,
                           'Unknown')
     
     # Join the files to the places data
     if(nrow(pops) > 0){
-      pops <- 
+      pops <-
         left_join(pops,
                   faces,
                   by = 'joiner')
       # Define colors
-      cols <- ifelse(is.na(pops$is_wbg) | 
+      cols <- ifelse(is.na(pops$is_wbg) |
                        !pops$is_wbg,
                      'orange',
                      'blue')
@@ -782,7 +799,7 @@ server <- function(input, output, session) {
       addMarkers(data = pops, lng =~Long, lat = ~Lat,
                  popup = popups,
                  # clusterOptions = markerClusterOptions(),
-                 icon = face_icons) 
+                 icon = face_icons)
     
     # Zoom out a bit if only 1 city or person
     if(nrp == 1 | length(unique(places$City)) == 1){
@@ -808,59 +825,59 @@ server <- function(input, output, session) {
   # # Leaflet proxy for the points
   # observeEvent(filtered_events(), {
   #   places <- filtered_events()
-  #   
+  #
   #   # Get whether wbg or not
-  #   places <- 
+  #   places <-
   #     left_join(places,
   #               people %>%
   #                 dplyr::select(short_name, is_wbg),
   #               by = c('Person' = 'short_name'))
   #   places$is_wbg <- as.logical(places$is_wbg)
-  #   
+  #
   #   # Get a id
-  #   places <- places %>% 
-  #     mutate(id = paste0(Person, Organization, Lat, Long, is_wbg, 
-  #              Counterpart, 
+  #   places <- places %>%
+  #     mutate(id = paste0(Person, Organization, Lat, Long, is_wbg,
+  #              Counterpart,
   #              `City of visit`, `Country of visit`, collapse = NULL)) %>%
   #     mutate(id = as.numeric(factor(id))) %>%
   #     dplyr::rename(City = `City of visit`) %>%
   #     dplyr::rename(Date = `Visit start`) %>%
   #     mutate(Date = format(Date, '%b %d, %Y'))
-  #   
+  #
   #   pops <- places %>%
   #     filter(!duplicated(id))
-  #   
-  #   popups = lapply(rownames(pops), function(row){ 
+  #
+  #   popups = lapply(rownames(pops), function(row){
   #     this_id <- pops[row,'id']
   #     x <- places %>% filter(id == this_id) %>%
   #       dplyr::select(Date, Person, City, Event)
   #     htmlTable(x,
   #               rnames = FALSE)
   #     })
-  #   
-  #   
+  #
+  #
   #   # Get faces
   #   faces_dir <- paste0('www/headshots/circles/')
   #   faces <- dir(faces_dir)
   #   faces <- data_frame(joiner = gsub('.png', '', faces, fixed = TRUE),
   #                       file = paste0(faces_dir, faces))
-  #   
+  #
   #   # Create a join column
-  #   faces$joiner <- ifelse(is.na(faces$joiner) | faces$joiner == 'NA', 
-  #                          'Unknown', 
+  #   faces$joiner <- ifelse(is.na(faces$joiner) | faces$joiner == 'NA',
+  #                          'Unknown',
   #                          faces$joiner)
-  #   pops$joiner <- ifelse(pops$Person %in% faces$joiner, 
+  #   pops$joiner <- ifelse(pops$Person %in% faces$joiner,
   #                         pops$Person,
   #                           'Unknown')
-  #   
+  #
   #   # Join the files to the places data
   #   if(nrow(pops) > 0){
-  #     pops <- 
+  #     pops <-
   #       left_join(pops,
   #                 faces,
   #                 by = 'joiner')
   #     # Define colors
-  #     cols <- ifelse(is.na(pops$is_wbg) | 
+  #     cols <- ifelse(is.na(pops$is_wbg) |
   #                      !pops$is_wbg,
   #                    'orange',
   #                    'blue')
@@ -869,7 +886,7 @@ server <- function(input, output, session) {
   #   }
   #   face_icons <- icons(pops$file,
   #                       iconWidth = 25, iconHeight = 25)
-  #   
+  #
   #   ## plot the subsetted ata
   #   leafletProxy("leafy") %>%
   #     clearMarkers() %>%
@@ -878,7 +895,7 @@ server <- function(input, output, session) {
   #                      col = cols, radius = 14) %>%
   #     addMarkers(data = pops, lng =~Long, lat = ~Lat,
   #                popup = popups,
-  #                icon = face_icons) 
+  #                icon = face_icons)
   # })
   
   output$sank <- renderSankeyNetwork({
@@ -961,11 +978,11 @@ server <- function(input, output, session) {
       # arrange(`Visit start`) %>%
       mutate(Location = `City of visit`) %>%
       mutate(Dates = paste0(
-        `Visit start`, ifelse(`Visit start` != `Visit end`, ' through ', ''), 
+        `Visit start`, ifelse(`Visit start` != `Visit end`, ' through ', ''),
         ifelse(`Visit start` != `Visit end`, as.character(`Visit end`), ''))) %>%
-        # format(`Visit start`, '%b %d, %Y'), 
-        # ' - ', 
-        # format(`Visit end`, '%b %d, %Y'))) %>%
+      # format(`Visit start`, '%b %d, %Y'),
+      # ' - ',
+      # format(`Visit end`, '%b %d, %Y'))) %>%
       dplyr::select(Person,
                     # Organization,
                     Location,
@@ -1021,7 +1038,7 @@ server <- function(input, output, session) {
   })
   
   #   output$g_calendar <- renderGvis({
-  #     
+  #
   #     fd <- date_range()
   #     if(is.null(fd)){
   #       return(NULL)
@@ -1032,7 +1049,7 @@ server <- function(input, output, session) {
   #                       0)
   #       dd <- date_dictionary %>%
   #         mutate(num = fills)
-  #       gvisCalendar(data = dd, 
+  #       gvisCalendar(data = dd,
   #                    datevar = 'date',
   #                    numvar = 'num',
   #                    options=list(
@@ -1050,8 +1067,8 @@ server <- function(input, output, session) {
   #                      var selected_date = data.getValue(chart.getSelection()[0].row,0);
   #                      var parsed_date = selected_date.getFullYear()+'-'+(selected_date.getMonth()+1)+'-'+selected_date.getDate();
   #                      Shiny.onInputChange('selected_date',parsed_date)"))
-  #       
-  #       
+  #
+  #
   # }
   # })
   
@@ -1083,7 +1100,7 @@ server <- function(input, output, session) {
       tags$script("$(document).on('click', '#Main_table button', function () {
                   Shiny.onInputChange('lastClickId',this.id);
                   Shiny.onInputChange('lastClick', Math.random())
-});")
+                            });")
 
       )
       )
@@ -1268,14 +1285,14 @@ server <- function(input, output, session) {
     plotReady$ok <- FALSE
     Sys.sleep(0.1)
     plotReady$ok <- TRUE
-  })  
+  })
   observeEvent(input$action_forward, {
     shinyjs::disable("action_forward")
     shinyjs::show("text2")
     plotReady$ok <- FALSE
     Sys.sleep(0.1)
     plotReady$ok <- TRUE
-  })  
+  })
   
   # Test table for graph
   output$click_table <- DT::renderDataTable({
@@ -1298,7 +1315,7 @@ server <- function(input, output, session) {
       
       if(meeting){
         tc <- x %>%
-          dplyr::select(person_name, 
+          dplyr::select(person_name,
                         is_wbg,
                         city_name,
                         country_name,
@@ -1311,7 +1328,7 @@ server <- function(input, output, session) {
           filter(!is.na(Counterpart))
       } else {
         tc <- x %>%
-          dplyr::select(person_name, 
+          dplyr::select(person_name,
                         is_wbg,
                         city_name,
                         country_name,
@@ -1320,7 +1337,7 @@ server <- function(input, output, session) {
                         coincidence_person_name,
                         coincidence_is_wbg) %>%
           dplyr::rename(Person = person_name,
-                        Counterpart = coincidence_person_name) 
+                        Counterpart = coincidence_person_name)
       }
       tc <- tc %>% dplyr::filter(!is.na(Counterpart))
       
@@ -1331,11 +1348,11 @@ server <- function(input, output, session) {
           tc <- tc %>% filter(Person == ii | Counterpart == ii)
           # Keep only one of each
           tc <- tc %>%
-            dplyr::distinct(Person, city_name, trip_start_date, trip_end_date, Counterpart, .keep_all = TRUE) 
-          tc$date <- paste0(tc$trip_start_date, 
+            dplyr::distinct(Person, city_name, trip_start_date, trip_end_date, Counterpart, .keep_all = TRUE)
+          tc$date <- paste0(tc$trip_start_date,
                             ifelse(tc$trip_start_date == tc$trip_end_date, '', ' through ')
-                            , 
-                            ifelse(tc$trip_start_date == tc$trip_end_date, 
+                            ,
+                            ifelse(tc$trip_start_date == tc$trip_end_date,
                                    '', as.character(tc$trip_end_date)))
           tc <- tc %>%
             dplyr::select(-is_wbg, -coincidence_is_wbg, -country_name, -trip_start_date, -trip_end_date) %>%
@@ -1359,14 +1376,16 @@ server <- function(input, output, session) {
     }
   })
   
-
+  
   # On session end, close
   session$onSessionEnded(function() {
     message('Session ended. Closing the connection pool.')
     tryCatch(pool::poolClose(pool), error = function(e) {message('')})
   })
   
+  
   }
-message('Done defining server')
 
-shinyApp(ui, server)
+# Run the application 
+shinyApp(ui = ui, server = server)
+
