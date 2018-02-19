@@ -2,16 +2,16 @@ library(shiny)
 library(shinydashboard)
 source('global.R')
 library(shinyjs)
-# the_width <- 270
+the_width <- 270
 
 # Header
-header <- dashboardHeader(title="Travel event dashboard")#,
-# titleWidth = the_width)
+header <- dashboardHeader(title="Travel event dashboard",
+  titleWidth = the_width)
 
 header <- dashboardHeader(title="Date picker")
 # Sidebar
 sidebar <- dashboardSidebar(
-  # width = the_width,
+  width = the_width,
   sidebarMenu(
     menuItem(
       text="Dashboard",
@@ -307,8 +307,8 @@ ui <- dashboardPage(header, sidebar, body)
 # Define server
 server <- function(input, output, session) {
   
-  date_range <- reactiveVal(c(Sys.Date() - 14,
-                              Sys.Date() + 7 ))
+  date_range <- reactiveVal(c(Sys.Date() - 7,
+                              Sys.Date() + 14 ))
   observeEvent(input$daterange12,{
     date_input <- input$daterange12
     message('Dates changed. They are: ')
