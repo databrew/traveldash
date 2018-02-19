@@ -1,6 +1,7 @@
 library(shiny)
 library(shinydashboard)
-# source('global.R')
+source('global.R')
+library(shinyjs)
 # the_width <- 270
 
 # Header
