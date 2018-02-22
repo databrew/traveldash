@@ -307,6 +307,22 @@ server <- function(input, output, session) {
     new_dates <- as.Date(new_dates)
     date_range(new_dates)
   })
+  observeEvent(input$daterange13,{
+    date_input <- input$daterange13
+    message('Dates changed. They are: ')
+    print(input$daterange13)
+    new_dates <- unlist(strsplit(date_input, split = ' to '))
+    new_dates <- as.Date(new_dates)
+    date_range(new_dates)
+  })
+  observeEvent(input$daterange14,{
+    date_input <- input$daterange14
+    message('Dates changed. They are: ')
+    print(input$daterange14)
+    new_dates <- unlist(strsplit(date_input, split = ' to '))
+    new_dates <- as.Date(new_dates)
+    date_range(new_dates)
+  })
   
   observeEvent(input$reset_date_range, {
     # reset
@@ -345,23 +361,7 @@ server <- function(input, output, session) {
                     "))
       )
 })
-  
-  # Net work date range stuff
-  #########################################
-  observeEvent(input$daterange13,{
-    date_input <- input$daterange13
-    message('Dates changed. They are: ')
-    print(input$daterange13)
-    new_dates <- unlist(strsplit(date_input, split = ' to '))
-    new_dates <- as.Date(new_dates)
-    date_range(new_dates)
-  })
-  
-  observeEvent(input$reset_date_range, {
-    # reset
-    date_range(c(Sys.Date() - 7,
-                 Sys.Date() + 14))
-  })
+
   
   output$date_ui_network <- renderUI({
     dr <- date_range()
