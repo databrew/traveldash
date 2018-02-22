@@ -321,12 +321,7 @@ server <- function(input, output, session) {
     date_range(c(Sys.Date() - 7,
                  Sys.Date() + 14))
   })
-  
-  output$dr_text <- renderText({
-    paste0('The date_range() object is ', paste0(date_range(), collapse = ', '))
-  })
-  
-  
+
   output$date_ui <- renderUI({
     dr <- date_range()
     dr <- paste0(as.character(dr[1]), ' to ', as.character(dr[2]))
@@ -358,6 +353,20 @@ server <- function(input, output, session) {
                     "))
       )
 })
+  
+  # Reactive view trips and meetings
+  view_trips_and_meetings_filtered <- reactive({
+    dr <- date_range()
+    message('dr is ', dr)
+    if(is.null(dr)){
+      dr <- range(c(view_trips_and_meetings$trip_start_date,
+                    view_trips_and_meetings$trip_end_date),
+                  na.rm = TRUE)
+    }
+    out <- view_trips_and_meetings %>%
+      dplyr::filter(trip_end_date >= dr[1] &
+                      trip_start_date <= dr[2])
+  })
   
   
   ################################
@@ -665,86 +674,96 @@ server <- function(input, output, session) {
   })
   
   output$leafy <- renderLeaflet({
+
+    # Get trips and meetings, filtered for date range    
+    df <- view_trips_and_meetings_filtered()
+
+    # Uncomment this later
+    # # Get row selection (if applicable) from datatable
+    # s <- input$visit_info_table_rows_selected
+    # 
+    # # Subset df if rows are selected
+    # if(!is.null(s)){
+    #   if(length(s) > 0){
+    #     df <- df[s,]
+    #   }
+    # }
     
-    # Get filtered place
-    places <- filtered_events()
-    
-    # Get row selection (if applicable) from datatable
-    s <- input$visit_info_table_rows_selected
-    
-    # Subset places if rows are selected
-    if(!is.null(s)){
-      if(length(s) > 0){
-        places <- places[s,]
-      }
-    }
-    
-    # Get number of rows of places
-    nrp <- nrow(places)
+    # Get number of rows of df
+    nrp <- nrow(df)
     
     # Get whether wbg or not
-    places <-
-      left_join(places,
-                people %>%
-                  dplyr::select(short_name, is_wbg) %>%
-                  dplyr::filter(!duplicated(short_name)),
-                by = c('Person' = 'short_name'))
-    places$is_wbg <- as.logical(places$is_wbg)
+    df$is_wbg <- as.logical(df$is_wbg)
     
-    # Overwrite event with the "counterpart" if event is NA
-    places$Event <- ifelse(is.na(places$Event),
-                           places$Counterpart,
-                           places$Event)
+    # Select down
+    df <- df %>%
+      dplyr::select(is_wbg,
+                    short_name,
+                    city_name,
+                    country_name,
+                    trip_start_date,
+                    trip_end_date,
+                    meeting_with,
+                    meeting_topic)
     
-    # Get a id
-    places <- places %>%
-      mutate(id = paste0(Person, Organization, is_wbg,
-                         Event,
-                         `City of visit`, collapse = NULL)) %>%
-      mutate(id = as.numeric(factor(id))) %>%
-      dplyr::rename(City = `City of visit`) %>%
-      dplyr::rename(Date = `Visit start`) %>%
-      mutate(Date = format(Date, '%b %d, %Y'))
+    # Get city id
+    df <- df %>%
+      left_join(cities %>%
+                  dplyr::select(city_name, country_name, city_id),
+                by = c('city_name', 'country_name'))
     
+    # Create an id
+    df <- df %>%
+      mutate(id = paste0(short_name, is_wbg, city_id)) %>%
+      mutate(id = as.numeric(factor(id)))
+      
+    # Create some more columns
+    df <- df %>%
+      arrange(trip_start_date) %>%
+      mutate(dates = paste0(as.character(trip_start_date),
+                            ifelse(trip_start_date != trip_end_date,
+                                   ' through ', 
+                                   ''),
+                            ifelse(trip_start_date != trip_end_date,
+                                   as.character(trip_end_date), 
+                                   ''))) %>%
+      mutate(event = paste0(ifelse(!is.na(meeting_topic), meeting_topic, ''), 
+                            ifelse(!is.na(meeting_with), ' with ', ''),
+                            ifelse(!is.na(meeting_with), meeting_with, ''))) %>%
+      mutate(event = Hmisc::capitalize(event)) 
     
+
+    # Keep a "full" df with one row per trip
+    full_df <- df
+
     # Make only one head per person/place
-    full_places <- places %>% arrange(Date)
-    places <- places %>%
-      group_by(Person, Organization, City, `Country of visit`) %>%
-      summarise(Date = paste0(Date, collapse = ';'),
-                Lat = dplyr::first(Lat),
-                Long = dplyr::first(Long),
-                Event = paste0(Event, collapse = ';'),
-                is_wbg = dplyr::first(is_wbg),
-                id = paste0(id, collapse = ';')) %>% ungroup
+    df <- df %>%
+      group_by(id, short_name, is_wbg, city_id) %>%
+      summarise(date = paste0(dates, collapse = ';'),
+                event = paste0(event, collapse = ';')) %>% ungroup
+
+    # Join to city names
+    df <- df %>%
+      left_join(cities %>%
+                  dplyr::select(city_name, country_name, city_id,
+                                latitude, longitude),
+                by = 'city_id') 
+
     
-    pops <- places %>%
-      filter(!duplicated(id))
-    
-    popups = lapply(rownames(pops), function(row){
-      this_id <- unlist(pops[row,'id'])
-      # Get the original rows from full places for each of the ids
-      ids <- unlist(lapply(strsplit(this_id, ';'), as.numeric))
-      out_list <- list()
-      for(i in 1:length(ids)){
-        message(i)
-        this_id <- ids[i]
-        x <- full_places %>% dplyr::filter(id == this_id) %>%
-          dplyr::select(Date, Person, City, Event, id)
-        out_list[[i]] <- x
-      }
-      x <- bind_rows(out_list)
-      x <- x %>% distinct(Date, Person, City, Event, .keep_all = TRUE)
-      # if(nrow(x) > 1){
-      #   x$Person[2:nrow(x)] <- ''
-      #   x$City[2:nrow(x)] <- ''
-      # }
-      y <- x %>%
-        dplyr::select(-id, -Person, -City)
-      htmlTable(y,
+    popups = lapply(rownames(df), function(row){
+      this_id <- unlist(df[row,'id'])
+      # Get the original rows from full df for each of the ids
+      x <- full_df %>%
+        filter(id == this_id)
+      caption <- paste0(x$short_name[1], ' in ', x$city_name[1])
+      x <- x %>%
+        dplyr::select(dates, event)
+      names(x) <- Hmisc::capitalize(names(x))
+      knitr::kable(x,
                 rnames = FALSE,
-                caption = paste0(x$Person[1], ' in ', x$City[1]),
-                align = paste(rep("l", ncol(y)), collapse = ''))
+                caption = caption,
+                align = paste(rep("l", ncol(x)), collapse = ''),
+                format = 'html')
     })
     
     
@@ -758,58 +777,48 @@ server <- function(input, output, session) {
     faces$joiner <- ifelse(is.na(faces$joiner) | faces$joiner == 'NA',
                            'Unknown',
                            faces$joiner)
-    pops$joiner <- ifelse(pops$Person %in% faces$joiner,
-                          pops$Person,
+    df$joiner <- ifelse(df$short_name %in% faces$joiner,
+                          df$short_name,
                           'Unknown')
     
-    # Join the files to the places data
-    if(nrow(pops) > 0){
-      pops <-
-        left_join(pops,
+    # Join the files to the df data
+    if(nrow(df) > 0){
+      df <-
+        left_join(df,
                   faces,
                   by = 'joiner')
       # Define colors
-      cols <- ifelse(is.na(pops$is_wbg) |
-                       !pops$is_wbg,
+      cols <- ifelse(is.na(df$is_wbg) |
+                       !df$is_wbg,
                      'orange',
                      'blue')
     } else {
-      pops <- events[0,]
+      df <- df[0,]
     }
-    face_icons <- icons(pops$file,
+    face_icons <- icons(df$file,
                         iconWidth = 25, iconHeight = 25)
-    
-    ## plot the subsetted ata
-    # leafletProxy("leafy") %>%
-    # clearMarkers() %>%
-    # setView(lng = mean(pops$Long, na.rm = TRUE), lat = mean(pops$Lat, na.rm = TRUE)) %>%
+
     l <- leaflet() %>%
       addProviderTiles("Esri.WorldStreetMap") %>%
       # setView(lng = mean(events$Long, na.rm = TRUE) - 5, lat = mean(events$Lat, na.rm = TRUE), zoom = 1) %>%
       leaflet.extras::addFullscreenControl() %>%
       addLegend(position = 'topright', colors = c('orange', 'blue'), labels = c('Non-WBG', 'WBG')) %>%
-      addCircleMarkers(data = pops, lng =~Long, lat = ~Lat,
+      addCircleMarkers(data = df, lng =~longitude, lat = ~latitude,
                        # clusterOptions = markerClusterOptions(),
                        col = cols, radius = 14) %>%
-      addMarkers(data = pops, lng =~Long, lat = ~Lat,
+      addMarkers(data = df, lng =~longitude, lat = ~latitude,
                  popup = popups,
                  # clusterOptions = markerClusterOptions(),
                  icon = face_icons)
     
     # Zoom out a bit if only 1 city or person
-    if(nrp == 1 | length(unique(places$City)) == 1){
+    if(nrp == 1 | length(unique(df$city_id)) == 1){
       l <- l %>%
-        setView(lng = mean(places$Long, na.rm = TRUE),
-                lat = mean(places$Lat, na.rm = TRUE),
+        setView(lng = mean(df$longitude, na.rm = TRUE),
+                lat = mean(df$latitude, na.rm = TRUE),
                 zoom = 7)
     }
     
-    # addDrawToolbar(
-    #   targetGroup='draw',
-    #   editOptions = editToolbarOptions(selectedPathOptions = selectedPathOptions()))  %>%
-    # addLayersControl(overlayGroups = c('draw'), options =
-    #                    layersControlOptions(collapsed=FALSE)) %>%
-    # addStyleEditor()
     shinyjs::enable("action_forward")
     shinyjs::hide("text1")
     shinyjs::enable("action_back")
