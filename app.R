@@ -140,6 +140,7 @@ body <- dashboardBody(
                    align = 'center',
                    uiOutput('date_ui_network')),
             column(6,
+                   align = 'center',
                    radioButtons('network_meeting',
                                 'Show meetings only or any trip overlaps',choices = c('Meetings only', 'Trip overlaps'),
                                 selected = 'Meetings only',
@@ -155,24 +156,21 @@ body <- dashboardBody(
       tabName = 'timeline',
       fluidPage(
         fluidRow(
-          column(3,
-                 dateRangeInput('date_range_timeline',
-                                'Filter for a specific date range:',
-                                start = min(date_dictionary$date),
-                                max = max(date_dictionary$date))),
-          column(3,
-                 actionButton('timevis_clear',
-                              'Clear selection')),
-          column(3,
-                 checkboxInput('show_meetings',
-                               'Show meetings',
-                               value = FALSE)),
-          column(3,
-                 textInput('search_timeline',
-                           'Or filter for specific events, people, places, etc.:'))
+          timevisOutput('timevis')
         ),
         fluidRow(
-          timevisOutput('timevis')
+          column(6,
+                 align = 'center',
+                 uiOutput('date_ui_timeline')),
+          column(6,
+                 align = 'center',
+                 actionButton('timevis_clear',
+                              'Clear selection'),
+                 checkboxInput('show_meetings',
+                               'Show meetings',
+                               value = FALSE),
+                 textInput('search_timeline',
+                           'Or filter for specific events, people, places, etc.:'))
         )
       )
     ),
@@ -396,6 +394,39 @@ server <- function(input, output, session) {
                     "))
       )
 })
+  
+  output$date_ui_timeline <- renderUI({
+    dr <- date_range()
+    dr <- paste0(as.character(dr[1]), ' to ', as.character(dr[2]))
+    fluidPage(
+      tags$div(HTML("
+                    <label for=\"daterange14container\">Pick a date range for analysis</label>
+                    
+                    <div id='daterange14container' style=\"width:456px;\">
+                    <input id=\"daterange14\" name=\"joe\" type=\"hidden\" class=\"form-control\" value=\"",dr, "\"/>
+                    
+                    </div>
+                    <script type=\"text/javascript\">
+                    $(function() {
+                    $('#daterange14').dateRangePicker({
+                    inline: true,
+                    container: '#daterange14container',
+                    alwaysOpen: true
+                    });
+                    
+                    // Observe changes and update:
+                    
+                    $('#daterange14').on('datepicker-change', function(event, changeObject) {
+                    // changeObject has properties value, date1 and date2.
+                    Shiny.onInputChange('daterange14', changeObject.value);
+                    });
+                    });
+                    </script>
+                    
+                    "))
+      )
+})
+  
   #########################################
   
   
@@ -603,7 +634,7 @@ server <- function(input, output, session) {
   
   filtered_expanded_trips <- reactive({
     sm<- input$show_meetings
-    fd <- input$date_range_timeline
+    fd <- date_range()
     search_string <- input$search_timeline
     out <- expanded_trips %>%
       filter(end >= fd[1],
