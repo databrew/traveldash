@@ -65,7 +65,6 @@ body <- dashboardBody(
   # Commenting out the below, since jquery is already included in shinydashboard
   # tags$head(tags$script(src = 'https://cdnjs.cloudflare.com/ajax/libs/jquery/1.12.4/jquery.min.js', type = 'text/javascript')),
   tags$head(tags$script(src = 'https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.16.0/moment.min.js', type = 'text/javascript')),
-  tags$head(tags$script(src = 'src/jquery.daterangepicker.js')),
   tags$head(tags$script(src = 'demo.js')),
   tags$head(tags$script(src = 'src/jquery.daterangepicker.js')),
   
@@ -494,6 +493,9 @@ server <- function(input, output, session) {
   vals$trip_meetings <- trip_meetings
   vals$trips <- trips
   vals$view_trip_coincidences <- view_trip_coincidences
+  vals$venue_events <- venue_events
+  vals$venue_types <- venue_types
+  vals$view_trips_and_meetings <- view_trips_and_meetings
   vals$upload_results <- NULL
   
   # Replace data with uploaded data
@@ -513,6 +515,9 @@ server <- function(input, output, session) {
     vals$people <- updated_data$people
     vals$trip_meetings <- updated_data$trip_meetings
     vals$trips <- updated_data$trips
+    vals$venue_events <- updated_data$venue_events
+    vals$venue_types <- updated_data$venue_types
+    vals$view_trips_and_meetings <- updated_data$view_trips_and_meetings
     vals$view_trip_coincidences <- updated_data$view_trip_coincidences
     vals$upload_results <- upload_results
   })
@@ -542,37 +547,7 @@ server <- function(input, output, session) {
   observeEvent(input$Del_row_head, {
     vals$events <- vals$events
   })
-  filtered_events <- reactive({
-    # x <- vals$events
-    fd <- date_range()
-    vd <- vals$events
-    x <- filter_events(events = vd,
-                       people = vals$people,
-                       visit_start = fd[1],
-                       visit_end = fd[2],
-                       search = input$search,
-                       wbg_only = input$wbg_only)
-    # Jitter if necessary
-    if(any(duplicated(x$Lat)) |
-       any(duplicated(x$Long))){
-      x <- x %>%
-        mutate(Long = jitter(Long, factor = 0.5),
-               Lat = jitter(Lat, factor = 0.5))
-    }
-    return(x)
-    
-  })
-  
-  filtered_events_timeline <- reactive({
-    fd <- input$date_range_timeline
-    vd <- vals$events
-    x <- filter_events(events = vd,
-                       visit_start = fd[1],
-                       visit_end = fd[2],
-                       search = input$search_timeline)
-    return(x)
-  })
-  
+ 
   selected_timevis <- reactiveVal(value = NULL)
   observeEvent(input$timevis_selected,
                selected_timevis(input$timevis_selected))
@@ -799,7 +774,6 @@ server <- function(input, output, session) {
 
     l <- leaflet() %>%
       addProviderTiles("Esri.WorldStreetMap") %>%
-      # setView(lng = mean(events$Long, na.rm = TRUE) - 5, lat = mean(events$Lat, na.rm = TRUE), zoom = 1) %>%
       leaflet.extras::addFullscreenControl() %>%
       addLegend(position = 'topright', colors = c('orange', 'blue'), labels = c('Non-WBG', 'WBG')) %>%
       addCircleMarkers(data = df, lng =~longitude, lat = ~latitude,
@@ -824,82 +798,6 @@ server <- function(input, output, session) {
     shinyjs::hide("text2")
     l
   })
-  
-  # # Leaflet proxy for the points
-  # observeEvent(filtered_events(), {
-  #   places <- filtered_events()
-  #
-  #   # Get whether wbg or not
-  #   places <-
-  #     left_join(places,
-  #               people %>%
-  #                 dplyr::select(short_name, is_wbg),
-  #               by = c('Person' = 'short_name'))
-  #   places$is_wbg <- as.logical(places$is_wbg)
-  #
-  #   # Get a id
-  #   places <- places %>%
-  #     mutate(id = paste0(Person, Organization, Lat, Long, is_wbg,
-  #              Counterpart,
-  #              `City of visit`, `Country of visit`, collapse = NULL)) %>%
-  #     mutate(id = as.numeric(factor(id))) %>%
-  #     dplyr::rename(City = `City of visit`) %>%
-  #     dplyr::rename(Date = `Visit start`) %>%
-  #     mutate(Date = format(Date, '%b %d, %Y'))
-  #
-  #   pops <- places %>%
-  #     filter(!duplicated(id))
-  #
-  #   popups = lapply(rownames(pops), function(row){
-  #     this_id <- pops[row,'id']
-  #     x <- places %>% filter(id == this_id) %>%
-  #       dplyr::select(Date, Person, City, Event)
-  #     htmlTable(x,
-  #               rnames = FALSE)
-  #     })
-  #
-  #
-  #   # Get faces
-  #   faces_dir <- paste0('www/headshots/circles/')
-  #   faces <- dir(faces_dir)
-  #   faces <- data_frame(joiner = gsub('.png', '', faces, fixed = TRUE),
-  #                       file = paste0(faces_dir, faces))
-  #
-  #   # Create a join column
-  #   faces$joiner <- ifelse(is.na(faces$joiner) | faces$joiner == 'NA',
-  #                          'Unknown',
-  #                          faces$joiner)
-  #   pops$joiner <- ifelse(pops$Person %in% faces$joiner,
-  #                         pops$Person,
-  #                           'Unknown')
-  #
-  #   # Join the files to the places data
-  #   if(nrow(pops) > 0){
-  #     pops <-
-  #       left_join(pops,
-  #                 faces,
-  #                 by = 'joiner')
-  #     # Define colors
-  #     cols <- ifelse(is.na(pops$is_wbg) |
-  #                      !pops$is_wbg,
-  #                    'orange',
-  #                    'blue')
-  #   } else {
-  #     pops <- events[0,]
-  #   }
-  #   face_icons <- icons(pops$file,
-  #                       iconWidth = 25, iconHeight = 25)
-  #
-  #   ## plot the subsetted ata
-  #   leafletProxy("leafy") %>%
-  #     clearMarkers() %>%
-  #     setView(lng = mean(pops$Long, na.rm = TRUE), lat = mean(pops$Lat, na.rm = TRUE)) %>%
-  #     addCircleMarkers(data = pops, lng =~Long, lat = ~Lat,
-  #                      col = cols, radius = 14) %>%
-  #     addMarkers(data = pops, lng =~Long, lat = ~Lat,
-  #                popup = popups,
-  #                icon = face_icons)
-  # })
   
   output$sank <- renderSankeyNetwork({
     x <- filtered_view_trip_coincidences()
@@ -999,20 +897,7 @@ server <- function(input, output, session) {
   })
   
   output$timevis <-  renderTimevis({
-    # fe <- filtered_events_timeline()
-    # if(nrow(fe) > 0){
-    #   fe$start <- fe$`Visit start`
-    #   fe$content <- paste0(fe$Person, ' in ', fe$`City of visit`)
-    #   fe$end <- fe$`Visit end`
-    #   fe$id <- 1:nrow(fe)
-    #   fe$type <- ifelse(as.numeric(fe$end - fe$start) == 0, 'box', 'range')
-    #   fe$title <- paste0(fe$Person, ' in ', fe$`City of visit`, ' from',
-    #                      fe$start, ' through ' , fe$end)
-    #   x <- timevis(data = fe)
-    #   return(x)
-    # } else {
-    #   return(NULL)
-    # }
+
     fet <- filtered_expanded_trips()
     out <- NULL
     
