@@ -134,27 +134,20 @@ body <- dashboardBody(
       fluidPage(
         fluidRow(
           h3('Visualization of interaction between people and places during the selected period', align = 'center'),
+          fluidRow(forceNetworkOutput('graph'),
           fluidRow(
-            column(4,
+            column(6,
+                   align = 'center',
+                   uiOutput('date_ui_network')),
+            column(6,
                    radioButtons('network_meeting',
                                 'Show meetings only or any trip overlaps',choices = c('Meetings only', 'Trip overlaps'),
                                 selected = 'Meetings only',
-                                inline = TRUE)),
-            column(4,
-                   uiOutput('date_ui_network')
-                   # dateRangeInput('date_range_network',
-                   #                'Filter for a specific date range:',
-                   #                start = min(date_dictionary$date, na.rm = TRUE),
-                   #                end = max(date_dictionary$date, na.rm = TRUE))
-                   ),
-            column(4,
+                                inline = TRUE),
                    textInput('search_network',
-                             'Or filter for specific events, people, places, etc.:'))
-          ),
-          fluidRow(column(8,
-                          forceNetworkOutput('graph')),
-                   column(4,
-                          fluidRow(DT::dataTableOutput('click_table'))))
+                             'Or filter for specific events, people, places, etc.:'),
+                   DT::dataTableOutput('click_table'))
+          ))
         )
       )
     ),
@@ -706,7 +699,14 @@ server <- function(input, output, session) {
 
     # Get trips and meetings, filtered for date range    
     df <- view_trips_and_meetings_filtered()
-
+    
+    # Filter for wbg only if relevant
+    if(input$wbg_only == 'WBG only'){
+      df <- df %>% dplyr::filter(is_wbg == 1)
+    } else if(input$wbg_only == 'Non-WBG only'){
+      df <- df %>% dplyr::filter(is_wbg == 0)
+    }
+    
     # Get row selection (if applicable) from datatable
     s <- input$visit_info_table_rows_selected
 
@@ -931,6 +931,12 @@ server <- function(input, output, session) {
   output$visit_info_table <- DT::renderDataTable({
     
    x <- view_trips_and_meetings_filtered()
+   # Filter for wbg only if relevant
+   if(input$wbg_only == 'WBG only'){
+     x <- x %>% dplyr::filter(is_wbg == 1)
+   } else if(input$wbg_only == 'Non-WBG only'){
+     x <- x %>% dplyr::filter(is_wbg == 0)
+   }
    x <- x %>%
      mutate(location = city_name) %>%
      mutate(name = short_name) %>%
