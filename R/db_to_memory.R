@@ -22,9 +22,13 @@ db_to_memory <- function(pool,
   
   # Read in all tables
   # tables <- unique(dbListTables(pool))
-  tables <- c('cities', 'people', 'trip_meetings', 'trips')
+  tables <- c('cities', 'people', 'trip_meetings', 'trips',
+              'user_action_log', 'users', 'venue_events',
+              'venue_types')
   # Add the views to the tables
-  tables <- c(tables, 'view_trip_coincidences', 'events')
+  tables <- c(tables, 'view_trip_coincidences',  
+              'events',
+              'view_trips_and_meetings')
   for (i in 1:length(tables)){
     this_table <- tables[i]
     message(paste0('Reading in the ', this_table, ' from the database and assigning to global environment.'))
