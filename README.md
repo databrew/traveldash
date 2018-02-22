@@ -109,6 +109,16 @@ psql --host=databrewdb.cfejspjhdciw.us-east-2.rds.amazonaws.com --port=8080 --us
 
 - Use the code in `grant_privileges.sql` to grant privileges to the `worldbank` user (password in credentials file).
 
+- Or grant privileges like:
+
+```
+create role worldbank with password '<PASSWORD HERE>' login;
+grant rds_superuser to worldbank;
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO worldbank;
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA pd_wbgtravel TO worldbank;
+```
+
+
 
 ### SQLite
 

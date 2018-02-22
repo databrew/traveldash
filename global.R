@@ -142,13 +142,15 @@ expand_trips <- function(trips, cities, people){
     mutate(group = 1)
   # Get the meetings in each event
   meetings <- trips %>%
-    dplyr::select(person_id, city_id, trip_group,
+    dplyr::select(person_id, city_id, #trip_group,
                   trip_start_date,
                   trip_end_date) %>%
     left_join(people %>% dplyr::select(person_id, 
                                        short_name),
               by = 'person_id') %>%
-    dplyr::mutate(content = paste0(short_name, ': ', trip_group)) %>%
+    dplyr::mutate(content = paste0(short_name, 
+                                   ': ')) %>% #, 
+                                   # trip_group)) %>%
     left_join(df %>% dplyr::select(-content,
                                    -type)) %>%
     # Keep only those dates which fall in the range
