@@ -8,7 +8,6 @@ the_width <- 270
 header <- dashboardHeader(title="Travel event dashboard",
   titleWidth = the_width)
 
-header <- dashboardHeader(title="Date picker")
 # Sidebar
 sidebar <- dashboardSidebar(
   width = the_width,
@@ -995,10 +994,13 @@ server <- function(input, output, session) {
     
     if(!is.null(fet)){
       if(nrow(fet) > 0){
+        # Decide whether to show meetings or not
         sm<- input$show_meetings
+        
         if(!sm){
           out <- timevis(data = fet,
-                         groups = data.frame(id = 1, content = c('Event'),
+                         groups = data.frame(id = 1, 
+                                             content = c('Event'),
                                              title = c('Event'),
                                              style = paste0('color: ', c('blue'))),
                          showZoom = FALSE,

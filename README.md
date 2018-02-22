@@ -114,6 +114,8 @@ psql --host=databrewdb.cfejspjhdciw.us-east-2.rds.amazonaws.com --port=8080 --us
 ```
 create role worldbank with password '<PASSWORD HERE>' login;
 grant rds_superuser to worldbank;
+GRANT ALL PRIVILEGES ON SCHEMA pd_wbgtravel TO worldbank;
+GRANT ALL PRIVILEGES ON SCHEMA public TO worldbank;
 GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO worldbank;
 GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA pd_wbgtravel TO worldbank;
 ```
