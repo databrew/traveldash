@@ -141,10 +141,12 @@ body <- dashboardBody(
                                 selected = 'Meetings only',
                                 inline = TRUE)),
             column(4,
-                   dateRangeInput('date_range_network',
-                                  'Filter for a specific date range:',
-                                  start = min(date_dictionary$date, na.rm = TRUE),
-                                  end = max(date_dictionary$date, na.rm = TRUE))),
+                   uiOutput('date_ui_network')
+                   # dateRangeInput('date_range_network',
+                   #                'Filter for a specific date range:',
+                   #                start = min(date_dictionary$date, na.rm = TRUE),
+                   #                end = max(date_dictionary$date, na.rm = TRUE))
+                   ),
             column(4,
                    textInput('search_network',
                              'Or filter for specific events, people, places, etc.:'))
@@ -352,6 +354,58 @@ server <- function(input, output, session) {
                     "))
       )
 })
+  
+  # Net work date range stuff
+  #########################################
+  observeEvent(input$daterange13,{
+    date_input <- input$daterange13
+    message('Dates changed. They are: ')
+    print(input$daterange13)
+    new_dates <- unlist(strsplit(date_input, split = ' to '))
+    new_dates <- as.Date(new_dates)
+    date_range(new_dates)
+  })
+  
+  observeEvent(input$reset_date_range, {
+    # reset
+    date_range(c(Sys.Date() - 7,
+                 Sys.Date() + 14))
+  })
+  
+  output$date_ui_network <- renderUI({
+    dr <- date_range()
+    dr <- paste0(as.character(dr[1]), ' to ', as.character(dr[2]))
+    fluidPage(
+      tags$div(HTML("
+                    <label for=\"daterange13container\">Pick a date range for analysis</label>
+                    
+                    <div id='daterange13container' style=\"width:456px;\">
+                    <input id=\"daterange13\" name=\"joe\" type=\"hidden\" class=\"form-control\" value=\"",dr, "\"/>
+                    
+                    </div>
+                    <script type=\"text/javascript\">
+                    $(function() {
+                    $('#daterange13').dateRangePicker({
+                    inline: true,
+                    container: '#daterange13container',
+                    alwaysOpen: true
+                    });
+                    
+                    // Observe changes and update:
+                    
+                    $('#daterange13').on('datepicker-change', function(event, changeObject) {
+                    // changeObject has properties value, date1 and date2.
+                    Shiny.onInputChange('daterange13', changeObject.value);
+                    });
+                    });
+                    </script>
+                    
+                    "))
+      )
+})
+  #########################################
+  
+  
   
   # Reactive view trips and meetings
   view_trips_and_meetings_filtered <- reactive({
@@ -824,7 +878,8 @@ server <- function(input, output, session) {
   
   # Create a separate filtered events for network
   filtered_view_trip_coincidences_network <- reactive({
-    fd <- input$date_range_network
+    # fd <- input$date_range_network
+    fd <- date_range()
     vd <- vals$view_trip_coincidences
     # filter for dates
     x <- vd %>%
