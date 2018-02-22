@@ -25,6 +25,10 @@ The above arguments should reflect any and all argments that one might pass to t
 
 ## Database set-up
 
+(The below should no longer be relevant, now that we are all using the same db on AWS)
+
+(For using local dump sent by Soren, `devnew`)
+
 ### Setting up the development database
 
 The development database is resembles the production database, but is named `dev` rather than `ARL`. To set up the database from scratch, take the following steps:

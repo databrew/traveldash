@@ -33,24 +33,15 @@ upload_raw_data <- function(pool,
   data$Start <- fix_date(data$Start)
   data$End <- fix_date(data$End)
   
-  # See if short or long format
-  if('STATUS' %in% names(data)){
-    short <- FALSE
-  } else {
-    short <- TRUE
+# Create fields
+  new_fields <- c('person_id', 'city_id', 'country_iso3', 'trip_id', 'meeting_person_id')
+  data$STATUS <- ''
+  for (new_field in new_fields){
+    if(!new_field %in% names(data)){
+      data[,new_field] <- as.integer(NA)
+    }
   }
-  
-  # Create fields in the short format 
-  if(short){
-    data$STATUS <- ''
-    data$person_id <-
-      data$city_id <-
-      data$country_iso3 <-
-      data$trip_id <- 
-      data$meeting_person_id <- 
-      as.integer(NA)
-  }
-  
+
   # Create an id field
   data <- cbind(up_id = rownames(data), data)
   

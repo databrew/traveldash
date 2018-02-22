@@ -276,7 +276,7 @@ body <- dashboardBody(
               fluidRow(
                 column(12,
                        h3('Upload your own data to the dashboard'),
-                       p('You can upload your own data, which will be geocoded, formatted, and then integrated into the dashboard. To do see, follow the instructions to the left. If you want a sample data set (with the format for upload), click one of the buttons to the right (the "short" format should be suitable for most users).')),
+                       p('You can upload your own data, which will be geocoded, formatted, and then integrated into the dashboard. To do see, follow the instructions to the left. If you want a sample data set (with the format for upload), click one of the button to the right.')),
                 column(6,
                        h4('Upload data'),
                        helpText('Upload a dataset from your computer. This should be either a .csv or .xls file.'),
@@ -287,10 +287,8 @@ body <- dashboardBody(
                                           '.csv'))),
                 column(6,
                        h4('Download sample dataset'),
-                       helpText('Click the "Download" button to get a sample dataset.'),
-                       downloadButton("download_short", "Download short format"),
-                       downloadButton("download_long", "Download long format"),
-                       fluidRow(p('If in "long format" mode, you can enter the word "UPDATE" or "DELETE" in the "STATUS" column in order to change the database.')))),
+                       helpText('Click the "Download" button to get a sample dataset in the correct upload format.'),
+                       downloadButton("download_correct", "Download correct format"))),
               uiOutput('upload_ui'),
               fluidRow(
                 h3(textOutput('your_data_text')),
@@ -371,20 +369,29 @@ server <- function(input, output, session) {
       return(NULL)
     } else {
       if(grepl('csv', inFile$datapath)){
-        x <- read_csv(inFile$datapath)
+        x <- read_csv(inFile$datapath,
+                      skip = 0)
+        # If it appears that the header row was included, skip it.
+        if(names(x)[1] != 'Person'){
+          x <- read_csv(inFile$datapath,
+                        skip = 1)
+        }
       } else if(grepl('xls', tolower(inFile$datapath))){
-        x <- read_excel(inFile$datapath)
+        x <- read_excel(inFile$datapath,
+                        skip = 0)
+        # If it appears that the header row was included, skip it.
+        if(names(x)[1] != 'Person'){
+          x <- read_excel(inFile$datapath,
+                          skip = 1)
+        }
       }
       x
     }
   })
   
   # Column table
-  output$column_table_short <- renderTable({
-    short_format %>% sample_n(0)
-  })
-  output$column_table_long <- renderTable({
-    long_format %>% sample_n(0)
+  output$column_table_correct <- renderTable({
+    upload_format %>% sample_n(0)
   })
   
   output$uploaded_table <- DT::renderDataTable({
@@ -418,14 +425,11 @@ server <- function(input, output, session) {
     x <- uploaded()
     if(!is.null(x)){
       uploaded_names <- names(x)
-      short_names <- names(head(short_format))
-      long_names <- names(head(long_format))
-      if(all(uploaded_names == short_names)){
-        'Your data matches the short format. Click "Submit" to use it in the app and save it to the database.'
-      } else if(all(uploaded_names == long_names)){
-        'Your data matches the long format. Click "Submit" to use it in the app and save it to the database.'
+      correct_names <- names(head(upload_format))
+      if(all(correct_names %in% uploaded_names)){
+        'Your data matches the correct upload format. Click "Submit" to use it in the app and save it to the database.'
       } else {
-        paste0('Your data does not match either the short or long format. Please upload a different dataset.')
+        paste0('Your data does not match either the upload format. Please upload a different dataset.')
       }
     } else {
       NULL
@@ -444,11 +448,9 @@ server <- function(input, output, session) {
       if(is.null(x)){
         fluidRow(
           column(8,
-                 helpText(paste0('Your uploaded data can be in either "short" format or "long" format.')),
-                 h4('Short format'),
-                 tableOutput('column_table_short'),
-                 h4('Long format'),
-                 tableOutput('column_table_long')),
+                 helpText(paste0('Your uploaded data should be in the following format')),
+                 h4('Correct format'),
+                 tableOutput('column_table_correct')),
           column(4)
         )
       } else {
@@ -464,20 +466,12 @@ server <- function(input, output, session) {
       }
     })
   
-  output$download_short <- downloadHandler(
+  output$download_correct <- downloadHandler(
     filename = function() {
-      'short_format.csv'
+      'upload_format.csv'
     },
     content = function(file) {
-      write.csv(short_format, file, row.names = FALSE)
-    }
-  )
-  output$download_long <- downloadHandler(
-    filename = function() {
-      'long_format.csv'
-    },
-    content = function(file) {
-      write.csv(long_format, file, row.names = FALSE)
+      write.csv(upload_format, file, row.names = FALSE)
     }
   )
   
