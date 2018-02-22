@@ -678,16 +678,15 @@ server <- function(input, output, session) {
     # Get trips and meetings, filtered for date range    
     df <- view_trips_and_meetings_filtered()
 
-    # Uncomment this later
-    # # Get row selection (if applicable) from datatable
-    # s <- input$visit_info_table_rows_selected
-    # 
-    # # Subset df if rows are selected
-    # if(!is.null(s)){
-    #   if(length(s) > 0){
-    #     df <- df[s,]
-    #   }
-    # }
+    # Get row selection (if applicable) from datatable
+    s <- input$visit_info_table_rows_selected
+
+    # Subset df if rows are selected
+    if(!is.null(s)){
+      if(length(s) > 0){
+        df <- df[s,]
+      }
+    }
     
     # Get number of rows of df
     nrp <- nrow(df)
@@ -715,11 +714,11 @@ server <- function(input, output, session) {
     # Create an id
     df <- df %>%
       mutate(id = paste0(short_name, is_wbg, city_id)) %>%
-      mutate(id = as.numeric(factor(id)))
+      mutate(id = as.numeric(factor(id))) %>%
+      arrange(trip_start_date)
       
     # Create some more columns
     df <- df %>%
-      arrange(trip_start_date) %>%
       mutate(dates = paste0(as.character(trip_start_date),
                             ifelse(trip_start_date != trip_end_date,
                                    ' through ', 
@@ -977,28 +976,26 @@ server <- function(input, output, session) {
   })
   
   output$visit_info_table <- DT::renderDataTable({
-    x <- filtered_events()
-    x <- x %>%
-      # arrange(`Visit start`) %>%
-      mutate(Location = `City of visit`) %>%
-      mutate(Dates = paste0(
-        `Visit start`, ifelse(`Visit start` != `Visit end`, ' through ', ''),
-        ifelse(`Visit start` != `Visit end`, as.character(`Visit end`), ''))) %>%
-      # format(`Visit start`, '%b %d, %Y'),
-      # ' - ',
-      # format(`Visit end`, '%b %d, %Y'))) %>%
-      dplyr::select(Person,
-                    # Organization,
-                    Location,
-                    Event,
-                    # Counterpart,
-                    Dates)
-    #               `Visit start`,
-    #               `Visit end`) %>%
-    # arrange(`Visit start`)
+    
+   x <- view_trips_and_meetings_filtered()
+   x <- x %>%
+     mutate(location = city_name) %>%
+     mutate(name = short_name) %>%
+     mutate(date = paste0(as.character(trip_start_date),
+                           ifelse(trip_start_date != trip_end_date,
+                                  ' through ', 
+                                  ''),
+                           ifelse(trip_start_date != trip_end_date,
+                                  as.character(trip_end_date), 
+                                  ''))) %>%
+     mutate(event = paste0(ifelse(!is.na(meeting_topic), meeting_topic, ''), 
+                           ifelse(!is.na(meeting_with), ' with ', ''),
+                           ifelse(!is.na(meeting_with), meeting_with, ''))) %>%
+     mutate(event = Hmisc::capitalize(event)) %>%
+     dplyr::select(name, date, location, event)
+   names(x) <- Hmisc::capitalize(names(x))
     prettify(x,
              download_options = TRUE) #%>%
-    # DT::formatStyle(columns = colnames(.), fontSize = '50%')
   })
   
   output$timevis <-  renderTimevis({
