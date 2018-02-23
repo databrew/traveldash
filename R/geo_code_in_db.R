@@ -7,7 +7,7 @@
 #' @export
 #' @import tmaptools
 #' @import DBI
-#' @import dplyr
+#' @import dplyr 
 
 
 get_geo <- function(city_id,q) 
