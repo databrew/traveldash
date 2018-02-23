@@ -762,8 +762,7 @@ server <- function(input, output, session) {
                     country_name,
                     trip_start_date,
                     trip_end_date,
-                    meeting_with,
-                    meeting_topic)
+                    meeting_with)
     
     # Get city id
     df <- df %>%
@@ -786,8 +785,7 @@ server <- function(input, output, session) {
                             ifelse(trip_start_date != trip_end_date,
                                    as.character(trip_end_date), 
                                    ''))) %>%
-      mutate(event = paste0(ifelse(!is.na(meeting_topic), meeting_topic, ''), 
-                            ifelse(!is.na(meeting_with), ' with ', ''),
+      mutate(event = paste0(ifelse(!is.na(meeting_with), ' With ', ''),
                             ifelse(!is.na(meeting_with), meeting_with, ''))) %>%
       mutate(event = Hmisc::capitalize(event)) 
     
@@ -978,8 +976,7 @@ server <- function(input, output, session) {
                            ifelse(trip_start_date != trip_end_date,
                                   as.character(trip_end_date), 
                                   ''))) %>%
-     mutate(event = paste0(ifelse(!is.na(meeting_topic), meeting_topic, ''), 
-                           ifelse(!is.na(meeting_with), ' with ', ''),
+     mutate(event = paste0(ifelse(!is.na(meeting_with), ' With ', ''),
                            ifelse(!is.na(meeting_with), meeting_with, ''))) %>%
      mutate(event = Hmisc::capitalize(event)) %>%
      dplyr::select(name, date, location, event)
