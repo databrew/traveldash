@@ -91,7 +91,7 @@ upload_raw_data <- function(pool,data,logged_in_user_id,return_upload_results = 
   # Spit back upload_results
   if(return_upload_results)
   {
-    names(upload_results) <- gsub("\\."," ",names(upload_results)) #read.xlsx replaces " " with "." eg, "Trip Group" to "Trip.Group
+    names(upload_results) <- gsub("\\."," ",names(upload_results)) #read.xlsx replaces " " with "." eg, "Trip Group" to "Trip.Group 
     return(upload_results)
   }
 }
