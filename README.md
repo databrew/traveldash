@@ -25,6 +25,10 @@ The above arguments should reflect any and all argments that one might pass to t
 
 ## Database set-up
 
+(The below should no longer be relevant, now that we are all using the same db on AWS)
+
+(For using local dump sent by Soren, `devnew`)
+
 ### Setting up the development database
 
 The development database is resembles the production database, but is named `dev` rather than `ARL`. To set up the database from scratch, take the following steps:
@@ -104,6 +108,18 @@ psql --host=databrewdb.cfejspjhdciw.us-east-2.rds.amazonaws.com --port=8080 --us
 ```
 
 - Use the code in `grant_privileges.sql` to grant privileges to the `worldbank` user (password in credentials file).
+
+- Or grant privileges like:
+
+```
+create role worldbank with password '<PASSWORD HERE>' login;
+grant rds_superuser to worldbank;
+GRANT ALL PRIVILEGES ON SCHEMA pd_wbgtravel TO worldbank;
+GRANT ALL PRIVILEGES ON SCHEMA public TO worldbank;
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO worldbank;
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA pd_wbgtravel TO worldbank;
+```
+
 
 
 ### SQLite

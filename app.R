@@ -8,7 +8,6 @@ the_width <- 270
 header <- dashboardHeader(title="Travel event dashboard",
   titleWidth = the_width)
 
-header <- dashboardHeader(title="Date picker")
 # Sidebar
 sidebar <- dashboardSidebar(
   width = the_width,
@@ -65,7 +64,6 @@ body <- dashboardBody(
   # Commenting out the below, since jquery is already included in shinydashboard
   # tags$head(tags$script(src = 'https://cdnjs.cloudflare.com/ajax/libs/jquery/1.12.4/jquery.min.js', type = 'text/javascript')),
   tags$head(tags$script(src = 'https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.16.0/moment.min.js', type = 'text/javascript')),
-  tags$head(tags$script(src = 'src/jquery.daterangepicker.js')),
   tags$head(tags$script(src = 'demo.js')),
   tags$head(tags$script(src = 'src/jquery.daterangepicker.js')),
   
@@ -135,25 +133,21 @@ body <- dashboardBody(
       fluidPage(
         fluidRow(
           h3('Visualization of interaction between people and places during the selected period', align = 'center'),
+          fluidRow(forceNetworkOutput('graph'),
           fluidRow(
-            column(4,
+            column(6,
+                   align = 'center',
+                   uiOutput('date_ui_network')),
+            column(6,
+                   align = 'center',
                    radioButtons('network_meeting',
                                 'Show meetings only or any trip overlaps',choices = c('Meetings only', 'Trip overlaps'),
                                 selected = 'Meetings only',
-                                inline = TRUE)),
-            column(4,
-                   dateRangeInput('date_range_network',
-                                  'Filter for a specific date range:',
-                                  start = min(date_dictionary$date, na.rm = TRUE),
-                                  end = max(date_dictionary$date, na.rm = TRUE))),
-            column(4,
+                                inline = TRUE),
                    textInput('search_network',
-                             'Or filter for specific events, people, places, etc.:'))
-          ),
-          fluidRow(column(8,
-                          forceNetworkOutput('graph')),
-                   column(4,
-                          fluidRow(DT::dataTableOutput('click_table'))))
+                             'Or filter for specific events, people, places, etc.:'),
+                   DT::dataTableOutput('click_table'))
+          ))
         )
       )
     ),
@@ -161,24 +155,21 @@ body <- dashboardBody(
       tabName = 'timeline',
       fluidPage(
         fluidRow(
-          column(3,
-                 dateRangeInput('date_range_timeline',
-                                'Filter for a specific date range:',
-                                start = min(date_dictionary$date),
-                                max = max(date_dictionary$date))),
-          column(3,
-                 actionButton('timevis_clear',
-                              'Clear selection')),
-          column(3,
-                 checkboxInput('show_meetings',
-                               'Show meetings',
-                               value = FALSE)),
-          column(3,
-                 textInput('search_timeline',
-                           'Or filter for specific events, people, places, etc.:'))
+          timevisOutput('timevis')
         ),
         fluidRow(
-          timevisOutput('timevis')
+          column(6,
+                 align = 'center',
+                 uiOutput('date_ui_timeline')),
+          column(6,
+                 align = 'center',
+                 actionButton('timevis_clear',
+                              'Clear selection'),
+                 checkboxInput('show_meetings',
+                               'Show meetings',
+                               value = FALSE),
+                 textInput('search_timeline',
+                           'Or filter for specific events, people, places, etc.:'))
         )
       )
     ),
@@ -276,7 +267,7 @@ body <- dashboardBody(
               fluidRow(
                 column(12,
                        h3('Upload your own data to the dashboard'),
-                       p('You can upload your own data, which will be geocoded, formatted, and then integrated into the dashboard. To do see, follow the instructions to the left. If you want a sample data set (with the format for upload), click one of the buttons to the right (the "short" format should be suitable for most users).')),
+                       p('You can upload your own data, which will be geocoded, formatted, and then integrated into the dashboard. To do see, follow the instructions to the left. If you want a sample data set (with the format for upload), click one of the button to the right.')),
                 column(6,
                        h4('Upload data'),
                        helpText('Upload a dataset from your computer. This should be either a .csv or .xls file.'),
@@ -287,10 +278,8 @@ body <- dashboardBody(
                                           '.csv'))),
                 column(6,
                        h4('Download sample dataset'),
-                       helpText('Click the "Download" button to get a sample dataset.'),
-                       downloadButton("download_short", "Download short format"),
-                       downloadButton("download_long", "Download long format"),
-                       fluidRow(p('If in "long format" mode, you can enter the word "UPDATE" or "DELETE" in the "STATUS" column in order to change the database.')))),
+                       helpText('Click the "Download" button to get a sample dataset in the correct upload format.'),
+                       downloadButton("download_correct", "Download correct format"))),
               uiOutput('upload_ui'),
               fluidRow(
                 h3(textOutput('your_data_text')),
@@ -317,18 +306,29 @@ server <- function(input, output, session) {
     new_dates <- as.Date(new_dates)
     date_range(new_dates)
   })
+  observeEvent(input$daterange13,{
+    date_input <- input$daterange13
+    message('Dates changed. They are: ')
+    print(input$daterange13)
+    new_dates <- unlist(strsplit(date_input, split = ' to '))
+    new_dates <- as.Date(new_dates)
+    date_range(new_dates)
+  })
+  observeEvent(input$daterange14,{
+    date_input <- input$daterange14
+    message('Dates changed. They are: ')
+    print(input$daterange14)
+    new_dates <- unlist(strsplit(date_input, split = ' to '))
+    new_dates <- as.Date(new_dates)
+    date_range(new_dates)
+  })
   
   observeEvent(input$reset_date_range, {
     # reset
     date_range(c(Sys.Date() - 7,
                  Sys.Date() + 14))
   })
-  
-  output$dr_text <- renderText({
-    paste0('The date_range() object is ', paste0(date_range(), collapse = ', '))
-  })
-  
-  
+
   output$date_ui <- renderUI({
     dr <- date_range()
     dr <- paste0(as.character(dr[1]), ' to ', as.character(dr[2]))
@@ -360,6 +360,89 @@ server <- function(input, output, session) {
                     "))
       )
 })
+
+  
+  output$date_ui_network <- renderUI({
+    dr <- date_range()
+    dr <- paste0(as.character(dr[1]), ' to ', as.character(dr[2]))
+    fluidPage(
+      tags$div(HTML("
+                    <label for=\"daterange13container\">Pick a date range for analysis</label>
+                    
+                    <div id='daterange13container' style=\"width:456px;\">
+                    <input id=\"daterange13\" name=\"joe\" type=\"hidden\" class=\"form-control\" value=\"",dr, "\"/>
+                    
+                    </div>
+                    <script type=\"text/javascript\">
+                    $(function() {
+                    $('#daterange13').dateRangePicker({
+                    inline: true,
+                    container: '#daterange13container',
+                    alwaysOpen: true
+                    });
+                    
+                    // Observe changes and update:
+                    
+                    $('#daterange13').on('datepicker-change', function(event, changeObject) {
+                    // changeObject has properties value, date1 and date2.
+                    Shiny.onInputChange('daterange13', changeObject.value);
+                    });
+                    });
+                    </script>
+                    
+                    "))
+      )
+})
+  
+  output$date_ui_timeline <- renderUI({
+    dr <- date_range()
+    dr <- paste0(as.character(dr[1]), ' to ', as.character(dr[2]))
+    fluidPage(
+      tags$div(HTML("
+                    <label for=\"daterange14container\">Pick a date range for analysis</label>
+                    
+                    <div id='daterange14container' style=\"width:456px;\">
+                    <input id=\"daterange14\" name=\"joe\" type=\"hidden\" class=\"form-control\" value=\"",dr, "\"/>
+                    
+                    </div>
+                    <script type=\"text/javascript\">
+                    $(function() {
+                    $('#daterange14').dateRangePicker({
+                    inline: true,
+                    container: '#daterange14container',
+                    alwaysOpen: true
+                    });
+                    
+                    // Observe changes and update:
+                    
+                    $('#daterange14').on('datepicker-change', function(event, changeObject) {
+                    // changeObject has properties value, date1 and date2.
+                    Shiny.onInputChange('daterange14', changeObject.value);
+                    });
+                    });
+                    </script>
+                    
+                    "))
+      )
+})
+  
+  #########################################
+  
+  
+  
+  # Reactive view trips and meetings
+  view_trips_and_meetings_filtered <- reactive({
+    dr <- date_range()
+    message('dr is ', dr)
+    if(is.null(dr)){
+      dr <- range(c(view_trips_and_meetings$trip_start_date,
+                    view_trips_and_meetings$trip_end_date),
+                  na.rm = TRUE)
+    }
+    out <- view_trips_and_meetings %>%
+      dplyr::filter(trip_end_date >= dr[1] &
+                      trip_start_date <= dr[2])
+  })
   
   
   ################################
@@ -371,20 +454,29 @@ server <- function(input, output, session) {
       return(NULL)
     } else {
       if(grepl('csv', inFile$datapath)){
-        x <- read_csv(inFile$datapath)
+        x <- read_csv(inFile$datapath,
+                      skip = 0)
+        # If it appears that the header row was included, skip it.
+        if(names(x)[1] != 'Person'){
+          x <- read_csv(inFile$datapath,
+                        skip = 1)
+        }
       } else if(grepl('xls', tolower(inFile$datapath))){
-        x <- read_excel(inFile$datapath)
+        x <- read_excel(inFile$datapath,
+                        skip = 0)
+        # If it appears that the header row was included, skip it.
+        if(names(x)[1] != 'Person'){
+          x <- read_excel(inFile$datapath,
+                          skip = 1)
+        }
       }
       x
     }
   })
   
   # Column table
-  output$column_table_short <- renderTable({
-    short_format %>% sample_n(0)
-  })
-  output$column_table_long <- renderTable({
-    long_format %>% sample_n(0)
+  output$column_table_correct <- renderTable({
+    upload_format %>% sample_n(0)
   })
   
   output$uploaded_table <- DT::renderDataTable({
@@ -418,14 +510,11 @@ server <- function(input, output, session) {
     x <- uploaded()
     if(!is.null(x)){
       uploaded_names <- names(x)
-      short_names <- names(head(short_format))
-      long_names <- names(head(long_format))
-      if(all(uploaded_names == short_names)){
-        'Your data matches the short format. Click "Submit" to use it in the app and save it to the database.'
-      } else if(all(uploaded_names == long_names)){
-        'Your data matches the long format. Click "Submit" to use it in the app and save it to the database.'
+      correct_names <- names(head(upload_format))
+      if(all(correct_names %in% uploaded_names)){
+        'Your data matches the correct upload format. Click "Submit" to use it in the app and save it to the database.'
       } else {
-        paste0('Your data does not match either the short or long format. Please upload a different dataset.')
+        paste0('Your data does not match either the upload format. Please upload a different dataset.')
       }
     } else {
       NULL
@@ -444,11 +533,9 @@ server <- function(input, output, session) {
       if(is.null(x)){
         fluidRow(
           column(8,
-                 helpText(paste0('Your uploaded data can be in either "short" format or "long" format.')),
-                 h4('Short format'),
-                 tableOutput('column_table_short'),
-                 h4('Long format'),
-                 tableOutput('column_table_long')),
+                 helpText(paste0('Your uploaded data should be in the following format')),
+                 h4('Correct format'),
+                 tableOutput('column_table_correct')),
           column(4)
         )
       } else {
@@ -464,20 +551,12 @@ server <- function(input, output, session) {
       }
     })
   
-  output$download_short <- downloadHandler(
+  output$download_correct <- downloadHandler(
     filename = function() {
-      'short_format.csv'
+      'upload_format.csv'
     },
     content = function(file) {
-      write.csv(short_format, file, row.names = FALSE)
-    }
-  )
-  output$download_long <- downloadHandler(
-    filename = function() {
-      'long_format.csv'
-    },
-    content = function(file) {
-      write.csv(long_format, file, row.names = FALSE)
+      write.csv(upload_format, file, row.names = FALSE)
     }
   )
   
@@ -491,6 +570,9 @@ server <- function(input, output, session) {
   vals$trip_meetings <- trip_meetings
   vals$trips <- trips
   vals$view_trip_coincidences <- view_trip_coincidences
+  vals$venue_events <- venue_events
+  vals$venue_types <- venue_types
+  vals$view_trips_and_meetings <- view_trips_and_meetings
   vals$upload_results <- NULL
   
   # Replace data with uploaded data
@@ -510,6 +592,9 @@ server <- function(input, output, session) {
     vals$people <- updated_data$people
     vals$trip_meetings <- updated_data$trip_meetings
     vals$trips <- updated_data$trips
+    vals$venue_events <- updated_data$venue_events
+    vals$venue_types <- updated_data$venue_types
+    vals$view_trips_and_meetings <- updated_data$view_trips_and_meetings
     vals$view_trip_coincidences <- updated_data$view_trip_coincidences
     vals$upload_results <- upload_results
   })
@@ -539,37 +624,7 @@ server <- function(input, output, session) {
   observeEvent(input$Del_row_head, {
     vals$events <- vals$events
   })
-  filtered_events <- reactive({
-    # x <- vals$events
-    fd <- date_range()
-    vd <- vals$events
-    x <- filter_events(events = vd,
-                       people = vals$people,
-                       visit_start = fd[1],
-                       visit_end = fd[2],
-                       search = input$search,
-                       wbg_only = input$wbg_only)
-    # Jitter if necessary
-    if(any(duplicated(x$Lat)) |
-       any(duplicated(x$Long))){
-      x <- x %>%
-        mutate(Long = jitter(Long, factor = 0.5),
-               Lat = jitter(Lat, factor = 0.5))
-    }
-    return(x)
-    
-  })
-  
-  filtered_events_timeline <- reactive({
-    fd <- input$date_range_timeline
-    vd <- vals$events
-    x <- filter_events(events = vd,
-                       visit_start = fd[1],
-                       visit_end = fd[2],
-                       search = input$search_timeline)
-    return(x)
-  })
-  
+ 
   selected_timevis <- reactiveVal(value = NULL)
   observeEvent(input$timevis_selected,
                selected_timevis(input$timevis_selected))
@@ -578,7 +633,7 @@ server <- function(input, output, session) {
   
   filtered_expanded_trips <- reactive({
     sm<- input$show_meetings
-    fd <- input$date_range_timeline
+    fd <- date_range()
     search_string <- input$search_timeline
     out <- expanded_trips %>%
       filter(end >= fd[1],
@@ -671,86 +726,102 @@ server <- function(input, output, session) {
   })
   
   output$leafy <- renderLeaflet({
+
+    # Get trips and meetings, filtered for date range    
+    df <- view_trips_and_meetings_filtered()
     
-    # Get filtered place
-    places <- filtered_events()
+    # Filter for wbg only if relevant
+    if(input$wbg_only == 'WBG only'){
+      df <- df %>% dplyr::filter(is_wbg == 1)
+    } else if(input$wbg_only == 'Non-WBG only'){
+      df <- df %>% dplyr::filter(is_wbg == 0)
+    }
     
     # Get row selection (if applicable) from datatable
     s <- input$visit_info_table_rows_selected
-    
-    # Subset places if rows are selected
+
+    # Subset df if rows are selected
     if(!is.null(s)){
       if(length(s) > 0){
-        places <- places[s,]
+        df <- df[s,]
       }
     }
     
-    # Get number of rows of places
-    nrp <- nrow(places)
+    # Get number of rows of df
+    nrp <- nrow(df)
     
     # Get whether wbg or not
-    places <-
-      left_join(places,
-                people %>%
-                  dplyr::select(short_name, is_wbg) %>%
-                  dplyr::filter(!duplicated(short_name)),
-                by = c('Person' = 'short_name'))
-    places$is_wbg <- as.logical(places$is_wbg)
+    df$is_wbg <- as.logical(df$is_wbg)
     
-    # Overwrite event with the "counterpart" if event is NA
-    places$Event <- ifelse(is.na(places$Event),
-                           places$Counterpart,
-                           places$Event)
+    # Select down
+    df <- df %>%
+      dplyr::select(is_wbg,
+                    short_name,
+                    city_name,
+                    country_name,
+                    trip_start_date,
+                    trip_end_date,
+                    meeting_with,
+                    meeting_topic)
     
-    # Get a id
-    places <- places %>%
-      mutate(id = paste0(Person, Organization, is_wbg,
-                         Event,
-                         `City of visit`, collapse = NULL)) %>%
+    # Get city id
+    df <- df %>%
+      left_join(cities %>%
+                  dplyr::select(city_name, country_name, city_id),
+                by = c('city_name', 'country_name'))
+    
+    # Create an id
+    df <- df %>%
+      mutate(id = paste0(short_name, is_wbg, city_id)) %>%
       mutate(id = as.numeric(factor(id))) %>%
-      dplyr::rename(City = `City of visit`) %>%
-      dplyr::rename(Date = `Visit start`) %>%
-      mutate(Date = format(Date, '%b %d, %Y'))
+      arrange(trip_start_date)
+      
+    # Create some more columns
+    df <- df %>%
+      mutate(dates = paste0(as.character(trip_start_date),
+                            ifelse(trip_start_date != trip_end_date,
+                                   ' through ', 
+                                   ''),
+                            ifelse(trip_start_date != trip_end_date,
+                                   as.character(trip_end_date), 
+                                   ''))) %>%
+      mutate(event = paste0(ifelse(!is.na(meeting_topic), meeting_topic, ''), 
+                            ifelse(!is.na(meeting_with), ' with ', ''),
+                            ifelse(!is.na(meeting_with), meeting_with, ''))) %>%
+      mutate(event = Hmisc::capitalize(event)) 
     
-    
+
+    # Keep a "full" df with one row per trip
+    full_df <- df
+
     # Make only one head per person/place
-    full_places <- places %>% arrange(Date)
-    places <- places %>%
-      group_by(Person, Organization, City, `Country of visit`) %>%
-      summarise(Date = paste0(Date, collapse = ';'),
-                Lat = dplyr::first(Lat),
-                Long = dplyr::first(Long),
-                Event = paste0(Event, collapse = ';'),
-                is_wbg = dplyr::first(is_wbg),
-                id = paste0(id, collapse = ';')) %>% ungroup
+    df <- df %>%
+      group_by(id, short_name, is_wbg, city_id) %>%
+      summarise(date = paste0(dates, collapse = ';'),
+                event = paste0(event, collapse = ';')) %>% ungroup
+
+    # Join to city names
+    df <- df %>%
+      left_join(cities %>%
+                  dplyr::select(city_name, country_name, city_id,
+                                latitude, longitude),
+                by = 'city_id') 
+
     
-    pops <- places %>%
-      filter(!duplicated(id))
-    
-    popups = lapply(rownames(pops), function(row){
-      this_id <- unlist(pops[row,'id'])
-      # Get the original rows from full places for each of the ids
-      ids <- unlist(lapply(strsplit(this_id, ';'), as.numeric))
-      out_list <- list()
-      for(i in 1:length(ids)){
-        message(i)
-        this_id <- ids[i]
-        x <- full_places %>% dplyr::filter(id == this_id) %>%
-          dplyr::select(Date, Person, City, Event, id)
-        out_list[[i]] <- x
-      }
-      x <- bind_rows(out_list)
-      x <- x %>% distinct(Date, Person, City, Event, .keep_all = TRUE)
-      # if(nrow(x) > 1){
-      #   x$Person[2:nrow(x)] <- ''
-      #   x$City[2:nrow(x)] <- ''
-      # }
-      y <- x %>%
-        dplyr::select(-id, -Person, -City)
-      htmlTable(y,
+    popups = lapply(rownames(df), function(row){
+      this_id <- unlist(df[row,'id'])
+      # Get the original rows from full df for each of the ids
+      x <- full_df %>%
+        filter(id == this_id)
+      caption <- paste0(x$short_name[1], ' in ', x$city_name[1])
+      x <- x %>%
+        dplyr::select(dates, event)
+      names(x) <- Hmisc::capitalize(names(x))
+      knitr::kable(x,
                 rnames = FALSE,
-                caption = paste0(x$Person[1], ' in ', x$City[1]),
-                align = paste(rep("l", ncol(y)), collapse = ''))
+                caption = caption,
+                align = paste(rep("l", ncol(x)), collapse = ''),
+                format = 'html')
     })
     
     
@@ -764,140 +835,53 @@ server <- function(input, output, session) {
     faces$joiner <- ifelse(is.na(faces$joiner) | faces$joiner == 'NA',
                            'Unknown',
                            faces$joiner)
-    pops$joiner <- ifelse(pops$Person %in% faces$joiner,
-                          pops$Person,
+    df$joiner <- ifelse(df$short_name %in% faces$joiner,
+                          df$short_name,
                           'Unknown')
     
-    # Join the files to the places data
-    if(nrow(pops) > 0){
-      pops <-
-        left_join(pops,
+    # Join the files to the df data
+    if(nrow(df) > 0){
+      df <-
+        left_join(df,
                   faces,
                   by = 'joiner')
       # Define colors
-      cols <- ifelse(is.na(pops$is_wbg) |
-                       !pops$is_wbg,
+      cols <- ifelse(is.na(df$is_wbg) |
+                       !df$is_wbg,
                      'orange',
                      'blue')
     } else {
-      pops <- events[0,]
+      df <- df[0,]
     }
-    face_icons <- icons(pops$file,
+    face_icons <- icons(df$file,
                         iconWidth = 25, iconHeight = 25)
-    
-    ## plot the subsetted ata
-    # leafletProxy("leafy") %>%
-    # clearMarkers() %>%
-    # setView(lng = mean(pops$Long, na.rm = TRUE), lat = mean(pops$Lat, na.rm = TRUE)) %>%
+
     l <- leaflet() %>%
       addProviderTiles("Esri.WorldStreetMap") %>%
-      # setView(lng = mean(events$Long, na.rm = TRUE) - 5, lat = mean(events$Lat, na.rm = TRUE), zoom = 1) %>%
       leaflet.extras::addFullscreenControl() %>%
       addLegend(position = 'topright', colors = c('orange', 'blue'), labels = c('Non-WBG', 'WBG')) %>%
-      addCircleMarkers(data = pops, lng =~Long, lat = ~Lat,
+      addCircleMarkers(data = df, lng =~longitude, lat = ~latitude,
                        # clusterOptions = markerClusterOptions(),
                        col = cols, radius = 14) %>%
-      addMarkers(data = pops, lng =~Long, lat = ~Lat,
+      addMarkers(data = df, lng =~longitude, lat = ~latitude,
                  popup = popups,
                  # clusterOptions = markerClusterOptions(),
                  icon = face_icons)
     
     # Zoom out a bit if only 1 city or person
-    if(nrp == 1 | length(unique(places$City)) == 1){
+    if(nrp == 1 | length(unique(df$city_id)) == 1){
       l <- l %>%
-        setView(lng = mean(places$Long, na.rm = TRUE),
-                lat = mean(places$Lat, na.rm = TRUE),
+        setView(lng = mean(df$longitude, na.rm = TRUE),
+                lat = mean(df$latitude, na.rm = TRUE),
                 zoom = 7)
     }
     
-    # addDrawToolbar(
-    #   targetGroup='draw',
-    #   editOptions = editToolbarOptions(selectedPathOptions = selectedPathOptions()))  %>%
-    # addLayersControl(overlayGroups = c('draw'), options =
-    #                    layersControlOptions(collapsed=FALSE)) %>%
-    # addStyleEditor()
     shinyjs::enable("action_forward")
     shinyjs::hide("text1")
     shinyjs::enable("action_back")
     shinyjs::hide("text2")
     l
   })
-  
-  # # Leaflet proxy for the points
-  # observeEvent(filtered_events(), {
-  #   places <- filtered_events()
-  #
-  #   # Get whether wbg or not
-  #   places <-
-  #     left_join(places,
-  #               people %>%
-  #                 dplyr::select(short_name, is_wbg),
-  #               by = c('Person' = 'short_name'))
-  #   places$is_wbg <- as.logical(places$is_wbg)
-  #
-  #   # Get a id
-  #   places <- places %>%
-  #     mutate(id = paste0(Person, Organization, Lat, Long, is_wbg,
-  #              Counterpart,
-  #              `City of visit`, `Country of visit`, collapse = NULL)) %>%
-  #     mutate(id = as.numeric(factor(id))) %>%
-  #     dplyr::rename(City = `City of visit`) %>%
-  #     dplyr::rename(Date = `Visit start`) %>%
-  #     mutate(Date = format(Date, '%b %d, %Y'))
-  #
-  #   pops <- places %>%
-  #     filter(!duplicated(id))
-  #
-  #   popups = lapply(rownames(pops), function(row){
-  #     this_id <- pops[row,'id']
-  #     x <- places %>% filter(id == this_id) %>%
-  #       dplyr::select(Date, Person, City, Event)
-  #     htmlTable(x,
-  #               rnames = FALSE)
-  #     })
-  #
-  #
-  #   # Get faces
-  #   faces_dir <- paste0('www/headshots/circles/')
-  #   faces <- dir(faces_dir)
-  #   faces <- data_frame(joiner = gsub('.png', '', faces, fixed = TRUE),
-  #                       file = paste0(faces_dir, faces))
-  #
-  #   # Create a join column
-  #   faces$joiner <- ifelse(is.na(faces$joiner) | faces$joiner == 'NA',
-  #                          'Unknown',
-  #                          faces$joiner)
-  #   pops$joiner <- ifelse(pops$Person %in% faces$joiner,
-  #                         pops$Person,
-  #                           'Unknown')
-  #
-  #   # Join the files to the places data
-  #   if(nrow(pops) > 0){
-  #     pops <-
-  #       left_join(pops,
-  #                 faces,
-  #                 by = 'joiner')
-  #     # Define colors
-  #     cols <- ifelse(is.na(pops$is_wbg) |
-  #                      !pops$is_wbg,
-  #                    'orange',
-  #                    'blue')
-  #   } else {
-  #     pops <- events[0,]
-  #   }
-  #   face_icons <- icons(pops$file,
-  #                       iconWidth = 25, iconHeight = 25)
-  #
-  #   ## plot the subsetted ata
-  #   leafletProxy("leafy") %>%
-  #     clearMarkers() %>%
-  #     setView(lng = mean(pops$Long, na.rm = TRUE), lat = mean(pops$Lat, na.rm = TRUE)) %>%
-  #     addCircleMarkers(data = pops, lng =~Long, lat = ~Lat,
-  #                      col = cols, radius = 14) %>%
-  #     addMarkers(data = pops, lng =~Long, lat = ~Lat,
-  #                popup = popups,
-  #                icon = face_icons)
-  # })
   
   output$sank <- renderSankeyNetwork({
     x <- filtered_view_trip_coincidences()
@@ -924,7 +908,8 @@ server <- function(input, output, session) {
   
   # Create a separate filtered events for network
   filtered_view_trip_coincidences_network <- reactive({
-    fd <- input$date_range_network
+    # fd <- input$date_range_network
+    fd <- date_range()
     vd <- vals$view_trip_coincidences
     # filter for dates
     x <- vd %>%
@@ -974,54 +959,48 @@ server <- function(input, output, session) {
   })
   
   output$visit_info_table <- DT::renderDataTable({
-    x <- filtered_events()
-    x <- x %>%
-      # arrange(`Visit start`) %>%
-      mutate(Location = `City of visit`) %>%
-      mutate(Dates = paste0(
-        `Visit start`, ifelse(`Visit start` != `Visit end`, ' through ', ''),
-        ifelse(`Visit start` != `Visit end`, as.character(`Visit end`), ''))) %>%
-      # format(`Visit start`, '%b %d, %Y'),
-      # ' - ',
-      # format(`Visit end`, '%b %d, %Y'))) %>%
-      dplyr::select(Person,
-                    # Organization,
-                    Location,
-                    Event,
-                    # Counterpart,
-                    Dates)
-    #               `Visit start`,
-    #               `Visit end`) %>%
-    # arrange(`Visit start`)
+    
+   x <- view_trips_and_meetings_filtered()
+   # Filter for wbg only if relevant
+   if(input$wbg_only == 'WBG only'){
+     x <- x %>% dplyr::filter(is_wbg == 1)
+   } else if(input$wbg_only == 'Non-WBG only'){
+     x <- x %>% dplyr::filter(is_wbg == 0)
+   }
+   x <- x %>%
+     mutate(location = city_name) %>%
+     mutate(name = short_name) %>%
+     mutate(date = paste0(as.character(trip_start_date),
+                           ifelse(trip_start_date != trip_end_date,
+                                  ' through ', 
+                                  ''),
+                           ifelse(trip_start_date != trip_end_date,
+                                  as.character(trip_end_date), 
+                                  ''))) %>%
+     mutate(event = paste0(ifelse(!is.na(meeting_topic), meeting_topic, ''), 
+                           ifelse(!is.na(meeting_with), ' with ', ''),
+                           ifelse(!is.na(meeting_with), meeting_with, ''))) %>%
+     mutate(event = Hmisc::capitalize(event)) %>%
+     dplyr::select(name, date, location, event)
+   names(x) <- Hmisc::capitalize(names(x))
     prettify(x,
              download_options = TRUE) #%>%
-    # DT::formatStyle(columns = colnames(.), fontSize = '50%')
   })
   
   output$timevis <-  renderTimevis({
-    # fe <- filtered_events_timeline()
-    # if(nrow(fe) > 0){
-    #   fe$start <- fe$`Visit start`
-    #   fe$content <- paste0(fe$Person, ' in ', fe$`City of visit`)
-    #   fe$end <- fe$`Visit end`
-    #   fe$id <- 1:nrow(fe)
-    #   fe$type <- ifelse(as.numeric(fe$end - fe$start) == 0, 'box', 'range')
-    #   fe$title <- paste0(fe$Person, ' in ', fe$`City of visit`, ' from',
-    #                      fe$start, ' through ' , fe$end)
-    #   x <- timevis(data = fe)
-    #   return(x)
-    # } else {
-    #   return(NULL)
-    # }
+
     fet <- filtered_expanded_trips()
     out <- NULL
     
     if(!is.null(fet)){
       if(nrow(fet) > 0){
+        # Decide whether to show meetings or not
         sm<- input$show_meetings
+        
         if(!sm){
           out <- timevis(data = fet,
-                         groups = data.frame(id = 1, content = c('Event'),
+                         groups = data.frame(id = 1, 
+                                             content = c('Event'),
                                              title = c('Event'),
                                              style = paste0('color: ', c('blue'))),
                          showZoom = FALSE,
