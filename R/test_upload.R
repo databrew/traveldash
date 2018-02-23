@@ -29,9 +29,10 @@ for(i in 1:length(functions))
 pool <- create_pool(options_list = credentials_extract(),F)
 
 file <- paste0(getwd(),"/dev_database/Travel Event Dashboard_DATA Feb-15.xlsx")
-file <- paste0(getwd(),"/dev_database/Travel Event Dashboard_DATA_20 Feb.xlsx")
+# file <- paste0(getwd(),"/dev_database/Travel Event Dashboard_DATA_20 Feb.xlsx")
+# file <- paste0(getwd(),"/dev_database/Travel Event Dashboard_DATA_20 Feb_fixed.xlsx")
 
-data <- read.xlsx(file,sheet=1,startRow=2,detectDates=F)
+data <- read_excel(file,sheet=1,skip = 1)
 
 LOGGED_IN_USER_ID <- 1 
 
