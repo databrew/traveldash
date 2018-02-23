@@ -481,10 +481,17 @@ server <- function(input, output, session) {
   
   output$uploaded_table <- DT::renderDataTable({
     ur <- vals$upload_results
+    save(ur, file = '~/Desktop/ur.RData')
     if(!is.null(ur)){
-      prettify(ur, download_options = TRUE)
+      if(all(is.na(names(ur)))){
+        prettify(data.frame(x = ur[,ncol(ur)]))
+      } else {
+        prettify(ur, download_options = TRUE)
+      }
+      
     } else {
       x <- uploaded()
+      save(x, file = '~/Desktop/x.RData')
       if(!is.null(x)){
         prettify(x)
       } else {
