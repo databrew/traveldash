@@ -29,7 +29,7 @@ db_to_memory <- function(pool,
               'venue_types')
   # Add the views to the tables
   tables <- c(tables, 'view_trip_coincidences',  
-              'events',
+              # 'events',
               'view_trips_and_meetings')
   for (i in 1:length(tables)){
     this_table <- tables[i]
@@ -74,9 +74,9 @@ db_to_memory <- function(pool,
     out_list[[i]] <- events
     names(out_list)[i] <- 'events'
   } else {
-    assign('events',
-           events,
-           envir = .GlobalEnv)
+    # assign('events',
+    #        events,
+    #        envir = .GlobalEnv)
   }
   if(return_list){
     return(out_list)

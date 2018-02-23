@@ -562,9 +562,10 @@ server <- function(input, output, session) {
   
   # Reactive dataframe for the filtered table
   vals <- reactiveValues()
-  vals$events<-filter_events(events = events,
-                             visit_start = min(date_dictionary$date),
-                             visit_end = max(date_dictionary$date))
+  # vals$events<-filter_events(events = events,
+  #                            visit_start = min(date_dictionary$date),
+  #                            visit_end = max(date_dictionary$date))
+  vals$events <- events
   vals$cities <- cities
   vals$people <- people
   vals$trip_meetings <- trip_meetings
