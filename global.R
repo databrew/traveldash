@@ -32,7 +32,10 @@ message('############ Done with package loading')
 # Source all the functions in the R directory
 functions <- dir('R')
 for(i in 1:length(functions)){
-  source(paste0('R/', functions[i]), chdir = TRUE)
+  this_function <- functions[i]
+  if(!grepl('test', this_function)){
+    source(paste0('R/', this_function), chdir = TRUE)
+  }
 }
 
 # Define whether using postgresql or sqlite
