@@ -48,8 +48,9 @@ pool <- create_pool(options_list = credentials_extract(),
                     use_sqlite = use_sqlite)
 
 # Geocode the cities in the db if necessary 
-geo_code_in_db(pool = pool,
-               use_sqlite = use_sqlite)
+# //SAH 2-22-2018: Called after upload or changes, should be unnecessary on app start-up and generate unnecessary db query each time
+#geo_code_in_db(pool = pool,
+#               use_sqlite = use_sqlite)
 
 # Get the data from the db into memory
 db_to_memory(pool = pool)
