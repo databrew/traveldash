@@ -1,6 +1,7 @@
 # Should be run from parent directory (traveldash)
 
-library(openxlsx)
+# library(openxlsx)
+library(readxl)
 library(RPostgreSQL)
 library(yaml)
 library(DBI)
@@ -29,7 +30,9 @@ for(i in 1:length(functions))
 pool <- create_pool(options_list = credentials_extract(),F)
 
 file <- paste0(getwd(),"/dev_database/Travel Event Dashboard_DATA Feb-15.xlsx")
-data <- read.xlsx(file,sheet=1,startRow=2,detectDates=F)
+# file <- paste0(getwd(),"/dev_database/Travel_Event_Dashboard_DATA_20_Feb.xlsx")
+
+data <- read_excel(file,sheet=1,skip = 1)
 
 LOGGED_IN_USER_ID <- 1 
 

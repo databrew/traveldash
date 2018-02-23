@@ -16,7 +16,7 @@ upload_raw_data <- function(pool,
                             data,
                             logged_in_user_id,
                             return_upload_results = TRUE){
-  names(data) <- gsub("\\."," ",names(data)) #read.xlsx replaces " " with "." eg, "Trip Group" to "Trip.Group"
+  # names(data) <- gsub("\\."," ",names(data)) #read.xlsx replaces " " with "." eg, "Trip Group" to "Trip.Group"
   
   data_cols <- names(data)
   valid_cols <- c("Person","Organization","City","Country","Start","End","Trip Group","Venue","Meeting","Agenda","CMD","ID")
@@ -37,6 +37,7 @@ upload_raw_data <- function(pool,
       }
     } else {
       out <- x
+      out <- as.character(as.Date(out))
     }
     return(out)
   }

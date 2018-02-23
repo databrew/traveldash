@@ -897,8 +897,8 @@ ALTER SEQUENCE cities_city_id_seq OWNED BY cities.city_id;
 
 CREATE TABLE people (
     person_id integer NOT NULL,
-    full_name character varying(50),
-    short_name character varying(35) NOT NULL,
+    full_name character varying(100),
+    short_name character varying(80) NOT NULL,
     title character varying(20),
     organization character varying(20) NOT NULL,
     sub_organization character varying(20),
