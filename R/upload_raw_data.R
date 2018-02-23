@@ -76,7 +76,7 @@ upload_raw_data <- function(pool,
   
   upload_results <- dbGetQuery(conn,paste0('select msg."Person",msg."Organization", msg."City", msg."Country",msg."Start",msg."End",msg."Trip Group", msg."Venue",msg."Meeting",msg."Agenda", msg."STATUS" from pd_wbgtravel.travel_uploads(',logged_in_user_id,') msg;')) 
   # Drop the temporary table
-  dbSendQuery(conn,"drop table if exists public._temp_travel_uploads;") 
+  #dbSendQuery(conn,"drop table if exists public._temp_travel_uploads;") 
   
   poolReturn(conn)
   

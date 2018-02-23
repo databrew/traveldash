@@ -1,3 +1,4 @@
+--drop function pd_wbgtravel.travel_uploads;
 CREATE OR REPLACE FUNCTION pd_wbgtravel.remove_abandoned_people_and_places(v_user_id int) RETURNS table(abandoned_log_id int)
 LANGUAGE plpgsql AS
 $$BEGIN
@@ -24,9 +25,12 @@ insert into _temp_user_action_log(log_id) select log_id from log_abandoned_citie
 with delete_abandoned_venues as
 (
 	delete from pd_wbgtravel.venue_events
-	where not exists (select * from pd_wbgtravel.cities where cities.city_id = venue_events.venue_city_id) or 
-				not exists (select * from pd_wbgtravel.trip_meetings where trip_meetings.meeting_venue_id = venue_events.venue_id) or 
-				venue_city_id is null
+	where venue_id <> 0 and
+			  (
+					not exists (select * from pd_wbgtravel.cities where cities.city_id = venue_events.venue_city_id) or 
+					not exists (select * from pd_wbgtravel.trip_meetings where trip_meetings.meeting_venue_id = venue_events.venue_id) or 
+					venue_city_id is null
+				)
 	returning venue_id,venue_name
 ),
 log_abandoned_venues as

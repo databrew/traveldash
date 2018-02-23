@@ -108,11 +108,14 @@ select abandoned_log_id from pd_wbgtravel.remove_abandoned_people_and_places(v_u
 ---------------------
 raise notice 'Adding New People';
 --Create a temp table to store new people to track which up_ids are added and report back to user on upload results
-create temp table if not exists _temp_people(up_id int4, short_name varchar(50), organization varchar(50), is_wbg int2); 
+create temp table if not exists _temp_people(up_id int4, short_name varchar(40), organization varchar(50), is_wbg int2); 
 delete from _temp_people;
 -- New people from travelers list
 insert into _temp_people(up_id,short_name,organization,is_wbg)
-select distinct ttu.up_id,initcap(trim(ttu."Person")),trim(ttu."Organization"),0
+select distinct 
+	ttu.up_id,
+	left(initcap(trim(ttu."Person")),40),
+	left(trim(ttu."Organization"),50),0
 from public._temp_travel_uploads ttu 
 where coalesce(ttu."CMD",'INSERT') = 'INSERT' and 
 	ttu."Person" is not null and 
@@ -124,7 +127,9 @@ where coalesce(ttu."CMD",'INSERT') = 'INSERT' and
 -- Meetings permit csv lists of people who are meeting
 with multi_meetings as
 (
-	select distinct ttu.up_id,initcap(trim(unnest(string_to_array(ttu."Meeting",',')))) as "Meeting"
+	select distinct 
+		ttu.up_id,
+		left(initcap(trim(unnest(string_to_array(ttu."Meeting",',')))),40) as "Meeting"
 	from public._temp_travel_uploads ttu 
 	where coalesce(ttu."CMD",'INSERT') = 'INSERT' and ttu."Meeting" is not null
 )
@@ -196,7 +201,9 @@ create temp table if not exists _temp_cities(up_id int4, city_name varchar(50), 
 delete from _temp_cities;
 
 insert into _temp_cities(up_id,city_name,country_name)
-select distinct ttu.up_id,ttu."City",ttu."Country"
+select distinct ttu.up_id,
+	left(ttu."City",50),
+	left(ttu."Country",50)
 from public._temp_travel_uploads ttu 
 where coalesce(ttu."CMD",'INSERT') = 'INSERT' and 
 	ttu."City" is not null and 
@@ -244,7 +251,7 @@ create temp table if not exists _temp_trips(up_id int4, person_id int4, city_id 
 delete from _temp_trips;
 
 insert into _temp_trips(up_id,person_id,city_id,trip_start_date,trip_end_date,trip_group)
-select distinct ttu.up_id,pe.person_id,ci.city_id,ttu."Start",ttu."End",ttu."Trip Group"
+select distinct ttu.up_id,pe.person_id,ci.city_id,ttu."Start",ttu."End",left(ttu."Trip Group",75)
 from public._temp_travel_uploads ttu 
 inner join pd_wbgtravel.people pe on (
                                       lower(trim(pe.short_name)) = lower(trim(ttu."Person")) or 
@@ -264,7 +271,7 @@ with trips_insert as
 (
 	insert into pd_wbgtravel.trips(person_id,city_id,trip_start_date,trip_end_date,trip_group,created_by_user_id)
 	select distinct person_id,city_id,trip_start_date,trip_end_date,
-		substring(array_to_string(array_agg(distinct trip_group),',') from 1 for 75),v_user_id
+		left(array_to_string(array_agg(distinct trip_group),','),75),v_user_id
 	from _temp_trips
 	where not exists(select * from pd_wbgtravel.trips where trips.person_id = _temp_trips.person_id and trips.city_id = _temp_trips.city_id 
 		and trips.trip_start_date = _temp_trips.trip_start_date and trips.trip_end_date = _temp_trips.trip_end_date)
@@ -314,7 +321,7 @@ display_flag boolean);
 
 -- Venues will only be recognized when new trips are also created due to the join on _temp_travel_uploads
 insert into _temp_venues(	up_id,	venue_name,	venue_city_id,	event_start_date,	event_end_date,	display_flag)
-select distinct ttu.up_id,	ttu."Venue",	tt.city_id,	tt.trip_start_date,	tt.trip_end_date,	false
+select distinct ttu.up_id, left(ttu."Venue",100),	tt.city_id,	tt.trip_start_date,	tt.trip_end_date,	false
 from public._temp_travel_uploads ttu
 inner join _temp_trips tt on tt.up_id = ttu.up_id
 where coalesce(ttu."CMD",'INSERT') = 'INSERT' and ttu."Venue" is not null;
@@ -461,7 +468,7 @@ update _user_action_log
 raise notice 'Adding New Meetings';
 
 create temp table if not exists _temp_meetings(up_id int4, travelers_trip_id int4, 
-                                               meeting_person_id int4, agenda varchar(75), 
+                                               meeting_person_id int4, agenda varchar(100), 
 																							 meeting_venue_id int, stag_flag bool not null default false); 
 delete from _temp_meetings;
 
@@ -473,8 +480,8 @@ with multi_meetings as
 		ttu.up_id,
 		ualt.table_ids[1] as travelers_trip_id,
 		trim(unnest(string_to_array(ttu."Meeting",','))) as meeting_person_name,
-		ttu."Agenda" as agenda,
-		ualv.table_ids[1] as meeting_venue_id
+		left(ttu."Agenda",100) as agenda,
+		coalesce(ualv.table_ids[1],0) as meeting_venue_id
 	from public._temp_travel_uploads ttu 
 	inner join _user_action_log ualt on ualt.table_name = 'trips' and ttu.up_id = any(ualt.up_ids)
 	left join _user_action_log ualv on ualv.table_name = 'venue_events' and ttu.up_id = any(ualv.up_ids)
@@ -485,7 +492,9 @@ select distinct mm.up_id,mm.travelers_trip_id,people.person_id,mm.agenda,mm.meet
 from multi_meetings mm
 inner join pd_wbgtravel.people on lower(people.short_name) = lower(mm.meeting_person_name)
 where not exists(select * from pd_wbgtravel.trip_meetings 
-								 where trip_meetings.meeting_person_id = people.person_id and trip_meetings.travelers_trip_id = mm.travelers_trip_id);
+								 where trip_meetings.meeting_person_id = people.person_id and 
+											 trip_meetings.travelers_trip_id = mm.travelers_trip_id and
+											 trip_meetings.meeting_venue_id = mm.meeting_venue_id);
 
 -- Stag meetings are where an upload entry specified a trip at a venue with on meeting counterpart
 -- This condition requires creating a self-meeting so that a venue does not appear as an abandoned venue 
@@ -495,9 +504,9 @@ with stag_meetings as (
 	select distinct 
 		ttu.up_id,
 		ualt.table_ids[1] as travelers_trip_id,
-		ttu."Meeting" as meeting_person_name,
-		ttu."Agenda" as agenda,
-		ualv.table_ids[1] as meeting_venue_id
+		left(ttu."Meeting",40) as meeting_person_name,
+		left(ttu."Agenda",100) as agenda,
+		coalesce(ualv.table_ids[1],0) as meeting_venue_id
 	from public._temp_travel_uploads ttu 
 	inner join _user_action_log ualt on ualt.table_name = 'trips' and ttu.up_id = any(ualt.up_ids)
 	inner join _user_action_log ualv on ualv.table_name = 'venue_events' and ttu.up_id = any(ualv.up_ids)
@@ -508,23 +517,27 @@ select distinct sm.up_id,sm.travelers_trip_id,trips.person_id,sm.agenda,sm.meeti
 from stag_meetings sm
 inner join pd_wbgtravel.trips on trips.trip_id = sm.travelers_trip_id
 where not exists(select * from pd_wbgtravel.trip_meetings 
-								 where trip_meetings.meeting_person_id = trips.person_id and trip_meetings.travelers_trip_id = sm.travelers_trip_id);
-
+								 where trip_meetings.meeting_person_id = trips.person_id and 
+								       trip_meetings.travelers_trip_id = sm.travelers_trip_id and
+											 trip_meetings.meeting_venue_id = sm.meeting_venue_id);
 
 with meetings_insert as
 (
 insert into pd_wbgtravel.trip_meetings(meeting_person_id,travelers_trip_id,agenda,meeting_venue_id,stag_flag)
-select distinct meeting_person_id,travelers_trip_id,substring(agenda from 1 for 50),meeting_venue_id,stag_flag
+select meeting_person_id,travelers_trip_id,left(array_to_string(array_agg(distinct agenda),','),100),meeting_venue_id,stag_flag
 from _temp_meetings
 where not exists(select * from pd_wbgtravel.trip_meetings 
                  where trip_meetings.meeting_person_id = _temp_meetings.meeting_person_id and 
-								       trip_meetings.travelers_trip_id = _temp_meetings.travelers_trip_id)
+								       trip_meetings.travelers_trip_id = _temp_meetings.travelers_trip_id and 
+											 trip_meetings.meeting_venue_id = _temp_meetings.meeting_venue_id)
+group by meeting_person_id,travelers_trip_id,meeting_venue_id,stag_flag
+			 
 returning meeting_person_id,travelers_trip_id,meeting_venue_id,stag_flag
 )
 insert into _user_action_log(user_id,user_action_id,table_name,table_ids,note)
 select v_user_id,1,'trip_meetings',ARRAY[mi.meeting_person_id,mi.travelers_trip_id],
 	'Adding Meeting: ' || p1.short_name || ' [AND] ' || p2.short_name || 
-	case when mi.meeting_venue_id is NULL then ' [IN] ' || ci.city_name else ' [AT] ' || ve.venue_name end
+	case when mi.meeting_venue_id = 0 then ' [IN] ' || ci.city_name else ' [AT] ' || ve.venue_name end
 from meetings_insert mi
 left join pd_wbgtravel.trips tr on tr.trip_id = mi.travelers_trip_id
 left join pd_wbgtravel.cities ci on ci.city_id = tr.city_id
