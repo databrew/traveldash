@@ -3,6 +3,7 @@
 #' Upload raw data to the databse, following a submission from the app
 #' @param pool A connection pool
 #' @param data A dataframe in either short or long format
+#' @param logged_in_user_id A user id, system is 0  
 #' @param return_upload_results Whether to return the upload results
 #' @return Database is uploaded
 #' @import pool
@@ -11,8 +12,10 @@
 #' @export
 
 #logged_in_user_id=0 is SYSTEM account -- this should not be left as default
-upload_raw_data <- function(pool,data,logged_in_user_id,return_upload_results = TRUE)
-{
+upload_raw_data <- function(pool,
+                            data,
+                            logged_in_user_id,
+                            return_upload_results = TRUE){
   names(data) <- gsub("\\."," ",names(data)) #read.xlsx replaces " " with "." eg, "Trip Group" to "Trip.Group"
   
   data_cols <- names(data)
@@ -86,8 +89,6 @@ upload_raw_data <- function(pool,data,logged_in_user_id,return_upload_results = 
     names(city_results) <- names(upload_results)
     upload_results <- rbind(upload_results,city_results)
   }
-  # Return the connection pool
-  
   # Spit back upload_results
   if(return_upload_results)
   {

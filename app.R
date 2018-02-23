@@ -583,6 +583,7 @@ server <- function(input, output, session) {
     upload_results <-
       upload_raw_data(pool = pool,
                       data = new_data,
+                      logged_in_user_id = 0,
                       return_upload_results = TRUE)
     message('Uploaded raw data')
     # Update the session
