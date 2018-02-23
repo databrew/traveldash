@@ -31,7 +31,7 @@ pool <- create_pool(options_list = credentials_extract(),F)
 file <- paste0(getwd(),"/dev_database/Travel Event Dashboard_DATA Feb-15.xlsx")
 data <- read.xlsx(file,sheet=1,startRow=2,detectDates=F)
 
-LOGGED_IN_USER_ID <- 1
+LOGGED_IN_USER_ID <- 1 
 
 start_time <- Sys.time()
   upload_results <- upload_raw_data(pool=pool,data=data,logged_in_user_id=LOGGED_IN_USER_ID,return_upload_results = TRUE)
