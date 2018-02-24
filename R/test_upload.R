@@ -1,6 +1,7 @@
 # Should be run from parent directory (traveldash)
 
-library(openxlsx)
+# library(openxlsx)
+library(readxl)
 library(RPostgreSQL)
 library(yaml)
 library(DBI)
