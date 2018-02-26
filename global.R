@@ -59,6 +59,7 @@ pool <- create_pool(options_list = credentials_extract(),
 #geo_code_in_db(pool = pool,
 #               use_sqlite = use_sqlite)
 
+
 # Get the data from the db into memory
 db_to_memory(pool = pool)
 
@@ -179,9 +180,71 @@ expand_trips <- function(trips, cities, people){
   df$end[df$group == 1] <- df$end[df$group == 1] + hours(23)
   return(df)
 }
-expanded_trips = expand_trips(trips = trips,
-                              cities = cities,
-                              people = people)
+
+
+
+# Remove the below
+cities <- cities[0,]
+people <- people[0,]
+trip_meetings <- trip_meetings[0,]
+trips <- trips[0,]
+view_trip_coincidences <- view_trip_coincidences[0,]
+view_trips_and_meetings <- view_trips_and_meetings[0,]
+
+
+
+
+make_empty <- function(cn){
+  d <- as.data.frame(x = t(rep(NA, length(cn))), stringsAsFactors = FALSE)
+  names(d) <- cn
+  d <- d[0,]
+  return(d)
+}
+if(nrow(cities) == 0){
+  cn <- c("city_id", "city_name", "country_name", "latitude", "longitude")
+  cities <- make_empty(cn)
+}
+if(nrow(people) == 0){
+  cn <- c("person_id", "full_name", "short_name", "title", "organization", "sub_organization", "image_file", "is_wbg", "time_created")
+  people <- make_empty(cn)
+}
+if(nrow(trip_meetings) == 0){
+  cn <- c("meeting_person_id", "travelers_trip_id", "description", "meeting_venue_id", "agenda", "stag_flag")
+  trip_meetings <- make_empty(cn)
+}
+if(nrow(trips) == 0){
+  cn <- c("trip_id", "person_id", "city_id", "trip_start_date", "trip_end_date", "time_created", "created_by_user_id", "trip_group_id", "trip_group", "trip_uid")
+  trips <- make_empty(cn)
+}
+if(nrow(view_trip_coincidences) == 0){
+  cn <- c("created_by_user_id", "trip_id", "city_id", "person_id", "person_name", "is_wbg", "organization", "city_name", "country_name", "trip_start_date", "trip_end_date", "trip_group", "coincidence_trip_id", "coincidence_city_id", "coincidence_person_id", "coincidence_person_name", "coincidence_is_wbg", "coincidence_organization", "coincidence_city_name", "coincidence_country_name", "coincidence_trip_group", "has_coincidence", "is_colleague_coincidence", "has_meeting", "is_stag_meeting", "meeting_person_name", "meeting_venue", "meeting_venue_type", "meeting_agenda", "trip_meeting_agenda_id")
+  view_trip_coincidences <- make_empty(cn)
+}
+if(nrow(view_trips_and_meetings) == 0){
+  cn <- c("is_wbg", "short_name", "organization", "title", "sub_organization", "country_name", "city_name", "trip_group", "trip_start_date", "trip_end_date", "meeting_with", "meeting_agenda")
+  view_trips_and_meetings <- make_empty(cn)
+}
+
+if(nrow(trips) > 0){
+  expanded_trips = expand_trips(trips = trips,
+                                cities = cities,
+                                people = people)  
+} else {
+  expanded_trips <- data_frame(city_id = 1,
+                               event_id = 1,
+                               start = Sys.Date(),
+                               end = Sys.Date(),
+                               city_name = 'DC',
+                               content = 'DC',
+                               type = 'DC',
+                               title = 'DC',
+                               group = 1,
+                               id = 1,
+                               subgroup = 1,
+                               style = 'DC') %>%
+    sample_n(0)
+}
+
 
 
 message('############ Done with global.R')
