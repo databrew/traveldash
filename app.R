@@ -439,7 +439,26 @@ server <- function(input, output, session) {
                     view_trips_and_meetings$trip_end_date),
                   na.rm = TRUE)
     }
-    out <- view_trips_and_meetings %>%
+    x <- view_trips_and_meetings
+    # Filter for the input search
+    search <- input$search
+    if(!is.null(search)){
+      if(nchar(search) > 0){
+        # Get all the search items (seperated by commas, which function as "or" statements)
+        search_items <- unlist(strsplit(search, split = ','))
+        search_items <- trimws(search_items, which = 'both')
+        keeps <- c()
+        for(i in 1:length(search_items)){
+          these_keeps <- apply(mutate_all(.tbl = x, .funs = function(x){grepl(tolower(search_items[i]), tolower(x))}),1, any)
+          these_keeps <- which(these_keeps)
+          keeps <- c(keeps, these_keeps)
+        }
+        keeps <- sort(unique(keeps))
+        x <- x[keeps,]
+      }
+    }
+    
+    out <- x %>%
       dplyr::filter(trip_end_date >= dr[1] &
                       trip_start_date <= dr[2])
   })
@@ -860,6 +879,16 @@ server <- function(input, output, session) {
     }
     face_icons <- icons(df$file,
                         iconWidth = 25, iconHeight = 25)
+    
+    # Jitter
+    joe_jitter <- function(x, sd = 0.1){
+      return(x + rnorm(n = length(x),
+                       mean = 0,
+                       sd = sd))
+    }
+    df <- df %>% 
+      mutate(longitude = joe_jitter(longitude, sd = 0.2),
+             latitude = joe_jitter(latitude, sd = 0.1))
 
     l <- leaflet() %>%
       addProviderTiles("Esri.WorldStreetMap") %>%
