@@ -182,18 +182,6 @@ expand_trips <- function(trips, cities, people){
 }
 
 
-
-# Remove the below
-cities <- cities[0,]
-people <- people[0,]
-trip_meetings <- trip_meetings[0,]
-trips <- trips[0,]
-view_trip_coincidences <- view_trip_coincidences[0,]
-view_trips_and_meetings <- view_trips_and_meetings[0,]
-
-
-
-
 make_empty <- function(cn){
   d <- as.data.frame(x = t(rep(NA, length(cn))), stringsAsFactors = FALSE)
   names(d) <- cn
