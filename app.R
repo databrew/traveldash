@@ -75,7 +75,7 @@ body <- dashboardBody(
                             
                             #wrapper
                             {
-                            width:600px;
+                            width:100px;
                             margin:0 auto;
                             color:#333;
                             font-family:Tahoma,Verdana,sans-serif;
@@ -93,8 +93,8 @@ body <- dashboardBody(
             
             fluidPage(
               fluidRow(
-                column(4,
-                       align = 'center',
+                column(6,
+                       # align = 'center',
                        uiOutput('date_ui'),
                        actionButton('reset_date_range', 'Reset', icon = icon('undo'),style='padding:3px; font-size:80%'),
                        # br(),
@@ -113,7 +113,7 @@ body <- dashboardBody(
                        #               
                        # ), style='text-align: center;')
                 ),
-                column(8,
+                column(6,
                        leafletOutput('leafy'))),
               fluidRow(
                 column(6,
