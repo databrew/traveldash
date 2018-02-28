@@ -102,16 +102,7 @@ body <- dashboardBody(
                        div(radioButtons('wbg_only',
                                         'Filter by affiliation',
                                         choices = c('Everyone', 'WBG only', 'Non-WBG only'),
-                                        inline = TRUE), style='text-align: center;')#,
-                       # br(),
-                       
-                       
-                       # div(textInput('search',
-                       #               'Filter for people, events, places, organizations, etc. (separate items with a comma)',
-                       #               placeholder = 'For example: Davos, Kim, Trump',
-                       #               width = '100%'
-                       #               
-                       # ), style='text-align: center;')
+                                        inline = TRUE), style='text-align: center;')
                 ),
                 column(6,
                        leafletOutput('leafy'))),
