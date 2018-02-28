@@ -6,6 +6,10 @@ the_width <- 270
 
 # Header
 header <- dashboardHeader(title="Travel event dashboard",
+                          tags$li(class = 'dropdown', 
+                                  textInput('search',
+                                            '',
+                                            placeholder = 'Search for people, places, events')),
   titleWidth = the_width)
 
 # Sidebar
@@ -98,16 +102,16 @@ body <- dashboardBody(
                        div(radioButtons('wbg_only',
                                         'Filter by affiliation',
                                         choices = c('Everyone', 'WBG only', 'Non-WBG only'),
-                                        inline = TRUE), style='text-align: center;'),
+                                        inline = TRUE), style='text-align: center;')#,
                        # br(),
                        
                        
-                       div(textInput('search',
-                                     'Filter for people, events, places, organizations, etc. (separate items with a comma)',
-                                     placeholder = 'For example: Davos, Kim, Trump',
-                                     width = '100%'
-                                     
-                       ), style='text-align: center;')
+                       # div(textInput('search',
+                       #               'Filter for people, events, places, organizations, etc. (separate items with a comma)',
+                       #               placeholder = 'For example: Davos, Kim, Trump',
+                       #               width = '100%'
+                       #               
+                       # ), style='text-align: center;')
                 ),
                 column(8,
                        leafletOutput('leafy'))),
@@ -143,8 +147,6 @@ body <- dashboardBody(
                                 'Show meetings only or any trip overlaps',choices = c('Meetings only', 'Trip overlaps'),
                                 selected = 'Meetings only',
                                 inline = TRUE),
-                   textInput('search_network',
-                             'Or filter for specific events, people, places, etc.:'),
                    DT::dataTableOutput('click_table'))
           ))
         )
@@ -165,9 +167,7 @@ body <- dashboardBody(
                               'Clear selection'),
                  checkboxInput('show_meetings',
                                'Show meetings',
-                               value = FALSE),
-                 textInput('search_timeline',
-                           'Or filter for specific events, people, places, etc.:'))
+                               value = FALSE))
         )
       )
     ),
@@ -576,7 +576,7 @@ server <- function(input, output, session) {
   filtered_expanded_trips <- reactive({
     sm<- input$show_meetings
     fd <- date_range()
-    search_string <- input$search_timeline
+    search_string <- input$search
     out <- expanded_trips %>%
       filter(end >= fd[1],
              start <= fd[2])
@@ -866,9 +866,9 @@ server <- function(input, output, session) {
       dplyr::filter(fd[1] <= trip_end_date,
                     fd[2] >= trip_start_date)
     # Filter for search box too
-    if(!is.null(input$search_network)){
-      if(nchar(input$search_network) > 0){
-        search <- input$search_network
+    if(!is.null(input$search)){
+      if(nchar(input$search) > 0){
+        search <- input$search
         search_items <- unlist(strsplit(search, split = ','))
         search_items <- trimws(search_items, which = 'both')
         keeps <- c()
