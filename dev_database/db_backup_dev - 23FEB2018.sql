@@ -300,7 +300,7 @@ update public._temp_travel_uploads ttu
 
 
 raise notice 'Looking for abandoned entries';
-create temp table _temp_abandoned_log(log_id int);
+create temp table _temp_abandoned_log(log_id int);
 insert into _temp_abandoned_log(log_id)
 select abandoned_log_id from pd_wbgtravel.remove_abandoned_people_and_places(v_user_id);
 
@@ -621,7 +621,7 @@ update _temp_venues
 update _temp_venues
 	set display_flag = true
 	where venue_id is null and venue_type_id in (select venue_type_id from pd_wbgtravel.venue_types where type_name = 'Major Event');
-update _temp_venues
+update _temp_venues
 	set event_title = NULL, event_start_date = NULL, event_end_date = NULL, display_flag = false
 	where venue_id is null and venue_type_id in (select venue_type_id from pd_wbgtravel.venue_types where is_temporal_venue=false);
 
@@ -872,7 +872,6 @@ ALTER TABLE cities OWNER TO postgres;
 --
 
 CREATE SEQUENCE cities_city_id_seq
-    AS integer
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
@@ -898,8 +897,8 @@ ALTER SEQUENCE cities_city_id_seq OWNED BY cities.city_id;
 
 CREATE TABLE people (
     person_id integer NOT NULL,
-    full_name character varying(50),
-    short_name character varying(35) NOT NULL,
+    full_name character varying(100),
+    short_name character varying(80) NOT NULL,
     title character varying(20),
     organization character varying(20) NOT NULL,
     sub_organization character varying(20),
@@ -1038,7 +1037,6 @@ ALTER TABLE events OWNER TO postgres;
 --
 
 CREATE SEQUENCE people_person_id_seq
-    AS integer
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
@@ -1063,7 +1061,6 @@ ALTER SEQUENCE people_person_id_seq OWNED BY people.person_id;
 --
 
 CREATE SEQUENCE trips_trip_id_seq
-    AS integer
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
@@ -1124,7 +1121,6 @@ COMMENT ON COLUMN user_action_log.table_ids IS 'array of ID(s) for table';
 --
 
 CREATE SEQUENCE user_action_log_log_id_seq
-    AS integer
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
@@ -1166,7 +1162,6 @@ ALTER TABLE users OWNER TO postgres;
 --
 
 CREATE SEQUENCE users_user_id_seq
-    AS integer
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
@@ -1211,7 +1206,6 @@ ALTER TABLE venue_events OWNER TO postgres;
 --
 
 CREATE SEQUENCE venue_events_venue_id_seq
-    AS integer
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
@@ -1250,7 +1244,6 @@ ALTER TABLE venue_types OWNER TO postgres;
 --
 
 CREATE SEQUENCE venue_types_venue_type_id_seq
-    AS integer
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
