@@ -89,7 +89,7 @@ body <- dashboardBody(
             
             fluidPage(
               fluidRow(
-                column(6,
+                column(4,
                        align = 'center',
                        uiOutput('date_ui'),
                        actionButton('reset_date_range', 'Reset', icon = icon('undo'),style='padding:3px; font-size:80%'),
@@ -109,7 +109,7 @@ body <- dashboardBody(
                                      
                        ), style='text-align: center;')
                 ),
-                column(6,
+                column(8,
                        leafletOutput('leafy'))),
               fluidRow(
                 column(6,
@@ -136,8 +136,7 @@ body <- dashboardBody(
           fluidRow(forceNetworkOutput('graph'),
           fluidRow(
             column(6,
-                   align = 'center',
-                   uiOutput('date_ui_network')),
+                   align = 'center'),
             column(6,
                    align = 'center',
                    radioButtons('network_meeting',
@@ -159,8 +158,7 @@ body <- dashboardBody(
         ),
         fluidRow(
           column(6,
-                 align = 'center',
-                 uiOutput('date_ui_timeline')),
+                 align = 'center'),
           column(6,
                  align = 'center',
                  actionButton('timevis_clear',
@@ -306,23 +304,7 @@ server <- function(input, output, session) {
     new_dates <- as.Date(new_dates)
     date_range(new_dates)
   })
-  observeEvent(input$daterange13,{
-    date_input <- input$daterange13
-    message('Dates changed. They are: ')
-    print(input$daterange13)
-    new_dates <- unlist(strsplit(date_input, split = ' to '))
-    new_dates <- as.Date(new_dates)
-    date_range(new_dates)
-  })
-  observeEvent(input$daterange14,{
-    date_input <- input$daterange14
-    message('Dates changed. They are: ')
-    print(input$daterange14)
-    new_dates <- unlist(strsplit(date_input, split = ' to '))
-    new_dates <- as.Date(new_dates)
-    date_range(new_dates)
-  })
-  
+
   observeEvent(input$reset_date_range, {
     # reset
     date_range(c(Sys.Date() - 7,
@@ -333,10 +315,7 @@ server <- function(input, output, session) {
     dr <- date_range()
     dr <- paste0(as.character(dr[1]), ' to ', as.character(dr[2]))
     fluidPage(
-      tags$div(HTML("
-                    <label for=\"daterange12container\">Pick a date range for analysis</label>
-                    
-                    <div id='daterange12container' style=\"width:456px;\">
+      tags$div(HTML("<div id='daterange12container' style=\"width:156px;\">
                     <input id=\"daterange12\" name=\"joe\" type=\"hidden\" class=\"form-control\" value=\"",dr, "\"/>
                     
                     </div>
@@ -362,69 +341,6 @@ server <- function(input, output, session) {
 })
 
   
-  output$date_ui_network <- renderUI({
-    dr <- date_range()
-    dr <- paste0(as.character(dr[1]), ' to ', as.character(dr[2]))
-    fluidPage(
-      tags$div(HTML("
-                    <label for=\"daterange13container\">Pick a date range for analysis</label>
-                    
-                    <div id='daterange13container' style=\"width:456px;\">
-                    <input id=\"daterange13\" name=\"joe\" type=\"hidden\" class=\"form-control\" value=\"",dr, "\"/>
-                    
-                    </div>
-                    <script type=\"text/javascript\">
-                    $(function() {
-                    $('#daterange13').dateRangePicker({
-                    inline: true,
-                    container: '#daterange13container',
-                    alwaysOpen: true
-                    });
-                    
-                    // Observe changes and update:
-                    
-                    $('#daterange13').on('datepicker-change', function(event, changeObject) {
-                    // changeObject has properties value, date1 and date2.
-                    Shiny.onInputChange('daterange13', changeObject.value);
-                    });
-                    });
-                    </script>
-                    
-                    "))
-      )
-})
-  
-  output$date_ui_timeline <- renderUI({
-    dr <- date_range()
-    dr <- paste0(as.character(dr[1]), ' to ', as.character(dr[2]))
-    fluidPage(
-      tags$div(HTML("
-                    <label for=\"daterange14container\">Pick a date range for analysis</label>
-                    
-                    <div id='daterange14container' style=\"width:456px;\">
-                    <input id=\"daterange14\" name=\"joe\" type=\"hidden\" class=\"form-control\" value=\"",dr, "\"/>
-                    
-                    </div>
-                    <script type=\"text/javascript\">
-                    $(function() {
-                    $('#daterange14').dateRangePicker({
-                    inline: true,
-                    container: '#daterange14container',
-                    alwaysOpen: true
-                    });
-                    
-                    // Observe changes and update:
-                    
-                    $('#daterange14').on('datepicker-change', function(event, changeObject) {
-                    // changeObject has properties value, date1 and date2.
-                    Shiny.onInputChange('daterange14', changeObject.value);
-                    });
-                    });
-                    </script>
-                    
-                    "))
-      )
-})
   
   #########################################
   
@@ -1017,7 +933,7 @@ server <- function(input, output, session) {
      dplyr::select(name, date, location, event)
    names(x) <- Hmisc::capitalize(names(x))
     prettify(x,
-             download_options = TRUE) #%>%
+             download_options = FALSE) #%>%
   })
   
   output$timevis <-  renderTimevis({
