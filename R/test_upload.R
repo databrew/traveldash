@@ -41,3 +41,21 @@ end_time <- Sys.time()
 
 print(paste0("Database upload time: ", end_time - start_time))
      
+
+template <- paste0(getwd(),"/dev_database/TEMPLATE_WBG_traveldash.xlsx")
+
+conn <- poolCheckout(pool)
+
+download_results <- dbGetQuery(conn,paste0('select short_name as "Person", organization as "Organization",
+                                            city_name as "City", country_name as "Country", trip_start_date as "Start", trip_end_date as "End",
+                                            trip_group as "Trip Group", coalesce(event_title,venue_name) as "Venue", meeting_person_short_names as "Meeting",
+                                            agenda as "Agenda", null as "CMD", trip_uid as "ID"
+                                            from pd_wbgtravel.view_all_trips_people_meetings_venues where user_id = ',LOGGED_IN_USER_ID,';')) 
+
+poolReturn(conn)
+Sys.setenv("R_ZIPCMD" = "C:/Program Files/R/Rtools/bin/zip.exe")
+
+
+workbook <- openxlsx::loadWorkbook(file=template)
+openxlsx::writeData(workbook,sheet="Travel Event Dashboard DATA",x=download_results,startCol=1,startRow=3,colNames=F,rowNames=F)
+openxlsx::saveWorkbook(workbook,paste0("WBG Travel Event Dashboard DATA-",today(),".xlsx"),overwrite=T)
