@@ -2,20 +2,43 @@ library(shiny)
 library(shinydashboard)
 source('global.R')
 library(shinyjs)
-the_width <- 270
+the_width <- 200
 
 # Header
-header <- dashboardHeader(title="Travel event dashboard",
-                          tags$li(class = 'dropdown', 
-                                  textInput('search',
-                                            '',
-                                            placeholder = 'Search for people, places, events')),
+header <- dashboardHeader(title="Travel dash",
+                          tags$li(class = 'dropdown',  
+                                  tags$style(type='text/css', "#reset_date_range { width:100%; margin-top: 20px; margin-right: 0px; margin-left: 0px; font-size:80%}"),
+                                  tags$style(type='text/css', "#search { width:80%; margin-right: 10px; margin-left: 10px; font-size:80%}"),
+                                  tags$style(type='text/css', "#wbg_only { width:100%; margin-right: 10px; margin-left: 10px; font-size:80%}"),
+                                  tags$style(type='text/css', "#date_range_2 { width:80%; margin-top: 5px; margin-left: 10px; margin-right: 10px; font-size:80%}"),
+                                  
+                                  tags$li(class = 'dropdown',
+                                          uiOutput('date_range_2_ui')),
+                                  tags$li(class = 'dropdown',
+                                          actionButton('reset_date_range', 'Reset', icon = icon('undo'))),
+                                  tags$li(class = 'dropdown',
+                                          
+                                          div(radioButtons('wbg_only',
+                                                           'Filter by affiliation',
+                                                           choices = c('Everyone', 'WBG only', 'Non-WBG only'),
+                                                           inline = TRUE), style='text-align: center;')
+                                  ),
+                                  tags$li(class = 'dropdown',
+                                          textInput('search',
+                                                    '',
+                                                    placeholder = 'Search for people, places, events'))),
   titleWidth = the_width)
 
 # Sidebar
 sidebar <- dashboardSidebar(
+  tags$style(".left-side, .main-sidebar {padding-top: 70px}"),
+  tags$style(".main-header {max-height: 70px}"),
+  tags$style(".main-header .logo {height: 70px;}"),
+  tags$style(".sidebar-toggle {height: 70px; padding-top: 1px !important;}"),
+  tags$style(".navbar {min-height:70px !important}"),  
   width = the_width,
   sidebarMenu(
+    id="tabs",
     menuItem(
       text="Dashboard",
       tabName="main",
@@ -60,7 +83,7 @@ sidebar <- dashboardSidebar(
 
 body <- dashboardBody(
   useShinyjs(),
-  
+
   # jquery daterange picker: # Using https://longbill.github.io/jquery-date-range-picker/
   
   tags$head(tags$link(rel = 'stylesheet', type = 'text/css', href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css')),
@@ -71,41 +94,36 @@ body <- dashboardBody(
   tags$head(tags$script(src = 'demo.js')),
   tags$head(tags$script(src = 'src/jquery.daterangepicker.js')),
   
-  tags$head(tags$style(HTML("
-                            
-                            #wrapper
-                            {
-                            width:100px;
-                            margin:0 auto;
-                            color:#333;
-                            font-family:Tahoma,Verdana,sans-serif;
-                            line-height:1.5;
-                            font-size:14px;
-                            }
-                            .demo { margin:30px 0;}
-                            .date-picker-wrapper .month-wrapper table .day.lalala { background-color:orange; }
-                            .options { display:none; border-left:6px solid #8ae; padding:10px; font-size:12px; line-height:1.4; background-color:#eee; border-radius:4px;}
-                            
-                            "))),
+  # tags$head(tags$style(HTML("
   # 
+  #                           #daterange12container
+  #                           {
+  #                           width:60px;
+  #                           margin:0 auto;
+  #                           color:#333;
+  #                           font-family:Tahoma,Verdana,sans-serif;
+  #                           line-height:1.5;
+  #                           font-size:10px;
+  #                           }
+  #                           .demo { margin:0px 0;}
+  #                           .date-picker-wrapper .month-wrapper table .day.lalala { background-color:red; }
+  #                           .options { display:none; border-left:0px solid #8ae; padding:2px; font-size:0px; line-height:1.4; background-color:#eee; border-radius:0px;}
+  # 
+  #                           "))),
+
   tabItems(
     tabItem(tabName = 'main',
             
             fluidPage(
               fluidRow(
-                column(6,
-                       # align = 'center',
-                       uiOutput('date_ui'),
-                       actionButton('reset_date_range', 'Reset', icon = icon('undo'),style='padding:3px; font-size:80%'),
-                       # br(),
-                       
-                       div(radioButtons('wbg_only',
-                                        'Filter by affiliation',
-                                        choices = c('Everyone', 'WBG only', 'Non-WBG only'),
-                                        inline = TRUE), style='text-align: center;')
+                column(4,
+                       align = 'left',
+                       div(uiOutput('date_ui'),
+                           style = 'text-align:left;')
                 ),
-                column(6,
-                       leafletOutput('leafy'))),
+                column(8,
+                       div(leafletOutput('leafy'),
+                           style = 'text-align:right;'))),
               fluidRow(
                 column(6,
                        h4('Interactions during selected period:',
@@ -116,7 +134,7 @@ body <- dashboardBody(
                                     inline = TRUE),
                        sankeyNetworkOutput('sank')),
                 column(6,
-                       h4('Detailed visit information',
+                       h6('Detailed visit information',
                           align = 'center'),
                        DT::dataTableOutput('visit_info_table'))
               )
@@ -295,6 +313,14 @@ server <- function(input, output, session) {
     new_dates <- as.Date(new_dates)
     date_range(new_dates)
   })
+  
+  observeEvent(input$date_range_2,{
+    date_input <- input$date_range_2
+    message('Dates changed. They are: ')
+    print(input$date_range_2)
+    new_dates <- as.Date(date_input)
+    date_range(new_dates)
+  })
 
   observeEvent(input$reset_date_range, {
     # reset
@@ -315,7 +341,8 @@ server <- function(input, output, session) {
                     $('#daterange12').dateRangePicker({
                     inline: true,
                     container: '#daterange12container',
-                    alwaysOpen: true
+                    alwaysOpen: true,
+                    showTopbar: false
                     });
                     
                     // Observe changes and update:
@@ -923,8 +950,14 @@ server <- function(input, output, session) {
      mutate(event = Hmisc::capitalize(event)) %>%
      dplyr::select(name, date, location, event)
    names(x) <- Hmisc::capitalize(names(x))
-    prettify(x,
-             download_options = FALSE) #%>%
+    # prettify(x,
+    #          download_options = FALSE) #%>%
+   DT::datatable(x,
+                 escape=FALSE,
+                 rownames = FALSE,
+                 options=list(dom='t',
+                              ordering=F,
+                              pageLength = nrow(x)))
   })
   
   output$timevis <-  renderTimevis({
@@ -1295,6 +1328,26 @@ server <- function(input, output, session) {
       return(NULL)
     }
   })
+  
+  output$date_range_2_ui <- renderUI({
+    dr <- date_range()
+    the_tab <- input$tabs
+    message('the tab is ', the_tab)
+    if(the_tab != 'main'){
+      div(
+        dateRangeInput('date_range_2',
+                       '  ',
+                       start = dr[1],
+                       end = dr[2]),
+        style='text-align: center;')
+    } else {
+      NULL
+    }
+    
+  })
+
+  
+  
   
   
   # On session end, close
