@@ -29,7 +29,7 @@ db_to_memory <- function(pool,
               'venue_types')
   # Add the views to the tables
   tables <- c(tables, 'view_trip_coincidences',  
-              'events',
+              # 'events',
               'view_trips_and_meetings')
   for (i in 1:length(tables)){
     this_table <- tables[i]

@@ -1,3 +1,8 @@
+# events placeholder
+events <- data.frame(a = 1:3,
+                     b = 2:4)
+
+
 library(RColorBrewer)
 library(maps)
 library(tidyverse)
