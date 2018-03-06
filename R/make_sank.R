@@ -74,6 +74,6 @@ make_sank <- function(trip_coincidences,
     nd3::sankeyNetwork(Links = links, Nodes = nodes,
                        Source = "source", Target = "target",
                        Value = "value", NodeID = "name",
-                       fontSize= 12, nodeWidth = 30)
+                       fontSize= 12, nodeWidth = 20)
   }
 }
