@@ -1,11 +1,11 @@
 .date-picker{
-    width:170px;
+    width:130px;
     height:25px;
     padding:0;
     border:0;
     line-height:25px;
-    padding-left:10px;
-    font-size:12px;
+    padding-left:0px;
+    font-size:10px;
     font-family:Arial,sans-serif;
     font-weight:700;
     cursor:pointer;
@@ -18,9 +18,9 @@
     z-index:1;
     border:1px solid #bfbfbf;
     background-color:#efefef;
-    padding:5px 12px;
-    font-size:12px;
-    line-height:20px;
+    padding:2px 2px;
+    font-size:10px;
+    line-height:2px;
     color:#aaa;
     font-family:Arial,sans-serif;
     -webkit-box-shadow:3px 3px 10px rgba(0,0,0,.5);
@@ -43,10 +43,10 @@
     width:auto
 }
 .date-picker-wrapper.no-shortcuts{
-    padding-bottom:12px
+    padding-bottom:2px
 }
 .date-picker-wrapper.no-topbar{
-    padding-top:12px
+    padding-top:2px
 }
 .date-picker-wrapper .footer{
     font-size:11px;
@@ -102,17 +102,17 @@
     border:1px solid #bfbfbf;
     border-radius:3px;
     background-color:#fff;
-    padding:5px;
+    padding:2px;
     cursor:default;
     position:relative;
     _overflow:hidden
 }
 .date-picker-wrapper .month-wrapper table{
-    width:190px;
+    width:140px;
     float:left
 }
 .date-picker-wrapper .month-wrapper table.month2{
-    width:190px;
+    width:140px;
     float:left
 }
 .date-picker-wrapper .month-wrapper table td,.date-picker-wrapper .month-wrapper table th{
@@ -125,7 +125,7 @@
 .date-picker-wrapper .month-wrapper table .day{
     padding:5px 0;
     line-height:1;
-    font-size:12px;
+    font-size:9px;
     margin-bottom:1px;
     color:#ccc;
     cursor:default
@@ -163,10 +163,10 @@
     display:none
 }
 .date-picker-wrapper .month-wrapper table .day.real-today{
-    background-color:#ffe684
+    background-color:#FF8C00
 }
 .date-picker-wrapper .month-wrapper table .day.real-today.checked,.date-picker-wrapper .month-wrapper table .day.real-today.hovering{
-    background-color:#70ccd5
+    background-color:#FF8C00
 }
 .date-picker-wrapper table .caption{
     height:40px
@@ -284,7 +284,7 @@
     top:6px;
     padding:3px 5px;
     margin:0;
-    font-size:12px;
+    font-size:10px;
     border-radius:4px;
     cursor:pointer;
     color:#d9eef7;
@@ -317,12 +317,12 @@
     height:20px
 }
 .date-picker-wrapper .time1{
-    width:180px;
+    width:130px;
     padding:0 5px;
     text-align:center
 }
 .time2{
-    width:180px;
+    width:130px;
     padding:0 5px;
     text-align:center
 }
@@ -355,7 +355,7 @@
     background-color:#ff0;
     padding:0 6px;
     border-radius:2px;
-    font-size:12px;
+    font-size:10px;
     line-height:16px;
     -webkit-filter:drop-shadow(0 0 3px rgba(0, 0, 0, .3));
     -moz-filter:drop-shadow(0 0 3px rgba(0, 0, 0, .3));
@@ -379,7 +379,7 @@
 .date-picker-wrapper .week-number{
     padding:5px 0;
     line-height:1;
-    font-size:12px;
+    font-size:10px;
     margin-bottom:1px;
     color:#999;
     cursor:pointer

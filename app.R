@@ -7,9 +7,9 @@ the_width <- 200
 # Header
 header <- dashboardHeader(title="Travel dash",
                           tags$li(class = 'dropdown',  
-                                  tags$style(type='text/css', "#reset_date_range { width:100%; margin-top: 20px; margin-right: 0px; margin-left: 0px; font-size:80%}"),
-                                  tags$style(type='text/css', "#search { width:80%; margin-right: 10px; margin-left: 10px; font-size:80%}"),
-                                  tags$style(type='text/css', "#wbg_only { width:100%; margin-right: 10px; margin-left: 10px; font-size:80%}"),
+                                  tags$style(type='text/css', "#reset_date_range { width:100%; margin-top: 22px; margin-right: 10px; margin-left: 10px; font-size:80%}"),
+                                  tags$style(type='text/css', "#search { width:70%; margin-right: 10px; margin-left: 10px; font-size:80%}"),
+                                  tags$style(type='text/css', "#wbg_only {margin-right: 10px; margin-left: 10px; font-size:80%}"),
                                   tags$style(type='text/css', "#date_range_2 { width:80%; margin-top: 5px; margin-left: 10px; margin-right: 10px; font-size:80%}"),
                                   
                                   tags$li(class = 'dropdown',
@@ -17,11 +17,17 @@ header <- dashboardHeader(title="Travel dash",
                                   tags$li(class = 'dropdown',
                                           actionButton('reset_date_range', 'Reset', icon = icon('undo'))),
                                   tags$li(class = 'dropdown',
+                                          img(src='blue.png', align = "center", width = '20px')),
+                                  tags$li(class = 'dropdown',
                                           
-                                          div(radioButtons('wbg_only',
-                                                           'Filter by affiliation',
-                                                           choices = c('Everyone', 'WBG only', 'Non-WBG only'),
-                                                           inline = TRUE), style='text-align: center;')
+                                          div(selectInput('wbg_only',
+                                                           '',
+                                                           choices = 
+                                                            c('All affiliations' = 'Everyone', 
+                                                              'WBG only' = 'WBG only', 
+                                                              'Non-WBG only' = 'Non-WBG only'),
+                                                          width = '150px'), 
+                                              style='text-align: center;')
                                   ),
                                   tags$li(class = 'dropdown',
                                           textInput('search',
@@ -116,28 +122,21 @@ body <- dashboardBody(
             
             fluidPage(
               fluidRow(
-                column(4,
-                       align = 'left',
+                column(5,
+                       align = 'center',
                        div(uiOutput('date_ui'),
-                           style = 'text-align:left;')
-                ),
-                column(8,
-                       div(leafletOutput('leafy'),
-                           style = 'text-align:right;'))),
-              fluidRow(
-                column(6,
-                       h4('Interactions during selected period:',
-                          align = 'center'),
+                           style = 'text-align:center;'),
+                       sankeyNetworkOutput('sank',
+                                           height = '400px'),
                        radioButtons('sankey_meeting',
-                                    'Show meetings only or any trip overlaps',choices = c('Meetings only', 'Trip overlaps'),
+                                    '',choices = c('Meetings only', 'Trip overlaps'),
                                     selected = 'Meetings only',
-                                    inline = TRUE),
-                       sankeyNetworkOutput('sank')),
-                column(6,
-                       h6('Detailed visit information',
-                          align = 'center'),
-                       DT::dataTableOutput('visit_info_table'))
-              )
+                                    inline = TRUE)
+                ),
+                column(7,
+                       div(leafletOutput('leafy'),
+                           style = 'text-align:right;'),
+                       DT::dataTableOutput('visit_info_table')))
             )
             
     ),
@@ -145,7 +144,6 @@ body <- dashboardBody(
       tabName = 'network',
       fluidPage(
         fluidRow(
-          h3('Visualization of interaction between people and places during the selected period', align = 'center'),
           fluidRow(forceNetworkOutput('graph'),
           fluidRow(
             column(6,
@@ -953,11 +951,15 @@ server <- function(input, output, session) {
     # prettify(x,
     #          download_options = FALSE) #%>%
    DT::datatable(x,
-                 escape=FALSE,
+                 # escape=FALSE,
                  rownames = FALSE,
-                 options=list(dom='t',
+                 autoHideNavigation = TRUE,
+                 options=list(#dom='t',
+                   filter = FALSE,
                               ordering=F,
-                              pageLength = nrow(x)))
+                              lengthMenu = c(5, 20, 50),
+                              pageLength = 10#nrow(x)
+                              ))
   })
   
   output$timevis <-  renderTimevis({
