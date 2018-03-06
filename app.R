@@ -21,8 +21,8 @@ header <- dashboardHeader(title="Travel dash",
                                   tags$li(class = 'dropdown',
                                           
                                           div(selectInput('wbg_only',
-                                                           '',
-                                                           choices = 
+                                                          '',
+                                                          choices = 
                                                             c('All affiliations' = 'Everyone', 
                                                               'WBG only' = 'WBG only', 
                                                               'Non-WBG only' = 'Non-WBG only'),
@@ -33,7 +33,7 @@ header <- dashboardHeader(title="Travel dash",
                                           textInput('search',
                                                     '',
                                                     placeholder = 'Search for people, places, events'))),
-  titleWidth = the_width)
+                          titleWidth = the_width)
 
 # Sidebar
 sidebar <- dashboardSidebar(
@@ -89,7 +89,7 @@ sidebar <- dashboardSidebar(
 
 body <- dashboardBody(
   useShinyjs(),
-
+  
   # jquery daterange picker: # Using https://longbill.github.io/jquery-date-range-picker/
   
   tags$head(tags$link(rel = 'stylesheet', type = 'text/css', href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css')),
@@ -116,7 +116,7 @@ body <- dashboardBody(
   #                           .options { display:none; border-left:0px solid #8ae; padding:2px; font-size:0px; line-height:1.4; background-color:#eee; border-radius:0px;}
   # 
   #                           "))),
-
+  
   tabItems(
     tabItem(tabName = 'main',
             
@@ -145,17 +145,17 @@ body <- dashboardBody(
       fluidPage(
         fluidRow(
           fluidRow(forceNetworkOutput('graph'),
-          fluidRow(
-            column(6,
-                   align = 'center'),
-            column(6,
-                   align = 'center',
-                   radioButtons('network_meeting',
-                                'Show meetings only or any trip overlaps',choices = c('Meetings only', 'Trip overlaps'),
-                                selected = 'Meetings only',
-                                inline = TRUE),
-                   DT::dataTableOutput('click_table'))
-          ))
+                   fluidRow(
+                     column(6,
+                            align = 'center'),
+                     column(6,
+                            align = 'center',
+                            radioButtons('network_meeting',
+                                         'Show meetings only or any trip overlaps',choices = c('Meetings only', 'Trip overlaps'),
+                                         selected = 'Meetings only',
+                                         inline = TRUE),
+                            DT::dataTableOutput('click_table'))
+                   ))
         )
       )
     ),
@@ -293,7 +293,7 @@ body <- dashboardBody(
               
             ))
   )
-  )
+)
 
 
 ui <- dashboardPage(header, sidebar, body)
@@ -318,13 +318,13 @@ server <- function(input, output, session) {
     new_dates <- as.Date(date_input)
     date_range(new_dates)
   })
-
+  
   observeEvent(input$reset_date_range, {
     # reset
     date_range(c(Sys.Date() - 7,
                  Sys.Date() + 14))
   })
-
+  
   output$date_ui <- renderUI({
     dr <- date_range()
     dr <- paste0(as.character(dr[1]), ' to ', as.character(dr[2]))
@@ -354,7 +354,7 @@ server <- function(input, output, session) {
                     "))
       )
 })
-
+  
   
   
   #########################################
@@ -370,7 +370,26 @@ server <- function(input, output, session) {
                     view_trips_and_meetings$trip_end_date),
                   na.rm = TRUE)
     }
-    out <- view_trips_and_meetings %>%
+    x <- view_trips_and_meetings
+    # Filter for the input search
+    search <- input$search
+    if(!is.null(search)){
+      if(nchar(search) > 0){
+        # Get all the search items (seperated by commas, which function as "or" statements)
+        search_items <- unlist(strsplit(search, split = ','))
+        search_items <- trimws(search_items, which = 'both')
+        keeps <- c()
+        for(i in 1:length(search_items)){
+          these_keeps <- apply(mutate_all(.tbl = x, .funs = function(x){grepl(tolower(search_items[i]), tolower(x))}),1, any)
+          these_keeps <- which(these_keeps)
+          keeps <- c(keeps, these_keeps)
+        }
+        keeps <- sort(unique(keeps))
+        x <- x[keeps,]
+      }
+    }
+    
+    out <- x %>%
       dplyr::filter(trip_end_date >= dr[1] &
                       trip_start_date <= dr[2])
   })
@@ -413,7 +432,12 @@ server <- function(input, output, session) {
   output$uploaded_table <- DT::renderDataTable({
     ur <- vals$upload_results
     if(!is.null(ur)){
-      prettify(ur, download_options = TRUE)
+      if(all(is.na(names(ur)))){
+        prettify(data.frame(x = ur[,ncol(ur)]))
+      } else {
+        prettify(ur, download_options = TRUE)
+      }
+      
     } else {
       x <- uploaded()
       if(!is.null(x)){
@@ -557,7 +581,7 @@ server <- function(input, output, session) {
   observeEvent(input$Del_row_head, {
     vals$events <- vals$events
   })
- 
+  
   selected_timevis <- reactiveVal(value = NULL)
   observeEvent(input$timevis_selected,
                selected_timevis(input$timevis_selected))
@@ -659,7 +683,7 @@ server <- function(input, output, session) {
   })
   
   output$leafy <- renderLeaflet({
-
+    
     # Get trips and meetings, filtered for date range    
     df <- view_trips_and_meetings_filtered()
     
@@ -672,7 +696,7 @@ server <- function(input, output, session) {
     
     # Get row selection (if applicable) from datatable
     s <- input$visit_info_table_rows_selected
-
+    
     # Subset df if rows are selected
     if(!is.null(s)){
       if(length(s) > 0){
@@ -707,7 +731,7 @@ server <- function(input, output, session) {
       mutate(id = paste0(short_name, is_wbg, city_id)) %>%
       mutate(id = as.numeric(factor(id))) %>%
       arrange(trip_start_date)
-      
+    
     # Create some more columns
     df <- df %>%
       mutate(dates = paste0(as.character(trip_start_date),
@@ -721,23 +745,23 @@ server <- function(input, output, session) {
                             ifelse(!is.na(meeting_with), meeting_with, ''))) %>%
       mutate(event = Hmisc::capitalize(event)) 
     
-
+    
     # Keep a "full" df with one row per trip
     full_df <- df
-
+    
     # Make only one head per person/place
     df <- df %>%
       group_by(id, short_name, is_wbg, city_id) %>%
       summarise(date = paste0(dates, collapse = ';'),
                 event = paste0(event, collapse = ';')) %>% ungroup
-
+    
     # Join to city names
     df <- df %>%
       left_join(cities %>%
                   dplyr::select(city_name, country_name, city_id,
                                 latitude, longitude),
                 by = 'city_id') 
-
+    
     
     popups = lapply(rownames(df), function(row){
       this_id <- unlist(df[row,'id'])
@@ -749,10 +773,10 @@ server <- function(input, output, session) {
         dplyr::select(dates, event)
       names(x) <- Hmisc::capitalize(names(x))
       knitr::kable(x,
-                rnames = FALSE,
-                caption = caption,
-                align = paste(rep("l", ncol(x)), collapse = ''),
-                format = 'html')
+                   rnames = FALSE,
+                   caption = caption,
+                   align = paste(rep("l", ncol(x)), collapse = ''),
+                   format = 'html')
     })
     
     
@@ -767,8 +791,8 @@ server <- function(input, output, session) {
                            'Unknown',
                            faces$joiner)
     df$joiner <- ifelse(df$short_name %in% faces$joiner,
-                          df$short_name,
-                          'Unknown')
+                        df$short_name,
+                        'Unknown')
     
     # Join the files to the df data
     if(nrow(df) > 0){
@@ -786,8 +810,18 @@ server <- function(input, output, session) {
     }
     face_icons <- icons(df$file,
                         iconWidth = 25, iconHeight = 25)
-
-    l <- leaflet() %>%
+    
+    # Jitter
+    joe_jitter <- function(x, sd = 0.1){
+      return(x + rnorm(n = length(x),
+                       mean = 0,
+                       sd = sd))
+    }
+    df <- df %>% 
+      mutate(longitude = joe_jitter(longitude, sd = 0.2),
+             latitude = joe_jitter(latitude, sd = 0.1))
+    
+    l <- leaflet(options = leafletOptions(zoomControl = FALSE)) %>%
       addProviderTiles("Esri.WorldStreetMap") %>%
       leaflet.extras::addFullscreenControl(position = 'topright') %>%
       addLegend(position = 'topright', colors = c('orange', 'blue'), labels = c('Non-WBG', 'WBG')) %>%
@@ -891,44 +925,44 @@ server <- function(input, output, session) {
   
   output$visit_info_table <- DT::renderDataTable({
     
-   x <- view_trips_and_meetings_filtered()
-   # Filter for wbg only if relevant
-   if(input$wbg_only == 'WBG only'){
-     x <- x %>% dplyr::filter(is_wbg == 1)
-   } else if(input$wbg_only == 'Non-WBG only'){
-     x <- x %>% dplyr::filter(is_wbg == 0)
-   }
-   x <- x %>%
-     mutate(location = city_name) %>%
-     mutate(name = short_name) %>%
-     mutate(date = paste0(as.character(trip_start_date),
+    x <- view_trips_and_meetings_filtered()
+    # Filter for wbg only if relevant
+    if(input$wbg_only == 'WBG only'){
+      x <- x %>% dplyr::filter(is_wbg == 1)
+    } else if(input$wbg_only == 'Non-WBG only'){
+      x <- x %>% dplyr::filter(is_wbg == 0)
+    }
+    x <- x %>%
+      mutate(location = city_name) %>%
+      mutate(name = short_name) %>%
+      mutate(date = paste0(as.character(trip_start_date),
                            ifelse(trip_start_date != trip_end_date,
                                   ' through ', 
                                   ''),
                            ifelse(trip_start_date != trip_end_date,
                                   as.character(trip_end_date), 
                                   ''))) %>%
-     mutate(event = paste0(ifelse(!is.na(meeting_with), ' With ', ''),
-                           ifelse(!is.na(meeting_with), meeting_with, ''))) %>%
-     mutate(event = Hmisc::capitalize(event)) %>%
-     dplyr::select(name, date, location, event)
-   names(x) <- Hmisc::capitalize(names(x))
+      mutate(event = paste0(ifelse(!is.na(meeting_with), ' With ', ''),
+                            ifelse(!is.na(meeting_with), meeting_with, ''))) %>%
+      mutate(event = Hmisc::capitalize(event)) %>%
+      dplyr::select(name, date, location, event)
+    names(x) <- Hmisc::capitalize(names(x))
     # prettify(x,
     #          download_options = FALSE) #%>%
-   DT::datatable(x,
-                 # escape=FALSE,
-                 rownames = FALSE,
-                 autoHideNavigation = TRUE,
-                 options=list(#dom='t',
-                   filter = FALSE,
-                              ordering=F,
-                              lengthMenu = c(5, 20, 50),
-                              pageLength = 10#nrow(x)
-                              ))
+    DT::datatable(x,
+                  # escape=FALSE,
+                  rownames = FALSE,
+                  autoHideNavigation = TRUE,
+                  options=list(#dom='t',
+                    filter = FALSE,
+                    ordering=F,
+                    lengthMenu = c(5, 20, 50),
+                    pageLength = 10#nrow(x)
+                  ))
   })
   
   output$timevis <-  renderTimevis({
-
+    
     fet <- filtered_expanded_trips()
     out <- NULL
     
@@ -1020,7 +1054,7 @@ server <- function(input, output, session) {
       tags$script("$(document).on('click', '#Main_table button', function () {
                   Shiny.onInputChange('lastClickId',this.id);
                   Shiny.onInputChange('lastClick', Math.random())
-                            });")
+                  });")
 
       )
       )
@@ -1312,7 +1346,7 @@ server <- function(input, output, session) {
     }
     
   })
-
+  
   
   
   
@@ -1328,4 +1362,3 @@ server <- function(input, output, session) {
 
 # Run the application 
 shinyApp(ui = ui, server = server)
-
