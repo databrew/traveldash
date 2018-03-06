@@ -122,7 +122,7 @@ body <- dashboardBody(
             
             fluidPage(
               fluidRow(
-                column(5,
+                column(4,
                        align = 'center',
                        div(uiOutput('date_ui'),
                            style = 'text-align:center;'),
@@ -133,7 +133,7 @@ body <- dashboardBody(
                                     selected = 'Meetings only',
                                     inline = TRUE)
                 ),
-                column(7,
+                column(8,
                        div(leafletOutput('leafy'),
                            style = 'text-align:right;'),
                        DT::dataTableOutput('visit_info_table')))
@@ -306,7 +306,6 @@ server <- function(input, output, session) {
   observeEvent(input$daterange12,{
     date_input <- input$daterange12
     message('Dates changed. They are: ')
-    print(input$daterange12)
     new_dates <- unlist(strsplit(date_input, split = ' to '))
     new_dates <- as.Date(new_dates)
     date_range(new_dates)
@@ -824,7 +823,7 @@ server <- function(input, output, session) {
 
     l <- leaflet() %>%
       addProviderTiles("Esri.WorldStreetMap") %>%
-      leaflet.extras::addFullscreenControl() %>%
+      leaflet.extras::addFullscreenControl(position = 'topright') %>%
       addLegend(position = 'topright', colors = c('orange', 'blue'), labels = c('Non-WBG', 'WBG')) %>%
       addCircleMarkers(data = df, lng =~longitude, lat = ~latitude,
                        # clusterOptions = markerClusterOptions(),
