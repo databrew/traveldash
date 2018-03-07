@@ -26,24 +26,24 @@ upload_raw_data <- function(pool,
       
   # Define function for fixing date issues
   # necessary since people's spreadsheet programs may do some inconsistent formatting
-#SAH -- I keep getting years 'fixed' to 2088.  Builting openxlsx function works better
-#    fix_date <- function(x){
-#    if(!is.Date(x)){
-#      if(any(grepl('/', x, fixed = TRUE))){
-#        out <- as.Date(x, format = '%m/%d/%Y')
-#      } else if(any(grepl('-', x, fixed = TRUE))){
-#        out <- as.Date(x)
-#      } else {
-#        out <- as.Date(x, origin = '1970-01-01')
-#      }
-#    } else {
-#      out <- x
-#    }
-#    return(out)
-#  }
+
+   fix_date <- function(x){
+   if(!is.Date(x)){
+     if(any(grepl('/', x, fixed = TRUE))){
+       out <- as.Date(x, format = '%m/%d/%Y')
+     } else if(any(grepl('-', x, fixed = TRUE))){
+       out <- as.Date(x)
+     } else {
+       out <- openxlsx::convertToDate(x, origin = '1970-01-01')
+     }
+   } else {
+     out <- x
+   }
+   return(out)
+ }
   
-  data$Start <- openxlsx::convertToDate(data$Start)
-  data$End <- openxlsx::convertToDate(data$End)
+  data$Start <- fix_date(data$Start)
+  data$End <- fix_date(data$End)
   
   
   # Create an id field
