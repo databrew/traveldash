@@ -28,7 +28,7 @@ for(i in 1:length(functions))
 
 pool <- create_pool(options_list = credentials_extract(),F)
 
-file <- paste0(getwd(),"/dev_database/Travel Event Dashboard_DATA_28 Feb.xlsx")
+file <- paste0(getwd(),"/dev_database/Travel_Event_Dashboard_DATA_06_Mar.xlsx")
 ##file <- paste0(getwd(),"/dev_database/Travel Event Dashboard_DATA_20 Feb.xlsx")
 
 data <- read.xlsx(file,sheet=1,startRow=2,detectDates=F)
@@ -54,8 +54,6 @@ download_results <- dbGetQuery(conn,paste0('select short_name as "Person", organ
 
 poolReturn(conn)
 Sys.setenv("R_ZIPCMD" = "C:/Program Files/R/Rtools/bin/zip.exe")
-
-
 workbook <- openxlsx::loadWorkbook(file=template)
 openxlsx::writeData(workbook,sheet="Travel Event Dashboard DATA",x=download_results,startCol=1,startRow=3,colNames=F,rowNames=F)
 openxlsx::saveWorkbook(workbook,paste0("WBG Travel Event Dashboard DATA-",today(),".xlsx"),overwrite=T)
