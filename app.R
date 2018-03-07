@@ -91,7 +91,12 @@ body <- dashboardBody(
   useShinyjs(),
   
   # jquery daterange picker: # Using https://longbill.github.io/jquery-date-range-picker/
-  
+  tags$head(tags$style(HTML('
+
+                        .modal-lg {
+                        width: 90%;
+                        }
+                      '))),
   tags$head(tags$link(rel = 'stylesheet', type = 'text/css', href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css')),
   tags$head(tags$link(rel = 'stylesheet', type = 'text/css', href = 'dist/daterangepicker.min.css')),
   # Commenting out the below, since jquery is already included in shinydashboard
@@ -126,6 +131,7 @@ body <- dashboardBody(
                        align = 'center',
                        div(uiOutput('date_ui'),
                            style = 'text-align:center;'),
+                       actionButton('play', '', icon = icon('play')),
                        sankeyNetworkOutput('sank',
                                            height = '400px'),
                        radioButtons('sankey_meeting',
@@ -1347,7 +1353,210 @@ server <- function(input, output, session) {
     
   })
   
+  timer <- reactiveTimer(1500)
   
+  # Create a date for looping through
+  this_date <- reactiveVal(value = NULL)
+  observeEvent(date_range(), {
+    dr <- date_range()
+    message('dr is ', dr)
+    this_date(dr[1])
+  })
+  
+  
+  # Play    
+  observeEvent(timer(),{
+      td <- this_date()
+      dr <- date_range()
+      if(td >= max(dr)){
+        this_date(dr[1])
+      } else {
+        this_date(td + 1)
+      }
+  })
+  observeEvent(input$play,{
+    showModal(modalDialog(
+      size = 'l',
+      fluidPage(
+        leafletOutput('leaf_play')
+      ),
+      easyClose = TRUE,
+      footer = NULL
+    ))
+  })
+
+  output$leaf_play <- renderLeaflet({
+    leaflet() %>%
+      addProviderTiles(providers$Esri.WorldStreetMap) %>%
+      setView(lng = 0, lat = 20, zoom = 2)
+  })
+  
+
+  observeEvent(this_date(),{
+    td <- this_date()
+
+    # Get trips and meetings, filtered for date range
+    df <- view_trips_and_meetings_filtered()
+
+    # Filter for this date only
+    df <- df %>% filter(trip_start_date <= td,
+                        trip_end_date >= td)
+
+    # Filter for wbg only if relevant
+    if(input$wbg_only == 'WBG only'){
+      df <- df %>% dplyr::filter(is_wbg == 1)
+    } else if(input$wbg_only == 'Non-WBG only'){
+      df <- df %>% dplyr::filter(is_wbg == 0)
+    }
+
+    # Get row selection (if applicable) from datatable
+    s <- input$visit_info_table_rows_selected
+
+    # Subset df if rows are selected
+    if(!is.null(s)){
+      if(length(s) > 0){
+        df <- df[s,]
+      }
+    }
+
+    # Get number of rows of df
+    nrp <- nrow(df)
+
+    # Get whether wbg or not
+    df$is_wbg <- as.logical(df$is_wbg)
+
+    # Select down
+    df <- df %>%
+      dplyr::select(is_wbg,
+                    short_name,
+                    city_name,
+                    country_name,
+                    trip_start_date,
+                    trip_end_date,
+                    meeting_with)
+
+    # Get city id
+    df <- df %>%
+      left_join(cities %>%
+                  dplyr::select(city_name, country_name, city_id),
+                by = c('city_name', 'country_name'))
+
+    # Create an id
+    df <- df %>%
+      mutate(id = paste0(short_name, is_wbg, city_id)) %>%
+      mutate(id = as.numeric(factor(id))) %>%
+      arrange(trip_start_date)
+
+    # Create some more columns
+    df <- df %>%
+      mutate(dates = paste0(as.character(trip_start_date),
+                            ifelse(trip_start_date != trip_end_date,
+                                   ' through ',
+                                   ''),
+                            ifelse(trip_start_date != trip_end_date,
+                                   as.character(trip_end_date),
+                                   ''))) %>%
+      mutate(event = paste0(ifelse(!is.na(meeting_with), ' With ', ''),
+                            ifelse(!is.na(meeting_with), meeting_with, ''))) %>%
+      mutate(event = Hmisc::capitalize(event))
+
+
+    # Keep a "full" df with one row per trip
+    full_df <- df
+
+    # Make only one head per person/place
+    df <- df %>%
+      group_by(id, short_name, is_wbg, city_id) %>%
+      summarise(date = paste0(dates, collapse = ';'),
+                event = paste0(event, collapse = ';')) %>% ungroup
+
+    # Join to city names
+    df <- df %>%
+      left_join(cities %>%
+                  dplyr::select(city_name, country_name, city_id,
+                                latitude, longitude),
+                by = 'city_id')
+
+
+    # popups = lapply(rownames(df), function(row){
+    #   this_id <- unlist(df[row,'id'])
+    #   # Get the original rows from full df for each of the ids
+    #   x <- full_df %>%
+    #     filter(id == this_id)
+    #   caption <- paste0(x$short_name[1], ' in ', x$city_name[1])
+    #   x <- x %>%
+    #     dplyr::select(dates, event)
+    #   names(x) <- Hmisc::capitalize(names(x))
+    #   knitr::kable(x,
+    #                rnames = FALSE,
+    #                caption = caption,
+    #                align = paste(rep("l", ncol(x)), collapse = ''),
+    #                format = 'html')
+    # })
+
+
+    # Get faces
+    faces_dir <- paste0('www/headshots/circles/')
+    faces <- dir(faces_dir)
+    faces <- data_frame(joiner = gsub('.png', '', faces, fixed = TRUE),
+                        file = paste0(faces_dir, faces))
+
+    # Create a join column
+    faces$joiner <- ifelse(is.na(faces$joiner) | faces$joiner == 'NA',
+                           'Unknown',
+                           faces$joiner)
+    df$joiner <- ifelse(df$short_name %in% faces$joiner,
+                        df$short_name,
+                        'Unknown')
+
+    # Join the files to the df data
+    if(nrow(df) > 0){
+      df <-
+        left_join(df,
+                  faces,
+                  by = 'joiner')
+      # Define colors
+      cols <- ifelse(is.na(df$is_wbg) |
+                       !df$is_wbg,
+                     'orange',
+                     'blue')
+    } else {
+      df <- df[0,]
+    }
+    face_icons <- icons(df$file,
+                        iconWidth = 25, iconHeight = 25)
+
+    # Jitter
+    joe_jitter <- function(x, sd = 0.1){
+      return(x + rnorm(n = length(x),
+                       mean = 0,
+                       sd = sd))
+    }
+    df <- df %>%
+      mutate(longitude = joe_jitter(longitude, sd = 0.2),
+             latitude = joe_jitter(latitude, sd = 0.1))
+
+    rr <- tags$div(
+      h1(format(td, '%B %d, %Y'))
+    )
+    
+    message('Map animation for ', td)
+
+    leafletProxy('leaf_play') %>%
+      clearMarkers() %>%
+      clearControls() %>%
+      addCircleMarkers(data = df, lng =~longitude, lat = ~latitude,
+                       # clusterOptions = markerClusterOptions(),
+                       col = cols, radius = 14) %>%
+      addMarkers(data = df, lng =~longitude, lat = ~latitude,
+                 # popup = popups,
+                 # clusterOptions = markerClusterOptions(),
+                 icon = face_icons) %>%
+      addControl(rr, position = "bottomleft")
+
+
+
+  })
   
   
   
