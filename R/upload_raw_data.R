@@ -45,6 +45,18 @@ upload_raw_data <- function(pool,
   data$Start <- fix_date(data$Start)
   data$End <- fix_date(data$End)
   
+  data$bad_date <- is.null(data$Start) | is.null(data$End) | is.na(data$Start) | is.na(data$End) |  !is.Date(data$Start) | !is.Date(data$End) 
+  data$good_date <- FALSE
+  
+  if (length(data$bad_date[!data$bad_date])>0)
+  {
+    data$good_date[!data$bad_date] <- with(data[!data$bad_date,],year(Start) < year(now())+10 & year(Start) > year(now())-10 &
+                                                               year(End) < year(now())+10 & year(Start) > year(now())-10 )
+  }
+  
+  data_bad_dates <- subset(data,data$good_date==FALSE)  
+  data <- subset(data,data$good_date==TRUE,select=data_cols)
+
   
   # Create an id field
   data <- cbind(up_id = rownames(data), data)
@@ -90,6 +102,13 @@ upload_raw_data <- function(pool,
     city_results <- data.frame(Person=NA,Organization=NA,City=NA,Country=NA,Start=NA,End=NA,`Trip Group`=NA,Venue=NA,Meeting=NA,Agenda=NA,STATUS=STATUS)
     names(city_results) <- names(upload_results)
     upload_results <- rbind(upload_results,city_results)
+  }
+  
+  if (nrow(data_bad_dates)>0)
+  {
+    date_results <- data_bad_dates[,c("Person","Organization","City","Country","Start","End","Trip Group","Venue","Meeting","Agenda")]
+    date_results$STATUS <- paste0(">ERROR< Travel date missing or more than 10 years away: ",date_results$Start," - ",date_results$End)
+    upload_results <- rbind(upload_results,date_results)
   }
   # Spit back upload_results
   if(return_upload_results)
