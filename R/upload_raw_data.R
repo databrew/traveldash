@@ -34,7 +34,7 @@ upload_raw_data <- function(pool,
      } else if(any(grepl('-', x, fixed = TRUE))){
        out <- as.Date(x)
      } else {
-       out <- openxlsx::convertToDate(x, origin = '1970-01-01')
+       out <- openxlsx::convertToDate(x)
      }
    } else {
      out <- x
