@@ -196,10 +196,10 @@ if(nrow(people) == 0){
   cn <- c("person_id", "full_name", "short_name", "title", "organization", "sub_organization", "image_file", "is_wbg", "time_created")
   people <- make_empty(cn)
 }
-if(nrow(trip_meetings) == 0){
-  cn <- c("meeting_person_id", "travelers_trip_id", "description", "meeting_venue_id", "agenda", "stag_flag")
-  trip_meetings <- make_empty(cn)
-}
+# if(nrow(trip_meetings) == 0){
+#   cn <- c("meeting_person_id", "travelers_trip_id", "description", "meeting_venue_id", "agenda", "stag_flag")
+#   trip_meetings <- make_empty(cn)
+# }
 if(nrow(trips) == 0){
   cn <- c("trip_id", "person_id", "city_id", "trip_start_date", "trip_end_date", "time_created", "created_by_user_id", "trip_group_id", "trip_group", "trip_uid")
   trips <- make_empty(cn)

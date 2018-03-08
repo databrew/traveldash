@@ -9,24 +9,19 @@
 db_to_memory <- function(pool,
                          return_list = FALSE){
   
-  # The database lay-out is as follows:
-  #    Schema    |     Name      | Type  |  Owner  
-  # --------------+---------------+-------+---------
-  # pd_wbgtravel | cities        | table | joebrew
-  # pd_wbgtravel | people        | table | joebrew
-  # pd_wbgtravel | trip_meetings | table | joebrew
-  # pd_wbgtravel | trips         | table | joebrew
-  # There is also an "events" view 
-  
   out_list <- list()
   
   # Read in all tables
   # tables <- unique(dbListTables(pool))
-  tables <- c('cities', 'people', 'trip_meetings', 'trips',
+  tables <- c('cities', 
+              'people',
+              # 'trip_meetings', 
+              'trips',
               'user_action_log',
-              'users',
-              'venue_events',
-              'venue_types')
+              'users')#,
+              # 'venue_events',
+              # 'venue_types'
+              # )
   # Add the views to the tables
   tables <- c(tables, 'view_trip_coincidences',  
               # 'events',
