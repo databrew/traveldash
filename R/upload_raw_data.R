@@ -16,6 +16,8 @@ upload_raw_data <- function(pool,
                             data,
                             logged_in_user_id,
                             return_upload_results = TRUE){
+  print('Debug Start: in upload_raw_data()')
+  
   names(data) <- gsub("\\."," ",names(data)) #read.xlsx replaces " " with "." eg, "Trip Group" to "Trip.Group"
   
   data_cols <- names(data)
@@ -77,8 +79,10 @@ upload_raw_data <- function(pool,
                  ID="varchar(50)")
   
     # Create the connection
+  print(paste('Debug: Pool1 '))
   conn <- poolCheckout(pool)
-
+  print(paste('Debug: Pool2 '))
+  
   # Drop a previous temporary table if it's around
   dbSendQuery(conn,"drop table if exists public._temp_travel_uploads;") 
   
@@ -111,6 +115,8 @@ upload_raw_data <- function(pool,
     upload_results <- rbind(upload_results,date_results)
   }
   # Spit back upload_results
+  print('Debug End: exit in upload_raw_data()')
+  
   if(return_upload_results)
   {
     names(upload_results) <- gsub("\\."," ",names(upload_results)) #read.xlsx replaces " " with "." eg, "Trip Group" to "Trip.Group 
