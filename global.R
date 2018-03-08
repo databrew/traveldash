@@ -236,7 +236,9 @@ if(nrow(trips) > 0){
 # Detect which database
 creds <- credentials_extract()
 creds <- creds[names(creds) %in% c('dbname', 'host')]
-creds <- paste0(paste0(unlist(names(creds)), ': ', unlist(creds)), collapse = '\n')
+creds <- paste0(paste0(#unlist(names(creds)), 
+                       # ' : ', 
+                       unlist(creds)), collapse = '\n')
 
 message('Using the following credentials:')
 message(creds)

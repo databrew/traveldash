@@ -193,7 +193,7 @@ body <- dashboardBody(
           tags$div(HTML('
                       
                       <h4>
-<img src="partnershiplogo.png" alt="logo" hspace="20" height=90 style="float: left;">
+<img src="partnershiplogo.png" alt="logo" hspace="20" height=90 style="float: right;">
 The dashboard was developed as a part of activities under the <a href="http://www.ifc.org/wps/wcm/connect/region__ext_content/ifc_external_corporate_site/sub-saharan+africa/priorities/financial+inclusion/za_ifc_partnership_financial_inclusion">Partnership for Financial Inclusion</a>, a $37.4 million joint initiative of the <a href="http://www.ifc.org/wps/wcm/connect/corp_ext_content/ifc_external_corporate_site/home">IFC</a> and the <a href="http://www.mastercardfdn.org/">Mastercard Foundation</a> to expand microfinance and advance digital financial services in Sub-Saharan Africa) by the FIG Africa Digital Financial Services unit (the MEL team).
 </h4>
                       '))
