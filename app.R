@@ -189,25 +189,14 @@ body <- dashboardBody(
     tabItem(
       tabName = 'about',
       fluidPage(
-        fluidRow(h4("The dashboard was developed as a part of activities under the ", 
-                    a(href = 'http://www.ifc.org/wps/wcm/connect/region__ext_content/ifc_external_corporate_site/sub-saharan+africa/priorities/financial+inclusion/za_ifc_partnership_financial_inclusion',
-                      target='_blank',
-                      "Partnership for Financial Inclusion"),
-                    " (a $37.4 million joint initiative of the ",
-                    a(href = "http://www.ifc.org/wps/wcm/connect/corp_ext_content/ifc_external_corporate_site/home",
-                      target='_blank',
-                      'IFC'),
-                    " and the ",
-                    a(href = "http://www.mastercardfdn.org/",
-                      target='_blank',
-                      'MasterCard Foundation'),
-                    " to expand microfinance and advance digital financial services in Sub-Saharan Africa) by the FIG Africa Digital Financial Services unit (the MEL team).")),
-        br(),
-        fluidRow(div(img(src='partnershiplogo.png', 
-                         align = "center",
-                         height = '90'), style="text-align: center;"),
-                 br(), 
-                 style = 'text-align:center;'
+        fluidRow(
+          tags$div(HTML('
+                      
+                      <h4>
+<img src="partnershiplogo.png" alt="logo" hspace="20" height=90 style="float: left;">
+The dashboard was developed as a part of activities under the <a href="http://www.ifc.org/wps/wcm/connect/region__ext_content/ifc_external_corporate_site/sub-saharan+africa/priorities/financial+inclusion/za_ifc_partnership_financial_inclusion">Partnership for Financial Inclusion</a>, a $37.4 million joint initiative of the <a href="http://www.ifc.org/wps/wcm/connect/corp_ext_content/ifc_external_corporate_site/home">IFC</a> and the <a href="http://www.mastercardfdn.org/">Mastercard Foundation</a> to expand microfinance and advance digital financial services in Sub-Saharan Africa) by the FIG Africa Digital Financial Services unit (the MEL team).
+</h4>
+                      '))
         ),
         br(),
         fluidRow(
@@ -269,7 +258,9 @@ body <- dashboardBody(
                        href="mailto:sheitmann@ifc.org",
                        align = 'center')), 
                  style = 'text-align:center;'
-        )
+        ),
+        fluidRow(div(helpText(creds),
+                     style = 'text-align:right'))
       )
     ),
     # tabItem(
