@@ -252,13 +252,6 @@ The dashboard was developed as a part of activities under the <a href="http://ww
             ),
             width = 4)
         ),
-        fluidRow(br(),
-                 div(a(actionButton(inputId = "email", label = "Contact", 
-                                    icon = icon("envelope", lib = "font-awesome")),
-                       href="mailto:sheitmann@ifc.org",
-                       align = 'center')), 
-                 style = 'text-align:center;'
-        ),
         fluidRow(div(helpText(creds),
                      style = 'text-align:right'))
       )
@@ -809,15 +802,12 @@ server <- function(input, output, session) {
     face_icons <- icons(df$file,
                         iconWidth = 25, iconHeight = 25)
     
-    # Jitter
-    joe_jitter <- function(x, sd = 0.1){
-      return(x + rnorm(n = length(x),
-                       mean = 0,
-                       sd = sd))
-    }
-    df <- df %>% 
-      mutate(longitude = joe_jitter(longitude, sd = 0.2),
-             latitude = joe_jitter(latitude, sd = 0.1))
+   
+  zoom_level <- 2
+
+    df <- df %>%
+      mutate(longitude = joe_jitter(longitude, zoom = zoom_level),
+             latitude = joe_jitter(latitude, zoom = zoom_level))
     
     l <- leaflet(options = leafletOptions(zoomControl = FALSE)) %>%
       addProviderTiles("Esri.WorldStreetMap") %>%
@@ -845,6 +835,166 @@ server <- function(input, output, session) {
     shinyjs::hide("text2")
     l
   })
+  
+  # Obseve changes to zoom
+  observeEvent(input$leafy_zoom, {
+    
+    # Much of this is a copy of the above map code
+    # Could be cleaned up a bit to not duplicate.
+    
+    # Get trips and meetings, filtered for date range    
+    df <- view_trips_and_meetings_filtered()
+    
+    # Filter for wbg only if relevant
+    if(input$wbg_only == 'WBG only'){
+      df <- df %>% dplyr::filter(is_wbg == 1)
+    } else if(input$wbg_only == 'Non-WBG only'){
+      df <- df %>% dplyr::filter(is_wbg == 0)
+    }
+    
+    # Get row selection (if applicable) from datatable
+    s <- input$visit_info_table_rows_selected
+    
+    # Subset df if rows are selected
+    if(!is.null(s)){
+      if(length(s) > 0){
+        df <- df[s,]
+      }
+    }
+    
+    # Get number of rows of df
+    nrp <- nrow(df)
+    
+    # Get whether wbg or not
+    df$is_wbg <- as.logical(df$is_wbg)
+    
+    # Select down
+    df <- df %>%
+      dplyr::select(is_wbg,
+                    short_name,
+                    city_name,
+                    country_name,
+                    trip_start_date,
+                    trip_end_date,
+                    meeting_with)
+    
+    # Get city id
+    df <- df %>%
+      left_join(cities %>%
+                  dplyr::select(city_name, country_name, city_id),
+                by = c('city_name', 'country_name'))
+    
+    # Create an id
+    df <- df %>%
+      mutate(id = paste0(short_name, is_wbg, city_id)) %>%
+      mutate(id = as.numeric(factor(id))) %>%
+      arrange(trip_start_date)
+    
+    # Create some more columns
+    df <- df %>%
+      mutate(dates = paste0(as.character(trip_start_date),
+                            ifelse(trip_start_date != trip_end_date,
+                                   ' through ', 
+                                   ''),
+                            ifelse(trip_start_date != trip_end_date,
+                                   as.character(trip_end_date), 
+                                   ''))) %>%
+      mutate(event = paste0(ifelse(!is.na(meeting_with), ' With ', ''),
+                            ifelse(!is.na(meeting_with), meeting_with, ''))) %>%
+      mutate(event = Hmisc::capitalize(event)) 
+    
+    
+    # Keep a "full" df with one row per trip
+    full_df <- df
+    
+    # Make only one head per person/place
+    df <- df %>%
+      group_by(id, short_name, is_wbg, city_id) %>%
+      summarise(date = paste0(dates, collapse = ';'),
+                event = paste0(event, collapse = ';')) %>% ungroup
+    
+    # Join to city names
+    df <- df %>%
+      left_join(cities %>%
+                  dplyr::select(city_name, country_name, city_id,
+                                latitude, longitude),
+                by = 'city_id') 
+    
+    
+    popups = lapply(rownames(df), function(row){
+      this_id <- unlist(df[row,'id'])
+      # Get the original rows from full df for each of the ids
+      x <- full_df %>%
+        filter(id == this_id)
+      caption <- paste0(x$short_name[1], ' in ', x$city_name[1])
+      x <- x %>%
+        dplyr::select(dates, event)
+      names(x) <- Hmisc::capitalize(names(x))
+      knitr::kable(x,
+                   rnames = FALSE,
+                   caption = caption,
+                   align = paste(rep("l", ncol(x)), collapse = ''),
+                   format = 'html')
+    })
+    
+    
+    # Get faces
+    faces_dir <- paste0('www/headshots/circles/')
+    faces <- dir(faces_dir)
+    faces <- data_frame(joiner = gsub('.png', '', faces, fixed = TRUE),
+                        file = paste0(faces_dir, faces))
+    
+    # Create a join column
+    faces$joiner <- ifelse(is.na(faces$joiner) | faces$joiner == 'NA',
+                           'Unknown',
+                           faces$joiner)
+    df$joiner <- ifelse(df$short_name %in% faces$joiner,
+                        df$short_name,
+                        'Unknown')
+    
+    # Join the files to the df data
+    if(nrow(df) > 0){
+      df <-
+        left_join(df,
+                  faces,
+                  by = 'joiner')
+      # Define colors
+      cols <- ifelse(is.na(df$is_wbg) |
+                       !df$is_wbg,
+                     'orange',
+                     'blue')
+    } else {
+      df <- df[0,]
+    }
+    face_icons <- icons(df$file,
+                        iconWidth = 25, iconHeight = 25)
+    
+    
+    zoom_level <- input$leafy_zoom
+    if(is.null(zoom_level)){
+      zoom_level <- 2
+    }
+    message('zoom is ', zoom_level)
+    
+    df <- df %>%
+      mutate(longitude = joe_jitter(longitude, zoom = zoom_level),
+             latitude = joe_jitter(latitude, zoom = zoom_level))
+    
+    l <- leafletProxy('leafy') %>%
+      clearMarkers() %>%
+      # clearControls() %>%
+      addCircleMarkers(data = df, lng =~longitude, lat = ~latitude,
+                       # clusterOptions = markerClusterOptions(),
+                       col = cols, radius = 14) %>%
+      addMarkers(data = df, lng =~longitude, lat = ~latitude,
+                 popup = popups,
+                 # clusterOptions = markerClusterOptions(),
+                 icon = face_icons)
+    l
+    
+  })
+  
+  
   
   output$sank <- renderSankeyNetwork({
     x <- filtered_view_trip_coincidences()
@@ -1491,17 +1641,13 @@ server <- function(input, output, session) {
       } else {
         df <- df[0,]
       }
+
       
-      
-      # Jitter
-      joe_jitter <- function(x, sd = 0.1){
-        return(x + rnorm(n = length(x),
-                         mean = 0,
-                         sd = sd))
-      }
+      zoom_level <- input$leafy_zoom
+
       df <- df %>%
-        mutate(longitude = joe_jitter(longitude, sd = 0.2),
-               latitude = joe_jitter(latitude, sd = 0.1))
+        mutate(longitude = joe_jitter(longitude, zoom = zoom_level),
+               latitude = joe_jitter(latitude, zoom = zoom_level))
       
       rr <- tags$div(
         h2(format(td, '%B %d, %Y'), align = 'center'),
