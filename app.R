@@ -133,13 +133,12 @@ body <- dashboardBody(
                            style = 'text-align:center;'),
                        checkboxInput('play', 'Day-by-day map',
                                     value = FALSE),
-                       sankeyNetworkOutput('sank',
-                                           height = '400px'),
                        radioButtons('sankey_meeting',
                                     '',choices = c('Meetings only', 'Trip overlaps'),
                                     selected = 'Meetings only',
-                                    inline = TRUE)
-                ),
+                                    inline = TRUE),
+                       sankeyNetworkOutput('sank',
+                                           height = '400px')),
                 column(8,
                        div(
                          uiOutput('leaf_ui'),
@@ -809,10 +808,11 @@ server <- function(input, output, session) {
       mutate(longitude = joe_jitter(longitude, zoom = zoom_level),
              latitude = joe_jitter(latitude, zoom = zoom_level))
     
-    l <- leaflet(options = leafletOptions(zoomControl = FALSE)) %>%
+    l <- leaflet(#options = leafletOptions(zoomControl = FALSE)
+                 ) %>%
       addProviderTiles("Esri.WorldStreetMap") %>%
       leaflet.extras::addFullscreenControl(position = 'topright') %>%
-      addLegend(position = 'topright', colors = c('orange', 'blue'), labels = c('Non-WBG', 'WBG')) %>%
+      addLegend(position = 'bottomright', colors = c('orange', 'blue'), labels = c('Non-WBG', 'WBG')) %>%
       addCircleMarkers(data = df, lng =~longitude, lat = ~latitude,
                        # clusterOptions = markerClusterOptions(),
                        col = cols, radius = 14) %>%
