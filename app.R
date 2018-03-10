@@ -731,8 +731,8 @@ server <- function(input, output, session) {
                             ifelse(trip_start_date != trip_end_date,
                                    as.character(trip_end_date), 
                                    ''))) %>%
-      mutate(event = paste0(ifelse(!is.na(meeting_with), ' With ', ''),
-                            ifelse(!is.na(meeting_with), meeting_with, ''))) %>%
+      mutate(event = paste0(ifelse(!is.na(meeting_with) & short_name != meeting_with, ' With ', ''),
+                            ifelse(!is.na(meeting_with) & short_name != meeting_with, meeting_with, ''))) %>%
       mutate(event = Hmisc::capitalize(event)) 
     
     
@@ -899,8 +899,8 @@ server <- function(input, output, session) {
                             ifelse(trip_start_date != trip_end_date,
                                    as.character(trip_end_date), 
                                    ''))) %>%
-      mutate(event = paste0(ifelse(!is.na(meeting_with), ' With ', ''),
-                            ifelse(!is.na(meeting_with), meeting_with, ''))) %>%
+      mutate(event = paste0(ifelse(!is.na(meeting_with) & short_name != meeting_with, ' With ', ''),
+                            ifelse(!is.na(meeting_with) & short_name != meeting_with, meeting_with, ''))) %>%
       mutate(event = Hmisc::capitalize(event)) 
     
     
@@ -1090,8 +1090,8 @@ server <- function(input, output, session) {
                            ifelse(trip_start_date != trip_end_date,
                                   as.character(trip_end_date), 
                                   ''))) %>%
-      mutate(event = paste0(ifelse(!is.na(meeting_with), ' With ', ''),
-                            ifelse(!is.na(meeting_with), meeting_with, ''))) %>%
+      mutate(event = paste0(ifelse(!is.na(meeting_with) & short_name != meeting_with, ' With ', ''),
+                            ifelse(!is.na(meeting_with) & short_name != meeting_with, meeting_with, ''))) %>%
       mutate(event = Hmisc::capitalize(event)) %>%
       dplyr::select(name, date, location, event)
     names(x) <- Hmisc::capitalize(names(x))
@@ -1495,7 +1495,7 @@ server <- function(input, output, session) {
     
   })
   
-  timer <- reactiveTimer(1000)
+  timer <- reactiveTimer(2000)
   
   # Create a date for looping through
   this_date <- reactiveVal(value = NULL)
@@ -1524,6 +1524,8 @@ server <- function(input, output, session) {
     # Re-initialize the base canvas for the map
     output$leafy_play <- renderLeaflet({
       leaflet() %>%
+        leaflet.extras::addFullscreenControl(position = 'topright') %>%
+        addLegend(position = 'bottomright', colors = c('orange', 'blue'), labels = c('Non-WBG', 'WBG')) %>%
         addProviderTiles(providers$Esri.WorldStreetMap) %>%
         setView(lng = 0, lat = 20, zoom = 2) 
     })
@@ -1592,8 +1594,8 @@ server <- function(input, output, session) {
                               ifelse(trip_start_date != trip_end_date,
                                      as.character(trip_end_date),
                                      ''))) %>%
-        mutate(event = paste0(ifelse(!is.na(meeting_with), ' With ', ''),
-                              ifelse(!is.na(meeting_with), meeting_with, ''))) %>%
+        mutate(event = paste0(ifelse(!is.na(meeting_with) & short_name != meeting_with, ' With ', ''),
+                              ifelse(!is.na(meeting_with) & short_name != meeting_with, meeting_with, ''))) %>%
         mutate(event = Hmisc::capitalize(event))
       
       
