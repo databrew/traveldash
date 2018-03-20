@@ -21,7 +21,7 @@ upload_raw_data <- function(pool,
   names(data) <- gsub("\\."," ",names(data)) #read.xlsx replaces " " with "." eg, "Trip Group" to "Trip.Group"
   
   data_cols <- names(data)
-  valid_cols <- c("Person","Organization","City","Country","Start","End","Trip Group","Venue","Meeting","Agenda","CMD","ID")
+  valid_cols <- c("Person","Title","Organization","City","Country","Start","End","Trip Group","Venue","Meeting","Agenda","CMD","ID")
   
   if (!any(length(data_cols) %in% c(10,12))) stop("Data upload row mismatch")
   if (!(all(data_cols==valid_cols) || all(data_cols[1:10]==valid_cols))) stop(paste0("Data upload columns mismatch: ",paste0(data_cols, collapse=",")))
