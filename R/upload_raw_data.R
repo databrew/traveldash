@@ -66,6 +66,7 @@ upload_raw_data <- function(pool,
   # Define field types
   fields <- list(up_id="int4",
                  Person="varchar(50)",
+                 Title="varchar(100)",
                  Organization="varchar(50)",
                  City="varchar(50)",
                  Country="varchar(50)",
@@ -92,7 +93,7 @@ upload_raw_data <- function(pool,
   # Define primary key
   dbSendQuery(conn,"ALTER TABLE public._temp_travel_uploads ADD PRIMARY KEY (up_id);") 
   
-  upload_results <- dbGetQuery(conn,paste0('select msg."Person",msg."Organization", msg."City", msg."Country",msg."Start",msg."End",msg."Trip Group", msg."Venue",msg."Meeting",msg."Agenda", msg."STATUS" from pd_wbgtravel.travel_uploads(',logged_in_user_id,') msg;')) 
+  upload_results <- dbGetQuery(conn,paste0('select msg."Person",msg."Title",msg."Organization", msg."City", msg."Country",msg."Start",msg."End",msg."Trip Group", msg."Venue",msg."Meeting",msg."Agenda", msg."STATUS" from pd_wbgtravel.travel_uploads(',logged_in_user_id,') msg;')) 
   # Drop the temporary table
   #dbSendQuery(conn,"drop table if exists public._temp_travel_uploads;") 
   
