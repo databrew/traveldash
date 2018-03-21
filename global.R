@@ -30,6 +30,23 @@ library(timevis)
 library(lubridate)
 library(readxl)
 library(htmlTable)
+library(Roxford)
+library(png)
+library(jpeg)
+library(raster)
+# For image processing
+# source("http://bioconductor.org/biocLite.R")
+# biocLite("EBImage")
+# sudo apt-get install libfftw3-3 libfftw3-dev libtiff5-dev
+# devtools::install('/home/joebrew/Documents/EBImage/')
+library(EBImage)
+
+# Read in keys from credentials
+if(!'keys.txt' %in% dir('credentials')){
+  stop('You need a "keys.txt" file with Microsoft Azure image recognition API credentials in your credentials folder. You do not have it.')
+} else {
+  keys <- readLines('credentials/keys.txt')
+}
 
 message('############ Done with package loading')
 #setwd("C:/Users/SHeitmann/WBG/Sinja Buri - FIG SSA MEL/MEL Program Operations/Knowledge Products/Dashboards & Viz/WBG Travel/GitHub/traveldash")

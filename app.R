@@ -61,6 +61,10 @@ sidebar <- dashboardSidebar(
       text="Upload data",
       tabName="upload_data",
       icon=icon("upload")),
+    menuItem(
+      text="Upload photos",
+      tabName="upload_photos",
+      icon=icon("images")),
     # menuItem(
     #   text="Edit data",
     #   tabName="edit_data",
@@ -258,6 +262,15 @@ The dashboard was developed as a part of activities under the <a href="http://ww
     # tabItem(
     #   tabName = 'edit_data',
     #   uiOutput("MainBody")),
+    tabItem(tabName = 'upload_photos',
+            fluidPage(
+              fluidRow(column(3,
+                              selectInput('photo_person',
+                                          'Who are you uploading a photo for?',
+                                          choices = sort(unique(people$short_name)))),
+                       column(9,
+                              imageOutput('photo_person_output')))
+            )),
     tabItem(tabName = 'upload_data',
             fluidPage(
               fluidRow(
@@ -1685,9 +1698,21 @@ server <- function(input, output, session) {
     } else {
       leafletOutput('leafy')
     }
-    
-    
   })
+  
+  output$photo_person_output <-
+    renderImage({
+      input$photo_person
+      the_file <- sample(dir('www/headshots/circles/'), 1)
+      the_file <- paste0('www/headshots/circles/', the_file)
+      png(the_file)
+      dev.off()
+      # Return a list containing the filename
+      list(src = the_file,
+           # width = width,
+           # height = height,
+           alt = "This is alternate text")
+    }, deleteFile = FALSE)
   
   
   
