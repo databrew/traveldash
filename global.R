@@ -261,7 +261,7 @@ joe_jitter <- function(x, zoom = 2){
 create_photos_df <- function(){
   photos <- data_frame(person = sort(unique(people$short_name))) %>%
     mutate(file_name = paste0(person, '.png'))
-  drop_photos <- drop_dir()
+  drop_photos <- drop_dir(dtoken = token)
   photos <- left_join(photos,
                       drop_photos,
                       by = c('file_name' = 'name')) %>%
@@ -281,7 +281,8 @@ populate_tmp <- function(photos){
     this_file <- photos$file_name[this_index]
     drop_download(this_file,
                   local_path = 'tmp',
-                  overwrite = TRUE)
+                  overwrite = TRUE,
+                  dtoken = token)
   }
 }
 populate_tmp(photos = photos)

@@ -1735,13 +1735,15 @@ server <- function(input, output, session) {
       the_file_name <- paste0(the_person, '.png')
       download_result <- try(drop_download(the_file_name,
                     local_path = 'tmp',
-                    overwrite = TRUE))
+                    overwrite = TRUE,
+                    dtoken = token))
       if(class(download_result) == 'try-error'){
         file.remove(paste0('tmp/', the_file_name))
         the_file_name <- paste0('NA', '.png')
         drop_download(the_file_name,
                       local_path = 'tmp',
-                      overwrite = TRUE)
+                      overwrite = TRUE,
+                      dtoken = token)
         person_file_name <- 'NA'
       } else {
         person_file_name <- the_person
@@ -1819,7 +1821,8 @@ server <- function(input, output, session) {
               overwrite = TRUE)
     message('--- uploading the new photo of ', the_person, ' to dropbox')
     drop_upload(paste0('tmp/', the_file), mode = 'overwrite',
-                autorename = FALSE)
+                autorename = FALSE,
+                dtoken = token)
     # Delete the tmp files
     file.remove('tmp/new_file.png')
     
