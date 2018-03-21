@@ -313,6 +313,10 @@ ui <- dashboardPage(header, sidebar, body)
 # Define server
 server <- function(input, output, session) {
   
+  # Create a reactive dataframe of photos
+  photos_reactive <- reactiveValues()
+  photos_reactive$photos <- photos
+  
   date_range <- reactiveVal(c(Sys.Date() - 7,
                               Sys.Date() + 14 ))
   observeEvent(input$daterange12,{
@@ -804,7 +808,7 @@ server <- function(input, output, session) {
     
     
     # Get faces
-    faces_dir <- paste0('www/headshots/circles/')
+    faces_dir <- paste0('tmp/')
     faces <- dir(faces_dir)
     faces <- data_frame(joiner = gsub('.png', '', faces, fixed = TRUE),
                         file = paste0(faces_dir, faces))
@@ -972,7 +976,7 @@ server <- function(input, output, session) {
     
     
     # Get faces
-    faces_dir <- paste0('www/headshots/circles/')
+    faces_dir <- paste0('tmp/')
     faces <- dir(faces_dir)
     faces <- data_frame(joiner = gsub('.png', '', faces, fixed = TRUE),
                         file = paste0(faces_dir, faces))
@@ -1754,6 +1758,7 @@ server <- function(input, output, session) {
   
   output$photo_person_new <-
     renderImage({
+      the_person <- input$photo_person
       x <- uploaded_photo_path()
       if(is.null(x)){
         file.copy('tmp/NA.png',
@@ -1770,6 +1775,7 @@ server <- function(input, output, session) {
            alt = the_person)
       
     }, deleteFile = FALSE)
+  
   
   # Observe the confirmation of the photo upload and send to dropbox
   output$photo_confirmation_ui <-
@@ -1788,16 +1794,26 @@ server <- function(input, output, session) {
       }
     })
   observeEvent(input$confirm_photo_upload,{
+    message('Photo upload confirmed---')
     the_person <- input$photo_person
     the_file <- paste0(the_person, '.png')
+    message('--- copying the new photo of ', the_person, ' to tmp/.')
     file.copy(from = 'tmp/new_file.png',
               to = paste0('tmp/', the_file),
               overwrite = TRUE)
+    message('--- uploading the new photo of ', the_person, ' to dropbox')
     drop_upload(paste0('tmp/', the_file), mode = 'overwrite',
                 autorename = FALSE)
     # Delete the tmp files
     file.remove('tmp/new_file.png')
-    file.remove(paste0('tmp/', the_file))
+    
+    # Keeping the below, since it will overwrite tmp
+    # making no need to re-call populate_tmp()
+    # file.remove(paste0('tmp/', the_file))
+    
+    # Update the reactive photos list
+    x <- create_photos_df()
+    photos_reactive$photos <- x
   })
   
   # On session end, close

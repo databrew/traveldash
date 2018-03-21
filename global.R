@@ -33,25 +33,11 @@ library(htmlTable)
 library(Roxford)
 library(png)
 library(jpeg)
-library(raster)
-# For image processing
-# source("http://bioconductor.org/biocLite.R")
-# biocLite("EBImage")
-# sudo apt-get install libfftw3-3 libfftw3-dev libtiff5-dev
-# devtools::install('/home/joebrew/Documents/EBImage/')
-library(EBImage)
+
 
 # Read in dropbox auth
 library(rdrop2)
 token <- readRDS("droptoken.rds")
-
-
-# Read in keys from credentials
-if(!'keys.txt' %in% dir('credentials')){
-  stop('You need a "keys.txt" file with Microsoft Azure image recognition API credentials in your credentials folder. You do not have it.')
-} else {
-  keys <- readLines('credentials/keys.txt')
-}
 
 message('############ Done with package loading')
 #setwd("C:/Users/SHeitmann/WBG/Sinja Buri - FIG SSA MEL/MEL Program Operations/Knowledge Products/Dashboards & Viz/WBG Travel/GitHub/traveldash")
@@ -66,11 +52,6 @@ for(i in 1:length(functions)){
 
 # Define whether using postgresql or sqlite
 use_sqlite <- FALSE
-if(use_sqlite){
-  message('In "sqlite mode"')
-} else {
-  message('In "Postgres mode"')
-}
 
 # Create a connection pool
 pool <- create_pool(options_list = credentials_extract(),
@@ -273,7 +254,34 @@ joe_jitter <- function(x, zoom = 2){
   return(x + rnorm(n = length(x),
                    mean = 0,
                    sd = z))
-  
-  
-  
 }
+
+# Create a table of names / photos, conditional on what is available in dropbox
+# and already stored locally
+create_photos_df <- function(){
+  photos <- data_frame(person = sort(unique(people$short_name))) %>%
+    mutate(file_name = paste0(person, '.png'))
+  drop_photos <- drop_dir()
+  photos <- left_join(photos,
+                      drop_photos,
+                      by = c('file_name' = 'name')) %>%
+    mutate(file_name = ifelse(is.na(path_lower), 'NA.png', file_name)) %>%
+    dplyr::select(person,
+                  file_name)
+  return(photos)
+}
+photos <- create_photos_df()
+# populate the tmp folder with photos
+populate_tmp <- function(photos){
+  not_na <- which(photos$file_name != 'NA.png')
+  lnn <- length(not_na)
+  for (i in 1:lnn){
+    message('--- downloading photo ', i, ' of ', lnn)
+    this_index <- not_na[i]
+    this_file <- photos$file_name[this_index]
+    drop_download(this_file,
+                  local_path = 'tmp',
+                  overwrite = TRUE)
+  }
+}
+populate_tmp(photos = photos)
