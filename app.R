@@ -440,6 +440,7 @@ server <- function(input, output, session) {
   })
   
   
+
   uploaded_photo_path <- reactive({
     inFile <- input$photo_upload
     
@@ -449,7 +450,6 @@ server <- function(input, output, session) {
       inFile$datapath
     }
   })
-  
   
   # Column table
   output$column_table_correct <- renderTable({
@@ -1724,8 +1724,13 @@ server <- function(input, output, session) {
     }
   })
   
+  # Define a switch for showing the old photo or not
+  switcher <- reactiveVal(TRUE)
+  
   output$photo_person_output <-
     renderImage({
+      # keep an eye on the update
+      input$confirm_photo_upload
       the_person <- input$photo_person
       the_file_name <- paste0(the_person, '.png')
       download_result <- try(drop_download(the_file_name,
@@ -1756,11 +1761,22 @@ server <- function(input, output, session) {
            alt = the_person)
     }, deleteFile = FALSE)
   
+  observeEvent(input$photo_person,{
+    message('Setting switcher to FALSE')
+    # Upon change of person, set the switcher to FALSE
+    switcher(FALSE)
+  })
+  observeEvent(uploaded_photo_path(),{
+    message('Setting switcher to TRUE')
+    # Upon change of the photo path, set switcher back to TRUE
+    switcher(TRUE)
+  })
   output$photo_person_new <-
     renderImage({
+      ss <- switcher()
       the_person <- input$photo_person
       x <- uploaded_photo_path()
-      if(is.null(x)){
+      if(is.null(x) | !ss){
         file.copy('tmp/NA.png',
                   'tmp/new_file.png',
                   overwrite = TRUE)
@@ -1820,6 +1836,14 @@ server <- function(input, output, session) {
   session$onSessionEnded(function() {
     message('Session ended. Closing the connection pool.')
     tryCatch(pool::poolClose(pool), error = function(e) {message('')})
+    message('Clearing out the tmp folder')
+    tmp_files <- dir('tmp')
+    tmp_files <- tmp_files[grepl('png', tmp_files)]
+    tmp_files <- tmp_files[!grepl('NA', tmp_files)]
+    for(i in 1:length(tmp_files)){
+      file.remove(paste0('tmp/', tmp_files[i]))
+    }
+    message('---removed ', length(tmp_files), ' temporary image files.')
   })
   
   
