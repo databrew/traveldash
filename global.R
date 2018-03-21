@@ -41,6 +41,11 @@ library(raster)
 # devtools::install('/home/joebrew/Documents/EBImage/')
 library(EBImage)
 
+# Read in dropbox auth
+library(rdrop2)
+token <- readRDS("droptoken.rds")
+
+
 # Read in keys from credentials
 if(!'keys.txt' %in% dir('credentials')){
   stop('You need a "keys.txt" file with Microsoft Azure image recognition API credentials in your credentials folder. You do not have it.')

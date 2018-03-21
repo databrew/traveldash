@@ -2,3 +2,5 @@ rsconnect/*
 credentials/credentials.yaml
 data/*
 upload_raw_data.R
+credentials/keys.txt
+.httr-oauth

@@ -64,7 +64,7 @@ sidebar <- dashboardSidebar(
     menuItem(
       text="Upload photos",
       tabName="upload_photos",
-      icon=icon("images")),
+      icon=icon("camera")),
     # menuItem(
     #   text="Edit data",
     #   tabName="edit_data",
@@ -264,12 +264,20 @@ The dashboard was developed as a part of activities under the <a href="http://ww
     #   uiOutput("MainBody")),
     tabItem(tabName = 'upload_photos',
             fluidPage(
-              fluidRow(column(3,
+              fluidRow(column(4,
                               selectInput('photo_person',
                                           'Who are you uploading a photo for?',
-                                          choices = sort(unique(people$short_name)))),
-                       column(9,
-                              imageOutput('photo_person_output')))
+                                          choices = sort(unique(people$short_name))),
+                              fileInput('photo_upload',
+                                        '',
+                                        accept=c('.png'))),
+                       column(4,
+                              h2('Current photo'),
+                              imageOutput('photo_person_output')),
+                       column(4,
+                              h2('New photo'),
+                              imageOutput('photo_person_new'))),
+              uiOutput('photo_confirmation_ui')
             )),
     tabItem(tabName = 'upload_data',
             fluidPage(
@@ -426,6 +434,18 @@ server <- function(input, output, session) {
       x
     }
   })
+  
+  
+  uploaded_photo_path <- reactive({
+    inFile <- input$photo_upload
+    
+    if (is.null(inFile)){
+      return(NULL)
+    } else {
+      inFile$datapath
+    }
+  })
+  
   
   # Column table
   output$column_table_correct <- renderTable({
@@ -1702,19 +1722,83 @@ server <- function(input, output, session) {
   
   output$photo_person_output <-
     renderImage({
-      input$photo_person
-      the_file <- sample(dir('www/headshots/circles/'), 1)
-      the_file <- paste0('www/headshots/circles/', the_file)
-      png(the_file)
-      dev.off()
+      the_person <- input$photo_person
+      the_file_name <- paste0(the_person, '.png')
+      download_result <- try(drop_download(the_file_name,
+                    local_path = 'tmp',
+                    overwrite = TRUE))
+      if(class(download_result) == 'try-error'){
+        file.remove(paste0('tmp/', the_file_name))
+        the_file_name <- paste0('NA', '.png')
+        drop_download(the_file_name,
+                      local_path = 'tmp',
+                      overwrite = TRUE)
+        person_file_name <- 'NA'
+      } else {
+        person_file_name <- the_person
+      }
+      the_file <- dir('tmp')
+      the_file <- the_file[grepl('png', the_file)]
+      the_file <- the_file[grepl(person_file_name, the_file)]
+      # if(length(the_file) != 1){
+      #   stop('Clean up the tmp folder. It has more than 1 file in it.')
+      # }
+      # png(the_file)
+      # dev.off()
       # Return a list containing the filename
-      list(src = the_file,
+      list(src = paste0('tmp/', the_file),
            # width = width,
            # height = height,
-           alt = "This is alternate text")
+           alt = the_person)
     }, deleteFile = FALSE)
   
+  output$photo_person_new <-
+    renderImage({
+      x <- uploaded_photo_path()
+      if(is.null(x)){
+        file.copy('tmp/NA.png',
+                  'tmp/new_file.png',
+                  overwrite = TRUE)
+      } else {
+        file.copy(from = x,
+                  to = 'tmp/new_file.png',
+                  overwrite = TRUE)
+      }
+      list(src = 'tmp/new_file.png',
+           # width = width,
+           # height = height,
+           alt = the_person)
+      
+    }, deleteFile = FALSE)
   
+  # Observe the confirmation of the photo upload and send to dropbox
+  output$photo_confirmation_ui <-
+    renderUI({
+      x <- uploaded_photo_path()
+      if(!is.null(x)){
+        fluidPage(
+          fluidRow(
+            column(12, 
+                   align = 'center',
+                   actionButton('confirm_photo_upload',
+                                'Confirm photo upload',
+                                icon = icon('arrow',"fa-5x")))
+          )
+        )
+      }
+    })
+  observeEvent(input$confirm_photo_upload,{
+    the_person <- input$photo_person
+    the_file <- paste0(the_person, '.png')
+    file.copy(from = 'tmp/new_file.png',
+              to = paste0('tmp/', the_file),
+              overwrite = TRUE)
+    drop_upload(paste0('tmp/', the_file), mode = 'overwrite',
+                autorename = FALSE)
+    # Delete the tmp files
+    file.remove('tmp/new_file.png')
+    file.remove(paste0('tmp/', the_file))
+  })
   
   # On session end, close
   session$onSessionEnded(function() {
