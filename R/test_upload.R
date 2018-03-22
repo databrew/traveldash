@@ -125,8 +125,6 @@ ui <- shinyUI(bootstrapPage(
               {
               var crop = document.getElementById('crop')
               document.is_drag=false;  
-              document.getElementById('cropX').value = Number(crop.style.backgroundPositionX.replace('px',''))
-              document.getElementById('cropY').value = Number(crop.style.backgroundPositionY.replace('px',''))
               Shiny.onInputChange('cropX',Number(crop.style.backgroundPositionX.replace('px','')));
               Shiny.onInputChange('cropY',Number(crop.style.backgroundPositionY.replace('px','')));
               }"), 
@@ -163,8 +161,8 @@ ui <- shinyUI(bootstrapPage(
   sliderInput(inputId="scale",label="Resize",min=1,max=100,step=1,value=100),
   textInput(inputId='img_url', 'Image Url',value='https://upload.wikimedia.org/wikipedia/commons/thumb/b/bb/Official_Portrait_of_President_Donald_Trump.jpg/1200px-Official_Portrait_of_President_Donald_Trump.jpg'),
   uiOutput('person'),
-  textInput(inputId="cropX","Crop X",value="0"),
-  textInput(inputId="cropY","Crop Y",value="0"),
+  #textInput(inputId="cropX","Crop X",value="0"),
+  #textInput(inputId="cropY","Crop Y",value="0"),
   actionButton("button_crop", "Crop & Save")
   ))
 
@@ -193,25 +191,17 @@ server <- shinyServer(function(input, output, session) {
   addResourcePath("www", resourcepath)
   
   observeEvent(input$button_crop, ({
-    <<<<<<< HEAD
+    img_url <- input$img_url    
     img_url <- gsub("\\s","",input$img_url)
-    
-    =======
-      img_url <- input$img_url    
-    >>>>>>> 4c261543d46082b567efcc4a73f62bbcd3bce459
+
     if (is.null(img_url) || img_url=="") return(NULL)
     
     scale = as.numeric(input$scale)
     cropX = as.numeric(input$cropX)
     cropY = as.numeric(input$cropY)
-    <<<<<<< HEAD
-    =======
-      img_url <- gsub("\\s","",img_url)
-    >>>>>>> 4c261543d46082b567efcc4a73f62bbcd3bce459
-    
+
     size <- min(image_info(mask)$width,image_info(mask)$height)
-    
-    
+  
     print(paste0("Resize: ",scale,"% X:",cropX," Y:",cropY))
     
     img_ob <- image_read(path=img_url)
