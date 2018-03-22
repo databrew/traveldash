@@ -98,7 +98,7 @@ upload_raw_data <- function(pool,
   #dbSendQuery(conn,"drop table if exists public._temp_travel_uploads;") 
   
   poolReturn(conn)
-  
+   
   # Geocode the cities table if it has been changed
   geo_results <- geo_code_in_db(pool = pool)
   if (!is.null(geo_results) && sum(geo_results$error)>0)
