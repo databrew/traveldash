@@ -71,8 +71,7 @@ test_image <- function()
   plotrix::draw.circle(.5,0.5,.5, col="gray")
   dev.off()
   
-  mask <- image_scale(mask, as.character(image_info(img)$width))
-  
+
   img_mm_url <- "https://www.disneyclips.com/imagesnewb/images/mickeyface.gif"
   img_mm_url <- "http://akns-images.eonline.com/eol_images/Entire_Site/201808/rs_1024x759-180108174835-1024.donald-trump.ct.010818.jpg"
   img_mm <- image_read(path=img_mm_url)
@@ -194,13 +193,13 @@ server <- shinyServer(function(input, output, session) {
   addResourcePath("www", resourcepath)
 
   observeEvent(input$button_crop, ({
+    img_url <- gsub("\\s","",input$img_url)
     
     if (is.null(img_url) || img_url=="") return(NULL)
     
     scale = as.numeric(input$scale)
     cropX = as.numeric(input$cropX)
     cropY = as.numeric(input$cropY)
-    img_url <- gsub("\\s","",input$img_url)
     
     size <- min(image_info(mask)$width,image_info(mask)$height)
     
