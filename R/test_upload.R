@@ -194,13 +194,13 @@ server <- shinyServer(function(input, output, session) {
   addResourcePath("www", resourcepath)
 
   observeEvent(input$button_crop, ({
-    
+    img_url <- input$img_url    
     if (is.null(img_url) || img_url=="") return(NULL)
     
     scale = as.numeric(input$scale)
     cropX = as.numeric(input$cropX)
     cropY = as.numeric(input$cropY)
-    img_url <- gsub("\\s","",input$img_url)
+    img_url <- gsub("\\s","",img_url)
     
     size <- min(image_info(mask)$width,image_info(mask)$height)
     
