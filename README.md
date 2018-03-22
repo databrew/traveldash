@@ -9,6 +9,17 @@ _The below assumes ubuntu 16.04_
 
 - This package requires a non-standard installation of `networkD3`. Prior to running the application, install `nd3` by running `devtools::install_github('databrew/nd3').
 
+## Oauth set-up
+
+Place `droptoken.rds` in the main repository. If you don't have it, request it from Joe. He generates it by running:
+
+```
+token <- drop_auth()
+saveRDS(token, "droptoken.rds")
+```
+
+(Manual authentication)
+
 ## Credentials set-up
 
 To use this app with database functionality, you'll note to provide database information and credentials. You'll note a `credentials/credentials.yaml` file. This is set up to assume an accessible, non-password protected "arl" database. If your database requires credentials, is running on a specific port, etc, add to the file in this format:
