@@ -74,10 +74,12 @@ test_image <- function()
   mask <- image_scale(mask, as.character(image_info(img)$width))
   
   img_mm_url <- "https://www.disneyclips.com/imagesnewb/images/mickeyface.gif"
+  img_mm_url <- "http://akns-images.eonline.com/eol_images/Entire_Site/201808/rs_1024x759-180108174835-1024.donald-trump.ct.010818.jpg"
   img_mm <- image_read(path=img_mm_url)
 
   mask <- image_read(tf)
-  mask <- image_scale(mask, as.character(image_info(img_mm)$width))
+  size <- min(image_info(img_mm)$width,image_info(img_mm)$height)
+  mask <- image_scale(mask, as.character(size))
   
   circle_img <- image_composite(mask, img_mm, "in") 
   circle_img <- image_scale(circle_img,"150")
@@ -114,5 +116,135 @@ test_image <- function()
   
   poolReturn(conn)
   
-  
+  return (img)
 }
+
+library(shiny)
+
+ui <- shinyUI(bootstrapPage(
+  tags$script(type="text/javascript", "function dragend(event) 
+              {
+                var crop = document.getElementById('crop')
+                document.is_drag=false;  
+                document.getElementById('cropX').value = Number(crop.style.backgroundPositionX.replace('px',''))
+                document.getElementById('cropY').value = Number(crop.style.backgroundPositionY.replace('px',''))
+                Shiny.onInputChange('cropX',Number(crop.style.backgroundPositionX.replace('px','')));
+                Shiny.onInputChange('cropY',Number(crop.style.backgroundPositionY.replace('px','')));
+              }"), 
+
+  tags$script(type="text/javascript", "function dragstart(event) 
+              {
+                var crop = document.getElementById('crop')
+
+                var cropX = Number(crop.style.backgroundPositionX.replace('px',''))
+                var cropY = Number(crop.style.backgroundPositionY.replace('px',''))
+              
+                crop.ondragstart = function() { return false; }
+                document.is_drag=true; 
+                document.dragorigin = [ Number(event.clientX) , Number(event.clientY) ];
+                document.croporigin = [ cropX , cropY ];
+              }"),
+  tags$script(type="text/javascript", "function dodrag(event) 
+              {
+                if (typeof document.is_drag=='undefined') return;
+                if (document.is_drag)
+                {
+                  var x = Number(event.clientX);
+                  var y = Number(event.clientY);
+                  var dragorigin = document.dragorigin;
+                  var croporigin = document.croporigin;
+                  var crop = document.getElementById('crop')
+
+//                  console.log(croporigin[0]+'+'+x+'-'+dragorigin[0]+' & '+croporigin[1]+'+'+y+'-'+dragorigin[1])
+                  crop.style.backgroundPositionX =  croporigin[0] + (x-dragorigin[0]) + 'px';
+                  crop.style.backgroundPositionY =  croporigin[1] + (y-dragorigin[1]) + 'px';
+                }
+              }"),
+  
+  sliderInput(inputId="scale",label="Resize",min=1,max=100,step=1,value=100),
+  textInput(inputId='img_url', 'Image Url',value='https://upload.wikimedia.org/wikipedia/commons/thumb/b/bb/Official_Portrait_of_President_Donald_Trump.jpg/1200px-Official_Portrait_of_President_Donald_Trump.jpg'),
+  uiOutput('person'),
+  textInput(inputId="cropX","Crop X",value="0"),
+  textInput(inputId="cropY","Crop Y",value="0"),
+  actionButton("button_crop", "Crop & Save")
+))
+
+#https://upload.wikimedia.org/wikipedia/commons/thumb/b/bb/Official_Portrait_of_President_Donald_Trump.jpg/1200px-Official_Portrait_of_President_Donald_Trump.jpg
+
+png(filename="www/mask-circle.png", 300, 300, units="px")
+par(mar = rep(0,4), yaxs="i", xaxs="i", bg="transparent")
+plot(0, type = "n", ylim = c(0,1), xlim=c(0,1), axes=F, xlab=NA, ylab=NA)
+plotrix::draw.circle(.5,0.5,.5, col="gray")
+dev.off()
+
+png(filename="www/mask-square.png", 300, 300, units="px")
+par(mar = rep(0,4), yaxs="i", xaxs="i", bg="black")
+plot(0, type = "n", ylim = c(0,1), xlim=c(0,1), axes=F, xlab=NA, ylab=NA)
+dev.off()
+
+maskc <- image_read("www/mask-circle.png")
+masks <- image_read("www/mask-square.png")
+
+mask <- image_composite(maskc, masks, "out") 
+image_write(mask,path="www/mask.png")
+
+resourcepath <- paste0(getwd(),"/www")
+server <- shinyServer(function(input, output, session) {
+  
+  addResourcePath("www", resourcepath)
+
+  observeEvent(input$button_crop, ({
+    
+    if (is.null(img_url) || img_url=="") return(NULL)
+    
+    scale = as.numeric(input$scale)
+    cropX = as.numeric(input$cropX)
+    cropY = as.numeric(input$cropY)
+    img_url <- gsub("\\s","",input$img_url)
+    
+    size <- min(image_info(mask)$width,image_info(mask)$height)
+    
+
+    print(paste0("Resize: ",scale,"% X:",cropX," Y:",cropY))
+    
+    img_ob <- image_read(path=img_url)
+    xscale <- ceiling(image_info(img_ob)$width * (as.numeric(scale))/100)
+    yscale <- ceiling(image_info(img_ob)$height * (as.numeric(scale))/100)
+    
+    img_ob_r <- image_resize(img_ob,geometry=geometry_size_pixels(width=xscale,height=NULL,preserve_aspect = TRUE))
+    img_ob_c <- image_crop(img_ob_r,geometry=geometry_area(x_off=cropX,y_off=cropY))
+    
+
+    circle_img <- image_composite(mask, img_ob_c, "out") 
+
+    image_write(circle_img,path="www/circle_img.png")
+    
+  }))
+  output$person <- renderUI({
+
+    
+    scale <- input$scale
+    print(paste("Scale: ",scale))
+    img_url <- gsub("\\s","",input$img_url)
+    print(paste('Rendering image [ ',img_url,' ]'))
+    if (is.null(img_url) || img_url=="") return(NULL)
+    img_ob <- image_read(path=img_url)
+    xscale <- ceiling(image_info(img_ob)$width * (as.numeric(scale))/100)
+    yscale <- ceiling(image_info(img_ob)$height * (as.numeric(scale))/100)
+    
+    html<- list(
+      HTML(paste0("<p>Uploaded Image</p>
+                  <img src='/www/mask.png'
+                  id='crop' name='crop' 
+                  onmousedown=\"dragstart(event);\" 
+                  onmouseup=\"dragend(event);\" 
+                  onmousemove=\"dodrag(event);\" 
+                  style=\"z-index:-1;background-image:url('",img_url,"');
+                  background-repeat: no-repeat;background-size:",xscale,"px ",yscale,"px;\" width='300px';>"))
+    )
+    
+    print(html)
+    return (html)
+  })
+})
+shinyApp(ui = ui, server = server)
