@@ -71,11 +71,11 @@ test_image <- function()
   plotrix::draw.circle(.5,0.5,.5, col="gray")
   dev.off()
   
-
+  
   img_mm_url <- "https://www.disneyclips.com/imagesnewb/images/mickeyface.gif"
   img_mm_url <- "http://akns-images.eonline.com/eol_images/Entire_Site/201808/rs_1024x759-180108174835-1024.donald-trump.ct.010818.jpg"
   img_mm <- image_read(path=img_mm_url)
-
+  
   mask <- image_read(tf)
   size <- min(image_info(img_mm)$width,image_info(img_mm)$height)
   mask <- image_scale(mask, as.character(size))
@@ -91,9 +91,9 @@ test_image <- function()
   conn <- poolCheckout(pool)
   
   person_id <- dbGetQuery(conn,"insert into pd_wbgtravel.people(short_name,title,organization,is_wbg) 
-                   values('Mickey Mouse','Mr.','Walt Disney Co.',0)
-                   on conflict(short_name,organization) do update SET short_name=excluded.short_name
-                   returning person_id;")
+                          values('Mickey Mouse','Mr.','Walt Disney Co.',0)
+                          on conflict(short_name,organization) do update SET short_name=excluded.short_name
+                          returning person_id;")
   person_id <- as.numeric(person_id)
   
   img_data <- image_data(circle_img)
@@ -123,41 +123,41 @@ library(shiny)
 ui <- shinyUI(bootstrapPage(
   tags$script(type="text/javascript", "function dragend(event) 
               {
-                var crop = document.getElementById('crop')
-                document.is_drag=false;  
-                document.getElementById('cropX').value = Number(crop.style.backgroundPositionX.replace('px',''))
-                document.getElementById('cropY').value = Number(crop.style.backgroundPositionY.replace('px',''))
-                Shiny.onInputChange('cropX',Number(crop.style.backgroundPositionX.replace('px','')));
-                Shiny.onInputChange('cropY',Number(crop.style.backgroundPositionY.replace('px','')));
+              var crop = document.getElementById('crop')
+              document.is_drag=false;  
+              document.getElementById('cropX').value = Number(crop.style.backgroundPositionX.replace('px',''))
+              document.getElementById('cropY').value = Number(crop.style.backgroundPositionY.replace('px',''))
+              Shiny.onInputChange('cropX',Number(crop.style.backgroundPositionX.replace('px','')));
+              Shiny.onInputChange('cropY',Number(crop.style.backgroundPositionY.replace('px','')));
               }"), 
 
   tags$script(type="text/javascript", "function dragstart(event) 
               {
-                var crop = document.getElementById('crop')
-
-                var cropX = Number(crop.style.backgroundPositionX.replace('px',''))
-                var cropY = Number(crop.style.backgroundPositionY.replace('px',''))
+              var crop = document.getElementById('crop')
               
-                crop.ondragstart = function() { return false; }
-                document.is_drag=true; 
-                document.dragorigin = [ Number(event.clientX) , Number(event.clientY) ];
-                document.croporigin = [ cropX , cropY ];
+              var cropX = Number(crop.style.backgroundPositionX.replace('px',''))
+              var cropY = Number(crop.style.backgroundPositionY.replace('px',''))
+              
+              crop.ondragstart = function() { return false; }
+              document.is_drag=true; 
+              document.dragorigin = [ Number(event.clientX) , Number(event.clientY) ];
+              document.croporigin = [ cropX , cropY ];
               }"),
   tags$script(type="text/javascript", "function dodrag(event) 
               {
-                if (typeof document.is_drag=='undefined') return;
-                if (document.is_drag)
-                {
-                  var x = Number(event.clientX);
-                  var y = Number(event.clientY);
-                  var dragorigin = document.dragorigin;
-                  var croporigin = document.croporigin;
-                  var crop = document.getElementById('crop')
-
-//                  console.log(croporigin[0]+'+'+x+'-'+dragorigin[0]+' & '+croporigin[1]+'+'+y+'-'+dragorigin[1])
-                  crop.style.backgroundPositionX =  croporigin[0] + (x-dragorigin[0]) + 'px';
-                  crop.style.backgroundPositionY =  croporigin[1] + (y-dragorigin[1]) + 'px';
-                }
+              if (typeof document.is_drag=='undefined') return;
+              if (document.is_drag)
+              {
+              var x = Number(event.clientX);
+              var y = Number(event.clientY);
+              var dragorigin = document.dragorigin;
+              var croporigin = document.croporigin;
+              var crop = document.getElementById('crop')
+              
+              //                  console.log(croporigin[0]+'+'+x+'-'+dragorigin[0]+' & '+croporigin[1]+'+'+y+'-'+dragorigin[1])
+              crop.style.backgroundPositionX =  croporigin[0] + (x-dragorigin[0]) + 'px';
+              crop.style.backgroundPositionY =  croporigin[1] + (y-dragorigin[1]) + 'px';
+              }
               }"),
   
   sliderInput(inputId="scale",label="Resize",min=1,max=100,step=1,value=100),
@@ -166,7 +166,7 @@ ui <- shinyUI(bootstrapPage(
   textInput(inputId="cropX","Crop X",value="0"),
   textInput(inputId="cropY","Crop Y",value="0"),
   actionButton("button_crop", "Crop & Save")
-))
+  ))
 
 #https://upload.wikimedia.org/wikipedia/commons/thumb/b/bb/Official_Portrait_of_President_Donald_Trump.jpg/1200px-Official_Portrait_of_President_Donald_Trump.jpg
 
@@ -191,19 +191,27 @@ resourcepath <- paste0(getwd(),"/www")
 server <- shinyServer(function(input, output, session) {
   
   addResourcePath("www", resourcepath)
-
+  
   observeEvent(input$button_crop, ({
+    <<<<<<< HEAD
     img_url <- gsub("\\s","",input$img_url)
     
+    =======
+      img_url <- input$img_url    
+    >>>>>>> 4c261543d46082b567efcc4a73f62bbcd3bce459
     if (is.null(img_url) || img_url=="") return(NULL)
     
     scale = as.numeric(input$scale)
     cropX = as.numeric(input$cropX)
     cropY = as.numeric(input$cropY)
+    <<<<<<< HEAD
+    =======
+      img_url <- gsub("\\s","",img_url)
+    >>>>>>> 4c261543d46082b567efcc4a73f62bbcd3bce459
     
     size <- min(image_info(mask)$width,image_info(mask)$height)
     
-
+    
     print(paste0("Resize: ",scale,"% X:",cropX," Y:",cropY))
     
     img_ob <- image_read(path=img_url)
@@ -213,14 +221,14 @@ server <- shinyServer(function(input, output, session) {
     img_ob_r <- image_resize(img_ob,geometry=geometry_size_pixels(width=xscale,height=NULL,preserve_aspect = TRUE))
     img_ob_c <- image_crop(img_ob_r,geometry=geometry_area(x_off=cropX,y_off=cropY))
     
-
+    
     circle_img <- image_composite(mask, img_ob_c, "out") 
-
+    
     image_write(circle_img,path="www/circle_img.png")
     
   }))
   output$person <- renderUI({
-
+    
     
     scale <- input$scale
     print(paste("Scale: ",scale))
