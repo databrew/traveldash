@@ -1769,12 +1769,13 @@ server <- function(input, output, session) {
   
   # Current photo output
   output$current_photo_output <- renderImage({
-    person <- input$photo_person
     # image <- photos_reactive$images
     # image <- image$person_image[image$short_name == person]
     
     # Also observe confirmation and refresh
-    input$button_crop
+    x <- input$button_crop
+    person <- input$photo_person
+    
     
     file_name <- paste0('www/headshots/circles/', person, '.png')
     if(!file.exists(file_name)){
