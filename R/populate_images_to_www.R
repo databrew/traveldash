@@ -33,6 +33,6 @@ populate_images_to_www <- function(pool){
   
   end_time <- Sys.time()
   
-  print(paste0("get_images(): Database upload/download time: ", end_time - start_time))
+  print(paste0("populate_images_to_www(): Database upload/download time: ", end_time - start_time))
   poolReturn(conn)
 }

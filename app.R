@@ -1891,9 +1891,10 @@ server <- function(input, output, session) {
     message('Just copied the cropped image to ', destination_file)
 
     
-    # # Having updated the www folder, we can now uppdate the database
-    # message('--- updating the database')
-    # populate_images_from_www(pool = pool)
+    # Having updated the www folder, we can now uppdate the database
+    message('--- updating the database')
+    Sys.sleep(0.2)
+    populate_images_from_www(pool = pool)
     # # Update the reactive object
     # message('--- updating the reactive in-session object')
     # images <- get_images(pool = pool)
