@@ -22,9 +22,9 @@ populate_images_to_www <- function(pool){
       image_write(this_image, 
                   path = disk_name, 
                   format = "png")
-      message('....... Wrote ', disk_name)
+      message('....... Wrote ', disk_name, ' to disk successfully.')
     } else {
-      mssage('.....', this_db_image, ' is already on disk. Not copying from database.')
+      message('.....', this_db_image, ' is already on disk. Not copying from database.')
     }
   }
   
