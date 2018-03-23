@@ -1804,23 +1804,23 @@ server <- function(input, output, session) {
   })
   
   # Current photo output
-  output$new_photo_output <- 
-    renderImage({
-      ss <- switcher()
-      the_person <- input$photo_person
-      x <- uploaded_photo_path()
-      
-      if(is.null(x) | !ss){
-        the_file <- 'www/headshots/circles/NA.png'
-      } else {
-        the_file <- x
-      }
-      list(src = the_file,
-           # width = width,
-           # height = height,
-           alt = the_person)
-      
-    }, deleteFile = FALSE)
+  # output$new_photo_output <- 
+  #   renderImage({
+  #     ss <- switcher()
+  #     the_person <- input$photo_person
+  #     x <- uploaded_photo_path()
+  #     
+  #     if(is.null(x) | !ss){
+  #       the_file <- 'www/headshots/circles/NA.png'
+  #     } else {
+  #       the_file <- x
+  #     }
+  #     list(src = the_file,
+  #          # width = width,
+  #          # height = height,
+  #          alt = the_person)
+  #     
+  #   }, deleteFile = FALSE)
   
   # Observe the confirmation of the photo upload and send to dropbox
   output$photo_confirmation_ui <-
@@ -1953,6 +1953,10 @@ server <- function(input, output, session) {
           go <- TRUE
         }
       }
+    }
+    ss <- switcher()
+    if(!ss){
+      go <- FALSE
     }
     if(!go){
       return(NULL)
