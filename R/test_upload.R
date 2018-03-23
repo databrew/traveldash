@@ -62,61 +62,7 @@ test_upload <- function()
   
 }
 
-test_image <- function()
-{
-  
-  png(tf <- tempfile(fileext = ".png"), 1000, 1000)
-  par(mar = rep(0,4), yaxs="i", xaxs="i", bg="transparent")
-  plot(0, type = "n", ylim = c(0,1), xlim=c(0,1), axes=F, xlab=NA, ylab=NA)
-  plotrix::draw.circle(.5,0.5,.5, col="gray")
-  dev.off()
-  
-  
-  img_mm_url <- "https://www.disneyclips.com/imagesnewb/images/mickeyface.gif"
-  img_mm_url <- "http://akns-images.eonline.com/eol_images/Entire_Site/201808/rs_1024x759-180108174835-1024.donald-trump.ct.010818.jpg"
-  img_mm <- image_read(path=img_mm_url)
-  
-  mask <- image_read(tf)
-  size <- min(image_info(img_mm)$width,image_info(img_mm)$height)
-  mask <- image_scale(mask, as.character(size))
-  
-  circle_img <- image_composite(mask, img_mm, "in") 
-  circle_img <- image_scale(circle_img,"150")
-  
-  
-  
-  pool <- create_pool(options_list = credentials_extract(),F)
-  start_time <- Sys.time()
-  
-  conn <- poolCheckout(pool)
-  
-  person_id <- dbGetQuery(conn,"insert into pd_wbgtravel.people(short_name,title,organization,is_wbg) 
-                          values('Mickey Mouse','Mr.','Walt Disney Co.',0)
-                          on conflict(short_name,organization) do update SET short_name=excluded.short_name
-                          returning person_id;")
-  person_id <- as.numeric(person_id)
-  
-  img_data <- image_data(circle_img)
-  img_bytes <- serialize(img_data,NULL,ascii=F); 
-  dbSendQuery(conn,"update pd_wbgtravel.people set image_data = $1 where person_id = $2",
-              params=list(image_data=postgresqlEscapeBytea(conn, img_bytes),person_id = person_id))
-  
-  img <- dbGetQuery(conn,"select image_data from pd_wbgtravel.people where person_id = $1",list(person_id = person_id))
-  img <- postgresqlUnescapeBytea(img)
-  img <- unserialize(img)
-  
-  end_time <- Sys.time()
-  
-  print(paste0("Database upload/download time: ", end_time - start_time))
-  
-  img <- image_read(img)
-  
-  image_write(circle_img,path="./mickeymouse.png",format="png")
-  
-  poolReturn(conn)
-  
-  return (img)
-}
+
 
 library(shiny)
 
