@@ -1776,7 +1776,6 @@ server <- function(input, output, session) {
     x <- input$button_crop
     person <- input$photo_person
     
-    
     file_name <- paste0('www/headshots/circles/', person, '.png')
     if(!file.exists(file_name)){
       message('No photo file on disk for ', person, '. Using the NA placeholder photo.')
@@ -2009,6 +2008,7 @@ server <- function(input, output, session) {
   session$onSessionEnded(function() {
     message('Session ended. Closing the connection pool.')
     tryCatch(pool::poolClose(pool), error = function(e) {message('')})
+    file.remove('www/temp.png')
   })
   
   
