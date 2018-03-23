@@ -6,6 +6,7 @@ the_width <- 200
 
 # Header
 header <- dashboardHeader(title="Travel dash",
+                          
                           tags$li(class = 'dropdown',  
                                   tags$style(type='text/css', "#reset_date_range { width:100%; margin-top: 22px; margin-right: 10px; margin-left: 10px; font-size:80%}"),
                                   tags$style(type='text/css', "#search { width:70%; margin-right: 10px; margin-left: 10px; font-size:80%}"),
@@ -42,6 +43,44 @@ sidebar <- dashboardSidebar(
   tags$style(".main-header .logo {height: 70px;}"),
   tags$style(".sidebar-toggle {height: 70px; padding-top: 1px !important;}"),
   tags$style(".navbar {min-height:70px !important}"),  
+  
+  tags$script(type="text/javascript", "function dragend(event) 
+              {
+              var crop = document.getElementById('crop')
+              document.is_drag=false;  
+              Shiny.onInputChange('cropX',Number(crop.style.backgroundPositionX.replace('px','')));
+              Shiny.onInputChange('cropY',Number(crop.style.backgroundPositionY.replace('px','')));
+              }"), 
+
+  tags$script(type="text/javascript", "function dragstart(event) 
+              {
+              var crop = document.getElementById('crop')
+              
+              var cropX = Number(crop.style.backgroundPositionX.replace('px',''))
+              var cropY = Number(crop.style.backgroundPositionY.replace('px',''))
+              
+              crop.ondragstart = function() { return false; }
+              document.is_drag=true; 
+              document.dragorigin = [ Number(event.clientX) , Number(event.clientY) ];
+              document.croporigin = [ cropX , cropY ];
+              }"),
+  tags$script(type="text/javascript", "function dodrag(event) 
+              {
+              if (typeof document.is_drag=='undefined') return;
+              if (document.is_drag)
+              {
+              var x = Number(event.clientX);
+              var y = Number(event.clientY);
+              var dragorigin = document.dragorigin;
+              var croporigin = document.croporigin;
+              var crop = document.getElementById('crop')
+              
+              //                  console.log(croporigin[0]+'+'+x+'-'+dragorigin[0]+' & '+croporigin[1]+'+'+y+'-'+dragorigin[1])
+              crop.style.backgroundPositionX =  croporigin[0] + (x-dragorigin[0]) + 'px';
+              crop.style.backgroundPositionY =  croporigin[1] + (y-dragorigin[1]) + 'px';
+              }
+              }"),
+  
   width = the_width,
   sidebarMenu(
     id="tabs",
@@ -264,19 +303,23 @@ The dashboard was developed as a part of activities under the <a href="http://ww
     #   uiOutput("MainBody")),
     tabItem(tabName = 'upload_photos',
             fluidPage(
-              fluidRow(column(4,
+              fluidRow(column(3, align = 'center',
                               selectInput('photo_person',
                                           'Who are you uploading a photo for?',
-                                          choices = sort(unique(people$short_name))),
-                              fileInput('photo_upload',
-                                        'Upload here:',
-                                        accept=c('.png'))),
-                       column(4,
-                              h2('Current photo'),
+                                          choices = sort(unique(people$short_name)))),
+                       column(3, align = 'center',
+                              h4('Current photo'),
                               imageOutput('current_photo_output')),
-                       column(4,
+                       column(6,
                               h2('New photo'),
-                              imageOutput('new_photo_output'))),
+                              radioButtons('url_or_upload',
+                                           '',
+                                           choices = c('Upload from disk',
+                                                       'Get from web')),
+                              uiOutput('upload_url_ui'),
+                              
+                              # imageOutput('new_photo_output'),
+                              uiOutput('new_photo_ui'))),
               uiOutput('photo_confirmation_ui')
             )),
     tabItem(tabName = 'upload_data',
@@ -1813,6 +1856,120 @@ server <- function(input, output, session) {
     message('--- updating the reactive in-session object')
     images <- get_images(pool = pool)
     photos_reactive$images <- images
+  })
+  
+  #UI for editing new photo
+  output$new_photo_ui <- renderUI({
+    fluidPage(
+      fluidRow(
+        column(12,
+               sliderInput(inputId="scale",label="Resize",min=1,max=100,step=1,value=100),
+               # textInput(inputId='img_url', 'Image Url',value='https://upload.wikimedia.org/wikipedia/commons/thumb/b/bb/Official_Portrait_of_President_Donald_Trump.jpg/1200px-Official_Portrait_of_President_Donald_Trump.jpg'),
+               
+               uiOutput('person'),
+               # textInput(inputId="cropX","Crop X",value="0"),
+               # textInput(inputId="cropY","Crop Y",value="0"),
+               actionButton("button_crop", "Crop & Save"))
+      )
+    )
+  })
+  
+  # Soren stuff
+  addResourcePath("www", resourcepath)
+  
+  observeEvent(input$button_crop, ({
+    upl <- input$url_or_upload
+    if(upl == 'Upload from disk'){
+      img_url <- uploaded_photo_path()
+    } else {
+      img_url <- input$img_url
+    }
+    
+    # img_url <- uploaded_photo_path()
+    message('uploaded photo path is ')
+    print(img_url)
+    # img_url <- gsub("\\s","",img_url)
+    
+    if (is.null(img_url) || img_url=="") return(NULL)
+    
+    scale = as.numeric(input$scale)
+    cropX = as.numeric(input$cropX)
+    cropY = as.numeric(input$cropY)
+    
+    size <- min(image_info(mask)$width,image_info(mask)$height)
+    
+    print(paste0("Resize: ",scale,"% X:",cropX," Y:",cropY))
+    
+    img_ob <- image_read(path=img_url)
+    xscale <- ceiling(image_info(img_ob)$width * (as.numeric(scale))/100)
+    yscale <- ceiling(image_info(img_ob)$height * (as.numeric(scale))/100)
+    
+    img_ob_r <- image_resize(img_ob,geometry=geometry_size_pixels(width=xscale,height=NULL,preserve_aspect = TRUE))
+    img_ob_c <- image_crop(img_ob_r,geometry=geometry_area(x_off=cropX,y_off=cropY))
+    
+    
+    circle_img <- image_composite(mask, img_ob_c, "out") 
+    
+    image_write(circle_img,path="www/circle_img.png")
+    
+  }))
+  output$person <- renderUI({
+    
+    scale <- input$scale
+    print(paste("Scale: ",scale))
+    # upp <- uploaded_photo_path()
+    upl <- input$url_or_upload
+    if(upl == 'Upload from disk'){
+      upp <- uploaded_photo_path()
+      img_url <- upp
+    } else {
+      upp <- input$img_url
+      img_url <- gsub("\\s","",
+                      upp)
+    }
+    
+    
+    print(paste('Rendering image [ ',img_url,' ]'))
+    go <- FALSE
+    if(!is.null(img_url)){
+      if(length(img_url) > 0){
+        if(img_url != ''){
+          go <- TRUE
+        }
+      }
+    }
+    if(!go){
+      return(NULL)
+    }
+    img_ob <- image_read(path=img_url)
+    xscale <- ceiling(image_info(img_ob)$width * (as.numeric(scale))/100)
+    yscale <- ceiling(image_info(img_ob)$height * (as.numeric(scale))/100)
+    
+    html<- list(
+      HTML(paste0("<p>Uploaded Image</p>
+                  <img src='/www/mask.png'
+                  id='crop' name='crop' 
+                  onmousedown=\"dragstart(event);\" 
+                  onmouseup=\"dragend(event);\" 
+                  onmousemove=\"dodrag(event);\" 
+                  style=\"z-index:-1;background-image:url('",img_url,"');
+                  background-repeat: no-repeat;background-size:",xscale,"px ",yscale,"px;\" width='300px';>"))
+    )
+    
+    print(html)
+    return (html)
+  })
+  
+  output$upload_url_ui <- renderUI({
+    
+    upl <- input$url_or_upload
+    if(upl == 'Upload from disk'){
+      fileInput('photo_upload',
+                'Upload here:',
+                accept=c('.png'))
+    } else {
+      textInput(inputId='img_url', 'Image Url',value='https://upload.wikimedia.org/wikipedia/commons/thumb/b/bb/Official_Portrait_of_President_Donald_Trump.jpg/1200px-Official_Portrait_of_President_Donald_Trump.jpg')
+    }
   })
   
   # On session end, close
