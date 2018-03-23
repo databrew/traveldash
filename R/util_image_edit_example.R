@@ -37,9 +37,10 @@ image_write(mask,path="www/mask.png")
 
 missing_headshot <- image_read("www/headshot-NA.png")
 
+pool <- create_pool(options_list = credentials_extract(),F)
 db_get_people <- function()
 {
-  pool <- create_pool(options_list = credentials_extract(),F)
+
   conn <- poolCheckout(pool)
   people <- dbGetQuery(conn,paste0("select person_id,short_name,image_data from pd_wbgtravel.people;"))
   
@@ -47,7 +48,14 @@ db_get_people <- function()
   return(people)  
 }
 
-
+db_save_person_image <- function(person_id,person_image)
+{
+  conn <- poolCheckout(pool)
+  people <- dbGetQuery(conn,paste0("select person_id,short_name,image_data from pd_wbgtravel.people;"))
+  
+  poolReturn(conn)
+  
+}
 ui <- shinyUI(bootstrapPage(
   tags$script(type="text/javascript", "function dragend(event) 
               {

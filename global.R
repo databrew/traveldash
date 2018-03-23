@@ -30,14 +30,14 @@ library(timevis)
 library(lubridate)
 library(readxl)
 library(htmlTable)
-library(Roxford)
+#library(Roxford)
 library(png)
 library(jpeg)
 
 
 # Read in dropbox auth
-library(rdrop2)
-token <- readRDS("droptoken.rds")
+#library(rdrop2)
+#token <- readRDS("droptoken.rds")
 
 message('############ Done with package loading')
 #setwd("C:/Users/SHeitmann/WBG/Sinja Buri - FIG SSA MEL/MEL Program Operations/Knowledge Products/Dashboards & Viz/WBG Travel/GitHub/traveldash")
@@ -258,31 +258,32 @@ joe_jitter <- function(x, zoom = 2){
 
 # Create a table of names / photos, conditional on what is available in dropbox
 # and already stored locally
-create_photos_df <- function(){
-  photos <- data_frame(person = sort(unique(people$short_name))) %>%
-    mutate(file_name = paste0(person, '.png'))
-  drop_photos <- drop_dir(dtoken = token)
-  photos <- left_join(photos,
-                      drop_photos,
-                      by = c('file_name' = 'name')) %>%
-    mutate(file_name = ifelse(is.na(path_lower), 'NA.png', file_name)) %>%
-    dplyr::select(person,
-                  file_name)
-  return(photos)
-}
-photos <- create_photos_df()
-# populate the tmp folder with photos
-populate_tmp <- function(photos){
-  not_na <- which(photos$file_name != 'NA.png')
-  lnn <- length(not_na)
-  for (i in 1:lnn){
-    message('--- downloading photo ', i, ' of ', lnn)
-    this_index <- not_na[i]
-    this_file <- photos$file_name[this_index]
-    drop_download(this_file,
-                  local_path = 'tmp',
-                  overwrite = TRUE,
-                  dtoken = token)
-  }
-}
-populate_tmp(photos = photos)
+# 
+# create_photos_df <- function(){
+#   photos <- data_frame(person = sort(unique(people$short_name))) %>%
+#     mutate(file_name = paste0(person, '.png'))
+#   drop_photos <- drop_dir(dtoken = token)
+#   photos <- left_join(photos,
+#                       drop_photos,
+#                       by = c('file_name' = 'name')) %>%
+#     mutate(file_name = ifelse(is.na(path_lower), 'NA.png', file_name)) %>%
+#     dplyr::select(person,
+#                   file_name)
+#   return(photos)
+# }
+# photos <- create_photos_df()
+# # populate the tmp folder with photos
+# populate_tmp <- function(photos){
+#   not_na <- which(photos$file_name != 'NA.png')
+#   lnn <- length(not_na)
+#   for (i in 1:lnn){
+#     message('--- downloading photo ', i, ' of ', lnn)
+#     this_index <- not_na[i]
+#     this_file <- photos$file_name[this_index]
+#     drop_download(this_file,
+#                   local_path = 'tmp',
+#                   overwrite = TRUE,
+#                   dtoken = token)
+#   }
+# }
+# populate_tmp(photos = photos)

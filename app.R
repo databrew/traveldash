@@ -314,8 +314,8 @@ ui <- dashboardPage(header, sidebar, body)
 server <- function(input, output, session) {
   
   # Create a reactive dataframe of photos
-  photos_reactive <- reactiveValues()
-  photos_reactive$photos <- photos
+  #photos_reactive <- reactiveValues()
+  #photos_reactive$photos <- photos
   
   date_range <- reactiveVal(c(Sys.Date() - 7,
                               Sys.Date() + 14 ))
