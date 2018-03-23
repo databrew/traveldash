@@ -303,13 +303,13 @@ The dashboard was developed as a part of activities under the <a href="http://ww
     #   uiOutput("MainBody")),
     tabItem(tabName = 'upload_photos',
             fluidPage(
-              fluidRow(column(3, align = 'center',
+              fluidRow(column(6, align = 'center',
                               selectInput('photo_person',
                                           'Who are you uploading a photo for?',
-                                          choices = sort(unique(people$short_name)))),
-                       column(3, align = 'center',
+                                          choices = sort(unique(people$short_name))),
                               h4('Current photo'),
                               imageOutput('current_photo_output')),
+
                        column(6,
                               h2('New photo'),
                               radioButtons('url_or_upload',
@@ -1867,7 +1867,7 @@ server <- function(input, output, session) {
                sliderInput(inputId="scale",label="Resize",min=1,max=100,step=1,value=100),
                # textInput(inputId='img_url', 'Image Url',value='https://upload.wikimedia.org/wikipedia/commons/thumb/b/bb/Official_Portrait_of_President_Donald_Trump.jpg/1200px-Official_Portrait_of_President_Donald_Trump.jpg'),
                
-               uiOutput('person'),
+               uiOutput('photo_editor'),
                textInput(inputId="cropX","Crop X",value="0"),
                textInput(inputId="cropY","Crop Y",value="0"),
                actionButton("button_crop", "Crop & Save"))
@@ -1922,7 +1922,7 @@ server <- function(input, output, session) {
     # message('Just copied the cropped image to ', destination_file)
     
   }))
-  output$person <- renderUI({
+  output$photo_editor <- renderUI({
     
     scale <- input$scale
     print(paste("Scale: ",scale))
@@ -1931,10 +1931,12 @@ server <- function(input, output, session) {
     if(upl == 'Upload from disk'){
       upp <- uploaded_photo_path()
       img_url <- upp
+      external_url <- FALSE
     } else {
       upp <- input$img_url
       img_url <- gsub("\\s","",
                       upp)
+      external_url <- TRUE
     }
     
     
@@ -1954,6 +1956,17 @@ server <- function(input, output, session) {
     xscale <- ceiling(image_info(img_ob)$width * (as.numeric(scale))/100)
     yscale <- ceiling(image_info(img_ob)$height * (as.numeric(scale))/100)
     
+    
+    if(!external_url){
+      file.copy(img_url,
+                to = 'www/temp.png',
+                overwrite = TRUE)
+      img_url <- 'www/temp.png'
+      url_text <- paste0("'", img_url, "'")
+    }
+    url_text <- paste0('url(', img_url, ')')
+    message('URL TEXT IS')
+    print(url_text)
     html<- list(
       HTML(paste0("<p>Uploaded Image</p>
                   <img src='/www/mask.png'
@@ -1961,7 +1974,7 @@ server <- function(input, output, session) {
                   onmousedown=\"dragstart(event);\" 
                   onmouseup=\"dragend(event);\" 
                   onmousemove=\"dodrag(event);\" 
-                  style=\"z-index:-1;background-image:url('",img_url,"');
+                  style=\"z-index:-1;background-image:", url_text, ";
                   background-repeat: no-repeat;background-size:",xscale,"px ",yscale,"px;\" width='300px';>"))
     )
     
