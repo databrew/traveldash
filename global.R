@@ -255,3 +255,9 @@ populate_images_from_www(pool = pool) # www to db
 populate_images_to_www(pool = pool) # db to www
 images <- get_images(pool = pool)
 message('############ Done with global.R')
+
+# Image manipulation
+resourcepath <- paste0(getwd(),"/www")
+maskc <- image_read("www/mask-circle.png")
+masks <- image_read("www/mask-square.png")
+mask <- image_composite(maskc, masks, "out") 

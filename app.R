@@ -1775,6 +1775,7 @@ server <- function(input, output, session) {
     
     # Also observe confirmation and refresh
     input$confirm_photo_upload
+    input$button_crop
     
     file_name <- paste0('www/headshots/circles/', person, '.png')
     if(!file.exists(file_name)){
@@ -1867,8 +1868,8 @@ server <- function(input, output, session) {
                # textInput(inputId='img_url', 'Image Url',value='https://upload.wikimedia.org/wikipedia/commons/thumb/b/bb/Official_Portrait_of_President_Donald_Trump.jpg/1200px-Official_Portrait_of_President_Donald_Trump.jpg'),
                
                uiOutput('person'),
-               # textInput(inputId="cropX","Crop X",value="0"),
-               # textInput(inputId="cropY","Crop Y",value="0"),
+               textInput(inputId="cropX","Crop X",value="0"),
+               textInput(inputId="cropY","Crop Y",value="0"),
                actionButton("button_crop", "Crop & Save"))
       )
     )
@@ -1911,6 +1912,14 @@ server <- function(input, output, session) {
     circle_img <- image_composite(mask, img_ob_c, "out") 
     
     image_write(circle_img,path="www/circle_img.png")
+    person <- input$photo_person
+    destination_file <- paste0('www/headshots/circles/', person, '.png')
+    
+    message('NOT WRITING TO DISK, SO AS TO AVOID ERRORS...')
+    # file.copy(from = 'www/circle_img.png',
+    #           to = destination_file,
+    #           overwrite = TRUE)
+    # message('Just copied the cropped image to ', destination_file)
     
   }))
   output$person <- renderUI({
