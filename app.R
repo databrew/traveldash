@@ -1774,7 +1774,6 @@ server <- function(input, output, session) {
     # image <- image$person_image[image$short_name == person]
     
     # Also observe confirmation and refresh
-    # input$confirm_photo_upload
     input$button_crop
     
     file_name <- paste0('www/headshots/circles/', person, '.png')
@@ -1826,8 +1825,17 @@ server <- function(input, output, session) {
   # Observe the confirmation of the photo upload and send to dropbox
   output$photo_confirmation_ui <-
     renderUI({
+      ok <- FALSE
+      upl <- input$url_or_upload
       x <- uploaded_photo_path()
+      if(upl == 'Get from web'){
+        ok <- TRUE
+      }
       if(!is.null(x)){
+        ok <- TRUE
+      }
+      
+      if(ok){
         fluidPage(
           fluidRow(
             column(12, 
@@ -1841,54 +1849,22 @@ server <- function(input, output, session) {
   observeEvent(input$button_crop,{
     message('Photo upload confirmed---')
     person <- input$photo_person
-    # Update the www folder
-    source_file <- uploaded_photo_path()
     destination_file <- paste0('www/headshots/circles/', person, '.png')
-    message('--- copying new photo to ', destination_file)
-    file.copy(from = source_file,
-              to = destination_file,
-              overwrite = TRUE)
     
-    # Having updated the www folder, we can now uppdate the database
-    message('--- updating the database')
-    populate_images_from_www(pool = pool)
-    # Update the reactive object
-    message('--- updating the reactive in-session object')
-    images <- get_images(pool = pool)
-    photos_reactive$images <- images
-  })
-  
-  #UI for editing new photo
-  output$new_photo_ui <- renderUI({
-    fluidPage(
-      fluidRow(
-        column(12,
-               sliderInput(inputId="scale",label="Resize",min=1,max=100,step=1,value=100),
-               # textInput(inputId='img_url', 'Image Url',value='https://upload.wikimedia.org/wikipedia/commons/thumb/b/bb/Official_Portrait_of_President_Donald_Trump.jpg/1200px-Official_Portrait_of_President_Donald_Trump.jpg'),
-               
-               uiOutput('photo_editor'),
-               hidden(textInput(inputId="cropX","Crop X",value="0"),
-                      textInput(inputId="cropY","Crop Y",value="0")))
-      )
-    )
-  })
-  
-  # Soren stuff
-  addResourcePath("www", resourcepath)
-  
-  observeEvent(input$button_crop, ({
     upl <- input$url_or_upload
     if(upl == 'Upload from disk'){
-      img_url <- uploaded_photo_path()
+      upp <- uploaded_photo_path()
+      img_url <- upp
+      external_url <- FALSE
     } else {
-      img_url <- input$img_url
+      upp <- input$img_url
+      img_url <- gsub("\\s","",
+                      upp)
+      external_url <- TRUE
     }
     
-    # img_url <- uploaded_photo_path()
-    message('uploaded photo path is ')
-    print(img_url)
-    # img_url <- gsub("\\s","",img_url)
     
+    # Update the www folder
     if (is.null(img_url) || img_url=="") return(NULL)
     
     scale = as.numeric(input$scale)
@@ -1896,8 +1872,6 @@ server <- function(input, output, session) {
     cropY = as.numeric(input$cropY)
     
     size <- min(image_info(mask)$width,image_info(mask)$height)
-    
-    print(paste0("Resize: ",scale,"% X:",cropX," Y:",cropY))
     
     img_ob <- image_read(path=img_url)
     xscale <- ceiling(image_info(img_ob)$width * (as.numeric(scale))/100)
@@ -1908,18 +1882,51 @@ server <- function(input, output, session) {
     
     
     circle_img <- image_composite(mask, img_ob_c, "out") 
-    
     image_write(circle_img,path="www/circle_img.png")
     person <- input$photo_person
     destination_file <- paste0('www/headshots/circles/', person, '.png')
+    file.copy(from = 'www/circle_img.png',
+              to = destination_file,
+              overwrite = TRUE)
+    message('Just copied the cropped image to ', destination_file)
+
     
-    message('NOT WRITING TO DISK, SO AS TO AVOID ERRORS...')
-    # file.copy(from = 'www/circle_img.png',
-    #           to = destination_file,
-    #           overwrite = TRUE)
-    # message('Just copied the cropped image to ', destination_file)
+    # # Having updated the www folder, we can now uppdate the database
+    # message('--- updating the database')
+    # populate_images_from_www(pool = pool)
+    # # Update the reactive object
+    # message('--- updating the reactive in-session object')
+    # images <- get_images(pool = pool)
+    # photos_reactive$images <- images
     
-  }))
+    
+  })
+  
+  #UI for editing new photo
+  output$new_photo_ui <- renderUI({
+    ok <- FALSE
+    upl <- input$url_or_upload
+    x <- uploaded_photo_path()
+    if(upl == 'Get from web'){
+      ok <- TRUE
+    }
+    if(!is.null(x)){
+      ok <- TRUE
+    }
+    if(ok){
+      fluidPage(
+        fluidRow(
+          column(12,
+                 uiOutput('photo_editor'),
+                 sliderInput(inputId="scale",label="Resize",min=1,max=100,step=1,value=100),
+                 hidden(textInput(inputId="cropX","Crop X",value="0"),
+                        textInput(inputId="cropY","Crop Y",value="0")))
+        )
+      ) 
+    }
+  })
+  addResourcePath("www", resourcepath)
+
   output$photo_editor <- renderUI({
     
     scale <- input$scale
