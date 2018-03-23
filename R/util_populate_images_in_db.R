@@ -81,5 +81,6 @@ get_images <- function()
   end_time <- Sys.time()
   
   print(paste0("Database upload/download time: ", end_time - start_time))
+  poolReturn(conn)
   return(images$person_image)
 }

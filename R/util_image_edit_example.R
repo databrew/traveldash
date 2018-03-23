@@ -1,14 +1,6 @@
-# Should be run from parent directory (traveldash)
-
-library(openxlsx)
-library(RPostgreSQL)
-library(yaml)
-library(pool)
-library(lubridate)
 library(magick)
+library(shiny)
 
-
-# Define whether on Joe's computer (dev) or elsewhere (prod)
 joe <- grepl('joebrew', getwd())
 
 if(joe){
@@ -22,49 +14,39 @@ if(joe){
 functions <- dir('R')
 for(i in 1:length(functions)) 
 {
-  if (functions[i]=="test_upload.R") next 
+  if (any(grepl("util",functions[i]))) next 
   else source(paste0('R/', functions[i]), chdir = TRUE) 
 }
 
-test_upload <- function()
+png(filename="www/mask-circle.png", 300, 300, units="px")
+par(mar = rep(0,4), yaxs="i", xaxs="i", bg="transparent")
+plot(0, type = "n", ylim = c(0,1), xlim=c(0,1), axes=F, xlab=NA, ylab=NA)
+plotrix::draw.circle(.5,0.5,.5, col="gray")
+dev.off()
+
+png(filename="www/mask-square.png", 300, 300, units="px")
+par(mar = rep(0,4), yaxs="i", xaxs="i", bg="black")
+plot(0, type = "n", ylim = c(0,1), xlim=c(0,1), axes=F, xlab=NA, ylab=NA)
+dev.off()
+
+maskc <- image_read("www/mask-circle.png")
+masks <- image_read("www/mask-square.png")
+
+mask <- image_composite(maskc, masks, "out") 
+image_write(mask,path="www/mask.png")
+
+missing_headshot <- image_read("www/headshot-NA.png")
+
+db_get_people <- function()
 {
   pool <- create_pool(options_list = credentials_extract(),F)
-  
-  file <- paste0(getwd(),"/dev_database/Travel_Event_Dashboard_DATA_06_Mar.xlsx")
-  ##file <- paste0(getwd(),"/dev_database/Travel Event Dashboard_DATA_20 Feb.xlsx")
-  
-  data <- read.xlsx(file,sheet=1,startRow=2,detectDates=F)
-  
-  LOGGED_IN_USER_ID <- 1 
-  
-  start_time <- Sys.time()
-  upload_results <- upload_raw_data(pool=pool,data=data,logged_in_user_id=LOGGED_IN_USER_ID,return_upload_results = TRUE)
-  end_time <- Sys.time()
-  
-  print(paste0("Database upload time: ", end_time - start_time))
-  
-  
-  template <- paste0(getwd(),"/dev_database/TEMPLATE_WBG_traveldash.xlsx")
-  
   conn <- poolCheckout(pool)
-  
-  download_results <- dbGetQuery(conn,paste0('select short_name as "Person", organization as "Organization",
-                                             city_name as "City", country_name as "Country", trip_start_date as "Start", trip_end_date as "End",
-                                             trip_group as "Trip Group", coalesce(event_title,venue_name) as "Venue", meeting_person_short_names as "Meeting",
-                                             agenda as "Agenda", null as "CMD", trip_uid as "ID"
-                                             from pd_wbgtravel.view_all_trips_people_meetings_venues where user_id = ',LOGGED_IN_USER_ID,';')) 
+  people <- dbGetQuery(conn,paste0("select person_id,short_name,image_data from pd_wbgtravel.people;"))
   
   poolReturn(conn)
-  #Sys.setenv("R_ZIPCMD" = "C:/Program Files/R/Rtools/bin/zip.exe")
-  workbook <- openxlsx::loadWorkbook(file=template)
-  openxlsx::writeData(workbook,sheet="Travel Event Dashboard DATA",x=download_results,startCol=1,startRow=3,colNames=F,rowNames=F)
-  openxlsx::saveWorkbook(workbook,paste0("WBG Travel Event Dashboard DATA-",today(),".xlsx"),overwrite= T)
-  
+  return(people)  
 }
 
-
-
-library(shiny)
 
 ui <- shinyUI(bootstrapPage(
   tags$script(type="text/javascript", "function dragend(event) 
@@ -112,24 +94,7 @@ ui <- shinyUI(bootstrapPage(
   actionButton("button_crop", "Crop & Save")
   ))
 
-#https://upload.wikimedia.org/wikipedia/commons/thumb/b/bb/Official_Portrait_of_President_Donald_Trump.jpg/1200px-Official_Portrait_of_President_Donald_Trump.jpg
 
-png(filename="www/mask-circle.png", 300, 300, units="px")
-par(mar = rep(0,4), yaxs="i", xaxs="i", bg="transparent")
-plot(0, type = "n", ylim = c(0,1), xlim=c(0,1), axes=F, xlab=NA, ylab=NA)
-plotrix::draw.circle(.5,0.5,.5, col="gray")
-dev.off()
-
-png(filename="www/mask-square.png", 300, 300, units="px")
-par(mar = rep(0,4), yaxs="i", xaxs="i", bg="black")
-plot(0, type = "n", ylim = c(0,1), xlim=c(0,1), axes=F, xlab=NA, ylab=NA)
-dev.off()
-
-maskc <- image_read("www/mask-circle.png")
-masks <- image_read("www/mask-square.png")
-
-mask <- image_composite(maskc, masks, "out") 
-image_write(mask,path="www/mask.png")
 
 resourcepath <- paste0(getwd(),"/www")
 server <- shinyServer(function(input, output, session) {
@@ -139,15 +104,15 @@ server <- shinyServer(function(input, output, session) {
   observeEvent(input$button_crop, ({
     img_url <- input$img_url    
     img_url <- gsub("\\s","",input$img_url)
-
+    
     if (is.null(img_url) || img_url=="") return(NULL)
     
     scale = as.numeric(input$scale)
     cropX = as.numeric(input$cropX)
     cropY = as.numeric(input$cropY)
-
+    
     size <- min(image_info(mask)$width,image_info(mask)$height)
-  
+    
     print(paste0("Resize: ",scale,"% X:",cropX," Y:",cropY))
     
     img_ob <- image_read(path=img_url)
