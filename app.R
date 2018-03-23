@@ -1774,7 +1774,7 @@ server <- function(input, output, session) {
     # image <- image$person_image[image$short_name == person]
     
     # Also observe confirmation and refresh
-    input$confirm_photo_upload
+    # input$confirm_photo_upload
     input$button_crop
     
     file_name <- paste0('www/headshots/circles/', person, '.png')
@@ -1832,14 +1832,13 @@ server <- function(input, output, session) {
           fluidRow(
             column(12, 
                    align = 'center',
-                   actionButton('confirm_photo_upload',
-                                'Confirm photo upload',
-                                icon = icon('arrow',"fa-5x")))
+                   actionButton("button_crop", "Crop & Save",
+                                icon = icon('calendar', 'fa-3x')))
           )
         )
       }
     })
-  observeEvent(input$confirm_photo_upload,{
+  observeEvent(input$button_crop,{
     message('Photo upload confirmed---')
     person <- input$photo_person
     # Update the www folder
@@ -1869,8 +1868,7 @@ server <- function(input, output, session) {
                
                uiOutput('photo_editor'),
                hidden(textInput(inputId="cropX","Crop X",value="0"),
-                      textInput(inputId="cropY","Crop Y",value="0")),
-               actionButton("button_crop", "Crop & Save"))
+                      textInput(inputId="cropY","Crop Y",value="0")))
       )
     )
   })
