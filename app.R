@@ -1868,8 +1868,8 @@ server <- function(input, output, session) {
                # textInput(inputId='img_url', 'Image Url',value='https://upload.wikimedia.org/wikipedia/commons/thumb/b/bb/Official_Portrait_of_President_Donald_Trump.jpg/1200px-Official_Portrait_of_President_Donald_Trump.jpg'),
                
                uiOutput('photo_editor'),
-               textInput(inputId="cropX","Crop X",value="0"),
-               textInput(inputId="cropY","Crop Y",value="0"),
+               hidden(textInput(inputId="cropX","Crop X",value="0"),
+                      textInput(inputId="cropY","Crop Y",value="0")),
                actionButton("button_crop", "Crop & Save"))
       )
     )
