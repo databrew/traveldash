@@ -269,7 +269,7 @@ The dashboard was developed as a part of activities under the <a href="http://ww
                                           'Who are you uploading a photo for?',
                                           choices = sort(unique(people$short_name))),
                               fileInput('photo_upload',
-                                        '',
+                                        'Upload here:',
                                         accept=c('.png'))),
                        column(4,
                               h2('Current photo'),
@@ -808,7 +808,7 @@ server <- function(input, output, session) {
     
     
     # Get faces
-    faces_dir <- paste0('tmp/')
+    faces_dir <- paste0('www/headshots/circles/')
     faces <- dir(faces_dir)
     faces <- data_frame(joiner = gsub('.png', '', faces, fixed = TRUE),
                         file = paste0(faces_dir, faces))
@@ -976,7 +976,7 @@ server <- function(input, output, session) {
     
     
     # Get faces
-    faces_dir <- paste0('tmp/')
+    faces_dir <- paste0('www/headshots/circles/')
     faces <- dir(faces_dir)
     faces <- data_frame(joiner = gsub('.png', '', faces, fixed = TRUE),
                         file = paste0(faces_dir, faces))
@@ -1729,6 +1729,10 @@ server <- function(input, output, session) {
     person <- input$photo_person
     # image <- photos_reactive$images
     # image <- image$person_image[image$short_name == person]
+    
+    # Also observe confirmation and refresh
+    input$confirm_photo_upload
+    
     file_name <- paste0('www/headshots/circles/', person, '.png')
     if(!file.exists(file_name)){
       message('No photo file on disk for ', person, '. Using the NA placeholder photo.')
@@ -1793,21 +1797,28 @@ server <- function(input, output, session) {
     })
   observeEvent(input$confirm_photo_upload,{
     message('Photo upload confirmed---')
-    message('DOING NOTHING')
+    person <- input$photo_person
+    # Update the www folder
+    source_file <- uploaded_photo_path()
+    destination_file <- paste0('www/headshots/circles/', person, '.png')
+    message('--- copying new photo to ', destination_file)
+    file.copy(from = source_file,
+              to = destination_file,
+              overwrite = TRUE)
+    
+    # Having updated the www folder, we can now uppdate the database
+    message('--- updating the database')
+    populate_images_from_www(pool = pool)
+    # Update the reactive object
+    message('--- updating the reactive in-session object')
+    images <- get_images(pool = pool)
+    photos_reactive$images <- images
   })
   
   # On session end, close
   session$onSessionEnded(function() {
     message('Session ended. Closing the connection pool.')
     tryCatch(pool::poolClose(pool), error = function(e) {message('')})
-    message('Clearing out the tmp folder')
-    tmp_files <- dir('tmp')
-    tmp_files <- tmp_files[grepl('png', tmp_files)]
-    tmp_files <- tmp_files[!grepl('NA', tmp_files)]
-    for(i in 1:length(tmp_files)){
-      file.remove(paste0('tmp/', tmp_files[i]))
-    }
-    message('---removed ', length(tmp_files), ' temporary image files.')
   })
   
   
