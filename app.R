@@ -273,10 +273,10 @@ The dashboard was developed as a part of activities under the <a href="http://ww
                                         accept=c('.png'))),
                        column(4,
                               h2('Current photo'),
-                              imageOutput('photo_person_output')),
+                              imageOutput('current_photo_output')),
                        column(4,
                               h2('New photo'),
-                              imageOutput('photo_person_new'))),
+                              imageOutput('new_photo_output'))),
               uiOutput('photo_confirmation_ui')
             )),
     tabItem(tabName = 'upload_data',
@@ -315,7 +315,7 @@ server <- function(input, output, session) {
   
   # Create a reactive dataframe of photos
   photos_reactive <- reactiveValues()
-  photos_reactive$photos <- photos
+  photos_reactive$images <- images
   
   date_range <- reactiveVal(c(Sys.Date() - 7,
                               Sys.Date() + 14 ))
@@ -1724,44 +1724,26 @@ server <- function(input, output, session) {
     }
   })
   
+  # Current photo output
+  output$current_photo_output <- renderImage({
+    person <- input$photo_person
+    # image <- photos_reactive$images
+    # image <- image$person_image[image$short_name == person]
+    file_name <- paste0('www/headshots/circles/', person, '.png')
+    if(!file.exists(file_name)){
+      message('No photo file on disk for ', person, '. Using the NA placeholder photo.')
+      file_name <- 'www/headshots/circles/NA.png'
+    }
+    list(src = file_name,
+         # width = width,
+         # height = height,
+         alt = person)
+    
+  },
+  deleteFile = FALSE)
+  
   # Define a switch for showing the old photo or not
   switcher <- reactiveVal(TRUE)
-  
-  output$photo_person_output <-
-    renderImage({
-      # keep an eye on the update
-      input$confirm_photo_upload
-      the_person <- input$photo_person
-      the_file_name <- paste0(the_person, '.png')
-      download_result <- try(drop_download(the_file_name,
-                    local_path = 'tmp',
-                    overwrite = TRUE,
-                    dtoken = token))
-      if(class(download_result) == 'try-error'){
-        file.remove(paste0('tmp/', the_file_name))
-        the_file_name <- paste0('NA', '.png')
-        drop_download(the_file_name,
-                      local_path = 'tmp',
-                      overwrite = TRUE,
-                      dtoken = token)
-        person_file_name <- 'NA'
-      } else {
-        person_file_name <- the_person
-      }
-      the_file <- dir('tmp')
-      the_file <- the_file[grepl('png', the_file)]
-      the_file <- the_file[grepl(person_file_name, the_file)]
-      # if(length(the_file) != 1){
-      #   stop('Clean up the tmp folder. It has more than 1 file in it.')
-      # }
-      # png(the_file)
-      # dev.off()
-      # Return a list containing the filename
-      list(src = paste0('tmp/', the_file),
-           # width = width,
-           # height = height,
-           alt = the_person)
-    }, deleteFile = FALSE)
   
   observeEvent(input$photo_person,{
     message('Setting switcher to FALSE')
@@ -1773,27 +1755,25 @@ server <- function(input, output, session) {
     # Upon change of the photo path, set switcher back to TRUE
     switcher(TRUE)
   })
-  output$photo_person_new <-
+  
+  # Current photo output
+  output$new_photo_output <- 
     renderImage({
       ss <- switcher()
       the_person <- input$photo_person
       x <- uploaded_photo_path()
+      
       if(is.null(x) | !ss){
-        file.copy('tmp/NA.png',
-                  'tmp/new_file.png',
-                  overwrite = TRUE)
+        the_file <- 'www/headshots/circles/NA.png'
       } else {
-        file.copy(from = x,
-                  to = 'tmp/new_file.png',
-                  overwrite = TRUE)
+        the_file <- x
       }
-      list(src = 'tmp/new_file.png',
+      list(src = the_file,
            # width = width,
            # height = height,
            alt = the_person)
       
     }, deleteFile = FALSE)
-  
   
   # Observe the confirmation of the photo upload and send to dropbox
   output$photo_confirmation_ui <-
@@ -1813,26 +1793,7 @@ server <- function(input, output, session) {
     })
   observeEvent(input$confirm_photo_upload,{
     message('Photo upload confirmed---')
-    the_person <- input$photo_person
-    the_file <- paste0(the_person, '.png')
-    message('--- copying the new photo of ', the_person, ' to tmp/.')
-    file.copy(from = 'tmp/new_file.png',
-              to = paste0('tmp/', the_file),
-              overwrite = TRUE)
-    message('--- uploading the new photo of ', the_person, ' to dropbox')
-    drop_upload(paste0('tmp/', the_file), mode = 'overwrite',
-                autorename = FALSE,
-                dtoken = token)
-    # Delete the tmp files
-    file.remove('tmp/new_file.png')
-    
-    # Keeping the below, since it will overwrite tmp
-    # making no need to re-call populate_tmp()
-    # file.remove(paste0('tmp/', the_file))
-    
-    # Update the reactive photos list
-    x <- create_photos_df()
-    photos_reactive$photos <- x
+    message('DOING NOTHING')
   })
   
   # On session end, close
