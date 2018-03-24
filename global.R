@@ -258,3 +258,4 @@ resourcepath <- paste0(getwd(),"/www")
 maskc <- image_read("www/mask-circle.png")
 masks <- image_read("www/mask-square.png")
 mask <- image_composite(maskc, masks, "out") 
+
