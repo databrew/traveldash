@@ -1956,9 +1956,9 @@ server <- function(input, output, session) {
       }
     }
     ss <- switcher()
-    if(!ss){
-      go <- FALSE
-    }
+    # if(!ss){
+    #   go <- FALSE
+    # }
     if(!go){
       return(NULL)
     }
@@ -2008,7 +2008,9 @@ server <- function(input, output, session) {
   session$onSessionEnded(function() {
     message('Session ended. Closing the connection pool.')
     tryCatch(pool::poolClose(pool), error = function(e) {message('')})
-    file.remove('www/temp.png')
+    if(file.exists('www/temp.png')){
+      file.remove('www/temp.png')
+    }
   })
   
   

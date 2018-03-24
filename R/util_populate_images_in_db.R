@@ -21,7 +21,7 @@ populate_images_from_www <- function(pool)
   images <- merge(x=people,y=name_shots,on="short_name",all.x=T)
   
   images[["files"]] <- lapply(images$path,file,open="rb")
-  images[["binaries"]] <- lapply(images$files,readBin,what="raw",n=100000,size=1)
+  images[["binaries"]] <- lapply(images$files,readBin,what="raw",n=1000000,size=1)
   images[["person_image"]] <- mapply(postgresqlEscapeBytea,raw_data=images$binaries,MoreArgs=list(con=conn))
   
   people_upload <- images[,c("person_id","person_image")]
