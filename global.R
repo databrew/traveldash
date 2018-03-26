@@ -35,7 +35,9 @@ message('############ Done with package loading')
 #setwd("C:/Users/SHeitmann/WBG/Sinja Buri - FIG SSA MEL/MEL Program Operations/Knowledge Products/Dashboards & Viz/WBG Travel/GitHub/traveldash")
 # Source all the functions in the R directory
 functions <- dir('R')
+message('Sourcing functions:')
 for(i in 1:length(functions)){
+  message('---', functions[i])
   this_function <- functions[i]
   if(!grepl('test', this_function)){
     source(paste0('R/', this_function), chdir = TRUE)
