@@ -6,6 +6,7 @@ the_width <- 200
 
 # Header
 header <- dashboardHeader(title="Travel dash",
+                          
                           tags$li(class = 'dropdown',  
                                   tags$style(type='text/css', "#reset_date_range { width:100%; margin-top: 22px; margin-right: 10px; margin-left: 10px; font-size:80%}"),
                                   tags$style(type='text/css', "#search { width:70%; margin-right: 10px; margin-left: 10px; font-size:80%}"),
@@ -42,6 +43,44 @@ sidebar <- dashboardSidebar(
   tags$style(".main-header .logo {height: 70px;}"),
   tags$style(".sidebar-toggle {height: 70px; padding-top: 1px !important;}"),
   tags$style(".navbar {min-height:70px !important}"),  
+  
+  tags$script(type="text/javascript", "function dragend(event) 
+              {
+              var crop = document.getElementById('crop')
+              document.is_drag=false;  
+              Shiny.onInputChange('cropX',Number(crop.style.backgroundPositionX.replace('px','')));
+              Shiny.onInputChange('cropY',Number(crop.style.backgroundPositionY.replace('px','')));
+              }"), 
+
+  tags$script(type="text/javascript", "function dragstart(event) 
+              {
+              var crop = document.getElementById('crop')
+              
+              var cropX = Number(crop.style.backgroundPositionX.replace('px',''))
+              var cropY = Number(crop.style.backgroundPositionY.replace('px',''))
+              
+              crop.ondragstart = function() { return false; }
+              document.is_drag=true; 
+              document.dragorigin = [ Number(event.clientX) , Number(event.clientY) ];
+              document.croporigin = [ cropX , cropY ];
+              }"),
+  tags$script(type="text/javascript", "function dodrag(event) 
+              {
+              if (typeof document.is_drag=='undefined') return;
+              if (document.is_drag)
+              {
+              var x = Number(event.clientX);
+              var y = Number(event.clientY);
+              var dragorigin = document.dragorigin;
+              var croporigin = document.croporigin;
+              var crop = document.getElementById('crop')
+              
+              //                  console.log(croporigin[0]+'+'+x+'-'+dragorigin[0]+' & '+croporigin[1]+'+'+y+'-'+dragorigin[1])
+              crop.style.backgroundPositionX =  croporigin[0] + (x-dragorigin[0]) + 'px';
+              crop.style.backgroundPositionY =  croporigin[1] + (y-dragorigin[1]) + 'px';
+              }
+              }"),
+  
   width = the_width,
   sidebarMenu(
     id="tabs",
@@ -264,19 +303,23 @@ The dashboard was developed as a part of activities under the <a href="http://ww
     #   uiOutput("MainBody")),
     tabItem(tabName = 'upload_photos',
             fluidPage(
-              fluidRow(column(4,
+              fluidRow(column(6, align = 'center',
                               selectInput('photo_person',
                                           'Who are you uploading a photo for?',
                                           choices = sort(unique(people$short_name))),
-                              fileInput('photo_upload',
-                                        '',
-                                        accept=c('.png'))),
-                       column(4,
-                              h2('Current photo'),
-                              imageOutput('photo_person_output')),
-                       column(4,
+                              h4('Current photo'),
+                              imageOutput('current_photo_output')),
+
+                       column(6,
                               h2('New photo'),
-                              imageOutput('photo_person_new'))),
+                              radioButtons('url_or_upload',
+                                           '',
+                                           choices = c('Upload from disk',
+                                                       'Get from web')),
+                              uiOutput('upload_url_ui'),
+                              
+                              # imageOutput('new_photo_output'),
+                              uiOutput('new_photo_ui'))),
               uiOutput('photo_confirmation_ui')
             )),
     tabItem(tabName = 'upload_data',
@@ -315,7 +358,7 @@ server <- function(input, output, session) {
   
   # Create a reactive dataframe of photos
   photos_reactive <- reactiveValues()
-  photos_reactive$photos <- photos
+  photos_reactive$images <- images
   
   date_range <- reactiveVal(c(Sys.Date() - 7,
                               Sys.Date() + 14 ))
@@ -808,7 +851,7 @@ server <- function(input, output, session) {
     
     
     # Get faces
-    faces_dir <- paste0('tmp/')
+    faces_dir <- paste0('www/headshots/circles/')
     faces <- dir(faces_dir)
     faces <- data_frame(joiner = gsub('.png', '', faces, fixed = TRUE),
                         file = paste0(faces_dir, faces))
@@ -976,7 +1019,7 @@ server <- function(input, output, session) {
     
     
     # Get faces
-    faces_dir <- paste0('tmp/')
+    faces_dir <- paste0('www/headshots/circles/')
     faces <- dir(faces_dir)
     faces <- data_frame(joiner = gsub('.png', '', faces, fixed = TRUE),
                         file = paste0(faces_dir, faces))
@@ -1724,44 +1767,30 @@ server <- function(input, output, session) {
     }
   })
   
+  # Current photo output
+  output$current_photo_output <- renderImage({
+    # image <- photos_reactive$images
+    # image <- image$person_image[image$short_name == person]
+    
+    # Also observe confirmation and refresh
+    x <- input$button_crop
+    person <- input$photo_person
+    
+    file_name <- paste0('www/headshots/circles/', person, '.png')
+    if(!file.exists(file_name)){
+      message('No photo file on disk for ', person, '. Using the NA placeholder photo.')
+      file_name <- 'www/headshots/circles/NA.png'
+    }
+    list(src = file_name,
+         # width = width,
+         # height = height,
+         alt = person)
+    
+  },
+  deleteFile = FALSE)
+  
   # Define a switch for showing the old photo or not
   switcher <- reactiveVal(TRUE)
-  
-  output$photo_person_output <-
-    renderImage({
-      # keep an eye on the update
-      input$confirm_photo_upload
-      the_person <- input$photo_person
-      the_file_name <- paste0(the_person, '.png')
-      download_result <- try(drop_download(the_file_name,
-                    local_path = 'tmp',
-                    overwrite = TRUE,
-                    dtoken = token))
-      if(class(download_result) == 'try-error'){
-        file.remove(paste0('tmp/', the_file_name))
-        the_file_name <- paste0('NA', '.png')
-        drop_download(the_file_name,
-                      local_path = 'tmp',
-                      overwrite = TRUE,
-                      dtoken = token)
-        person_file_name <- 'NA'
-      } else {
-        person_file_name <- the_person
-      }
-      the_file <- dir('tmp')
-      the_file <- the_file[grepl('png', the_file)]
-      the_file <- the_file[grepl(person_file_name, the_file)]
-      # if(length(the_file) != 1){
-      #   stop('Clean up the tmp folder. It has more than 1 file in it.')
-      # }
-      # png(the_file)
-      # dev.off()
-      # Return a list containing the filename
-      list(src = paste0('tmp/', the_file),
-           # width = width,
-           # height = height,
-           alt = the_person)
-    }, deleteFile = FALSE)
   
   observeEvent(input$photo_person,{
     message('Setting switcher to FALSE')
@@ -1773,80 +1802,215 @@ server <- function(input, output, session) {
     # Upon change of the photo path, set switcher back to TRUE
     switcher(TRUE)
   })
-  output$photo_person_new <-
-    renderImage({
-      ss <- switcher()
-      the_person <- input$photo_person
-      x <- uploaded_photo_path()
-      if(is.null(x) | !ss){
-        file.copy('tmp/NA.png',
-                  'tmp/new_file.png',
-                  overwrite = TRUE)
-      } else {
-        file.copy(from = x,
-                  to = 'tmp/new_file.png',
-                  overwrite = TRUE)
-      }
-      list(src = 'tmp/new_file.png',
-           # width = width,
-           # height = height,
-           alt = the_person)
-      
-    }, deleteFile = FALSE)
   
+  # Current photo output
+  # output$new_photo_output <- 
+  #   renderImage({
+  #     ss <- switcher()
+  #     the_person <- input$photo_person
+  #     x <- uploaded_photo_path()
+  #     
+  #     if(is.null(x) | !ss){
+  #       the_file <- 'www/headshots/circles/NA.png'
+  #     } else {
+  #       the_file <- x
+  #     }
+  #     list(src = the_file,
+  #          # width = width,
+  #          # height = height,
+  #          alt = the_person)
+  #     
+  #   }, deleteFile = FALSE)
   
   # Observe the confirmation of the photo upload and send to dropbox
   output$photo_confirmation_ui <-
     renderUI({
+      ok <- FALSE
+      upl <- input$url_or_upload
       x <- uploaded_photo_path()
+      if(upl == 'Get from web'){
+        ok <- TRUE
+      }
       if(!is.null(x)){
+        ok <- TRUE
+      }
+      
+      if(ok){
         fluidPage(
           fluidRow(
             column(12, 
                    align = 'center',
-                   actionButton('confirm_photo_upload',
-                                'Confirm photo upload',
-                                icon = icon('arrow',"fa-5x")))
+                   actionButton("button_crop", "Crop & Save",
+                                icon = icon('calendar', 'fa-3x')))
           )
         )
       }
     })
-  observeEvent(input$confirm_photo_upload,{
+  observeEvent(input$button_crop,{
     message('Photo upload confirmed---')
-    the_person <- input$photo_person
-    the_file <- paste0(the_person, '.png')
-    message('--- copying the new photo of ', the_person, ' to tmp/.')
-    file.copy(from = 'tmp/new_file.png',
-              to = paste0('tmp/', the_file),
+    person <- input$photo_person
+    destination_file <- paste0('www/headshots/circles/', person, '.png')
+    
+    upl <- input$url_or_upload
+    if(upl == 'Upload from disk'){
+      upp <- uploaded_photo_path()
+      img_url <- upp
+      external_url <- FALSE
+    } else {
+      upp <- input$img_url
+      img_url <- gsub("\\s","",
+                      upp)
+      external_url <- TRUE
+    }
+    
+    
+    # Update the www folder
+    if (is.null(img_url) || img_url=="") return(NULL)
+    
+    scale = as.numeric(input$scale)
+    cropX = as.numeric(input$cropX)
+    cropY = as.numeric(input$cropY)
+    
+    size <- min(image_info(mask)$width,image_info(mask)$height)
+    
+    img_ob <- image_read(path=img_url)
+    xscale <- ceiling(image_info(img_ob)$width * (as.numeric(scale))/100)
+    yscale <- ceiling(image_info(img_ob)$height * (as.numeric(scale))/100)
+    
+    img_ob_r <- image_resize(img_ob,geometry=geometry_size_pixels(width=xscale,height=NULL,preserve_aspect = TRUE))
+    img_ob_c <- image_crop(img_ob_r,geometry=geometry_area(x_off=cropX,y_off=cropY))
+    
+    
+    circle_img <- image_composite(mask, img_ob_c, "out") 
+    image_write(circle_img,path="www/circle_img.png")
+    person <- input$photo_person
+    destination_file <- paste0('www/headshots/circles/', person, '.png')
+    file.copy(from = 'www/circle_img.png',
+              to = destination_file,
               overwrite = TRUE)
-    message('--- uploading the new photo of ', the_person, ' to dropbox')
-    drop_upload(paste0('tmp/', the_file), mode = 'overwrite',
-                autorename = FALSE,
-                dtoken = token)
-    # Delete the tmp files
-    file.remove('tmp/new_file.png')
+    message('Just copied the cropped image to ', destination_file)
+
     
-    # Keeping the below, since it will overwrite tmp
-    # making no need to re-call populate_tmp()
-    # file.remove(paste0('tmp/', the_file))
+    # Having updated the www folder, we can now uppdate the database
+    message('--- updating the database')
+    Sys.sleep(0.2)
+    populate_images_from_www(pool = pool)
+    # # Update the reactive object
+    # message('--- updating the reactive in-session object')
+    # images <- get_images(pool = pool)
+    # photos_reactive$images <- images
     
-    # Update the reactive photos list
-    x <- create_photos_df()
-    photos_reactive$photos <- x
+    
+  })
+  
+  #UI for editing new photo
+  output$new_photo_ui <- renderUI({
+    ok <- FALSE
+    upl <- input$url_or_upload
+    x <- uploaded_photo_path()
+    if(upl == 'Get from web'){
+      ok <- TRUE
+    }
+    if(!is.null(x)){
+      ok <- TRUE
+    }
+    if(ok){
+      fluidPage(
+        fluidRow(
+          column(12,
+                 uiOutput('photo_editor'),
+                 sliderInput(inputId="scale",label="Resize",min=1,max=100,step=1,value=100),
+                 hidden(textInput(inputId="cropX","Crop X",value="0"),
+                        textInput(inputId="cropY","Crop Y",value="0")))
+        )
+      ) 
+    }
+  })
+  addResourcePath("www", resourcepath)
+
+  output$photo_editor <- renderUI({
+    
+    scale <- input$scale
+    print(paste("Scale: ",scale))
+    # upp <- uploaded_photo_path()
+    upl <- input$url_or_upload
+    if(upl == 'Upload from disk'){
+      upp <- uploaded_photo_path()
+      img_url <- upp
+      external_url <- FALSE
+    } else {
+      upp <- input$img_url
+      img_url <- gsub("\\s","",
+                      upp)
+      external_url <- TRUE
+    }
+    
+    
+    print(paste('Rendering image [ ',img_url,' ]'))
+    go <- FALSE
+    if(!is.null(img_url)){
+      if(length(img_url) > 0){
+        if(img_url != ''){
+          go <- TRUE
+        }
+      }
+    }
+    ss <- switcher()
+    # if(!ss){
+    #   go <- FALSE
+    # }
+    if(!go){
+      return(NULL)
+    }
+    img_ob <- image_read(path=img_url)
+    xscale <- ceiling(image_info(img_ob)$width * (as.numeric(scale))/100)
+    yscale <- ceiling(image_info(img_ob)$height * (as.numeric(scale))/100)
+    
+    
+    if(!external_url){
+      file.copy(img_url,
+                to = 'www/temp.png',
+                overwrite = TRUE)
+      img_url <- 'www/temp.png'
+      url_text <- paste0("'", img_url, "'")
+    }
+    url_text <- paste0('url(', img_url, ')')
+    message('URL TEXT IS')
+    print(url_text)
+    html<- list(
+      HTML(paste0("<p>Uploaded Image</p>
+                  <img src='/www/mask.png'
+                  id='crop' name='crop' 
+                  onmousedown=\"dragstart(event);\" 
+                  onmouseup=\"dragend(event);\" 
+                  onmousemove=\"dodrag(event);\" 
+                  style=\"z-index:-1;background-image:", url_text, ";
+                  background-repeat: no-repeat;background-size:",xscale,"px ",yscale,"px;\" width='300px';>"))
+    )
+    
+    print(html)
+    return (html)
+  })
+  
+  output$upload_url_ui <- renderUI({
+    
+    upl <- input$url_or_upload
+    if(upl == 'Upload from disk'){
+      fileInput('photo_upload',
+                'Upload here:',
+                accept=c('.png'))
+    } else {
+      textInput(inputId='img_url', 'Image Url',value='https://upload.wikimedia.org/wikipedia/commons/thumb/b/bb/Official_Portrait_of_President_Donald_Trump.jpg/1200px-Official_Portrait_of_President_Donald_Trump.jpg')
+    }
   })
   
   # On session end, close
   session$onSessionEnded(function() {
     message('Session ended. Closing the connection pool.')
     tryCatch(pool::poolClose(pool), error = function(e) {message('')})
-    message('Clearing out the tmp folder')
-    tmp_files <- dir('tmp')
-    tmp_files <- tmp_files[grepl('png', tmp_files)]
-    tmp_files <- tmp_files[!grepl('NA', tmp_files)]
-    for(i in 1:length(tmp_files)){
-      file.remove(paste0('tmp/', tmp_files[i]))
+    if(file.exists('www/temp.png')){
+      file.remove('www/temp.png')
     }
-    message('---removed ', length(tmp_files), ' temporary image files.')
   })
   
   
