@@ -53,3 +53,4 @@ get_images <- function(pool){
   poolReturn(conn)
   return(images)
 }
+
