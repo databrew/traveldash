@@ -24,7 +24,7 @@ upload_raw_data <- function(pool,
   valid_cols <- c("Person","Title","Organization","City","Country","Start","End","Trip Group","Venue","Meeting","Agenda","CMD","ID")
   
   if (!any(length(data_cols) %in% c(10,12))) stop("Data upload row mismatch")
-  if (!(all(data_cols==valid_cols) || all(data_cols[1:10]==valid_cols))) stop(paste0("Data upload columns mismatch: ",paste0(data_cols, collapse=",")))
+  if (!(all(data_cols %in% valid_cols) || all(data_cols[1:10]==valid_cols[1:10]))) stop(paste0("Data upload columns mismatch: ",paste0(data_cols, collapse=",")))
       
   # Define function for fixing date issues
   # necessary since people's spreadsheet programs may do some inconsistent formatting
@@ -49,6 +49,13 @@ upload_raw_data <- function(pool,
   
   data$bad_date <- is.null(data$Start) | is.null(data$End) | is.na(data$Start) | is.na(data$End) |  !is.Date(data$Start) | !is.Date(data$End) 
   data$good_date <- FALSE
+  
+  # Remove any observations without a city
+  no_city <- is.na(data$City)
+  if(any(no_city)){
+    message(length(which(no_city)), ' observation does not have a city. Removing.')
+    data <- data %>% filter(!is.na(City))
+  }
   
   if (length(data$bad_date[!data$bad_date])>0)
   {
