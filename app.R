@@ -487,6 +487,9 @@ server <- function(input, output, session) {
   uploaded_photo_path <- reactive({
     inFile <- input$photo_upload
     
+    message('upload photo path is:------------------------ ')
+    print(inFile)
+    
     if (is.null(inFile)){
       return(NULL)
     } else {
