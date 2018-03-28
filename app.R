@@ -2003,7 +2003,7 @@ server <- function(input, output, session) {
                 'Upload here:',
                 accept=c('.png'))
     } else {
-      textInput(inputId='img_url', 'Image Url',value='https://upload.wikimedia.org/wikipedia/commons/thumb/b/bb/Official_Portrait_of_President_Donald_Trump.jpg/1200px-Official_Portrait_of_President_Donald_Trump.jpg')
+      textInput(inputId='img_url', 'Image Url',value='https://petapixel.com/assets/uploads/2017/11/Donald_Trump_official_portraitt-640x800.jpg')
     }
   })
   
