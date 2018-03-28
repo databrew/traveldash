@@ -113,6 +113,11 @@ psql -d dev -f dev_database/create_function_travel_uploads.sql
 psql --host=databrewdb.cfejspjhdciw.us-east-2.rds.amazonaws.com --port=8080 --username=worldbank --dbname=dev 
 ```
 
+Create a dump from WB AWS RDS endpoint:
+```
+pg_dump -h figssamel1.cosjv4zx2mww.us-east-1.rds.amazonaws.com -U postgres -f ~/Desktop/dump.sql dev
+```
+
 - Restore a locally created dump from within psql
 ``` 
 \i /home/joebrew/Desktop/dev.sql
