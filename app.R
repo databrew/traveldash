@@ -1982,7 +1982,7 @@ server <- function(input, output, session) {
     print(url_text)
     html<- list(
       HTML(paste0("<p>Uploaded Image</p>
-                  <img src='/www/mask.png'
+                  <img src='www/mask.png'
                   id='crop' name='crop' 
                   onmousedown=\"dragstart(event);\" 
                   onmouseup=\"dragend(event);\" 
