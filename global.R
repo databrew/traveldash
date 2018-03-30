@@ -60,6 +60,26 @@ pool <- create_pool(options_list = credentials_extract(),
 # Get the data from the db into memory
 db_to_memory(pool = pool)
 
+# Bring the is_wbg field from people into view_all_trips_people_meetings_venues
+view_all_trips_people_meetings_venues <- 
+  left_join(x = view_all_trips_people_meetings_venues,
+            y = people %>%
+              dplyr::select(person_id, is_wbg),
+            by = 'person_id') %>%
+  # Create a "meeting with" column
+  mutate(meeting_with = meeting_person_short_names,
+         meeting_person_name = meeting_person_short_names) %>%
+  # Create a "person_name" column
+  mutate(person_name = short_name) %>%
+  # get whether the coincidence person is wbg too
+  left_join(people %>%
+              dplyr::select(person_id, is_wbg) %>%
+              dplyr::rename(meeting_person_ids = person_id,
+                            coincidence_is_wbg = is_wbg) %>%
+              mutate(meeting_person_ids = as.character(meeting_person_ids)),
+            by = 'meeting_person_ids')
+  
+
 # Create a dataframe for dicting day numbers to dates
 date_dictionary <-
   data_frame(date = seq(as.Date('2017-01-01'),

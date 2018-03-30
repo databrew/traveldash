@@ -414,43 +414,6 @@ server <- function(input, output, session) {
   
   
   
-  #########################################
-  
-  
-  
-  # Reactive view trips and meetings
-  view_trips_and_meetings_filtered <- reactive({
-    dr <- date_range()
-    if(is.null(dr)){
-      dr <- range(c(view_trips_and_meetings$trip_start_date,
-                    view_trips_and_meetings$trip_end_date),
-                  na.rm = TRUE)
-    }
-    x <- view_trips_and_meetings
-    # Filter for the input search
-    search <- input$search
-    if(!is.null(search)){
-      if(nchar(search) > 0){
-        # Get all the search items (seperated by commas, which function as "or" statements)
-        search_items <- unlist(strsplit(search, split = ','))
-        search_items <- trimws(search_items, which = 'both')
-        keeps <- c()
-        for(i in 1:length(search_items)){
-          these_keeps <- apply(mutate_all(.tbl = x, .funs = function(x){grepl(tolower(search_items[i]), tolower(x))}),1, any)
-          these_keeps <- which(these_keeps)
-          keeps <- c(keeps, these_keeps)
-        }
-        keeps <- sort(unique(keeps))
-        x <- x[keeps,]
-      }
-    }
-    
-    out <- x %>%
-      dplyr::filter(trip_end_date >= dr[1] &
-                      trip_start_date <= dr[2])
-  })
-  
-  
   ################################
   # Create a reactive data frame from the user upload
   uploaded <- reactive({
@@ -601,6 +564,7 @@ server <- function(input, output, session) {
   # vals$venue_types <- venue_types
   vals$view_trips_and_meetings <- view_trips_and_meetings
   vals$upload_results <- NULL
+  vals$view_all_trips_people_meetings_venues <- view_all_trips_people_meetings_venues
   
   # Replace data with uploaded data
   observeEvent(input$submit, {
@@ -725,9 +689,9 @@ server <- function(input, output, session) {
   
   
   # Create a filtered view_trip_coincidences
-  filtered_view_trip_coincidences <- reactive({
+  view_all_trips_people_meetings_venues_filtered <- reactive({
     fd <- date_range()
-    vd <- vals$view_trip_coincidences
+    vd <- vals$view_all_trips_people_meetings_venues
     x <- vd %>%
       dplyr::filter(fd[1] <= trip_end_date,
                     fd[2] >= trip_start_date)
@@ -756,7 +720,8 @@ server <- function(input, output, session) {
   output$leafy <- renderLeaflet({
     
     # Get trips and meetings, filtered for date range    
-    df <- view_trips_and_meetings_filtered()
+    df <- view_all_trips_people_meetings_venues_filtered()
+
     
     # Filter for wbg only if relevant
     if(input$wbg_only == 'WBG only'){
@@ -780,6 +745,7 @@ server <- function(input, output, session) {
     
     # Get whether wbg or not
     df$is_wbg <- as.logical(df$is_wbg)
+
     
     # Select down
     df <- df %>%
@@ -930,7 +896,7 @@ server <- function(input, output, session) {
     # Could be cleaned up a bit to not duplicate.
     
     # Get trips and meetings, filtered for date range    
-    df <- view_trips_and_meetings_filtered()
+    df <- view_all_trips_people_meetings_venues_filtered()
     
     # Filter for wbg only if relevant
     if(input$wbg_only == 'WBG only'){
@@ -1090,7 +1056,7 @@ server <- function(input, output, session) {
   
   
   output$sank <- renderSankeyNetwork({
-    x <- filtered_view_trip_coincidences()
+    x <- view_all_trips_people_meetings_venues_filtered()
     show_sankey <- FALSE
     if(!is.null(x)){
       if(nrow(x) > 0){
@@ -1113,10 +1079,10 @@ server <- function(input, output, session) {
   
   
   # Create a separate filtered events for network
-  filtered_view_trip_coincidences_network <- reactive({
+  view_all_trips_people_meetings_venues_filtered_network <- reactive({
     # fd <- input$date_range_network
     fd <- date_range()
-    vd <- vals$view_trip_coincidences
+    vd <- vals$view_all_trips_people_meetings_venues
     # filter for dates
     x <- vd %>%
       dplyr::filter(fd[1] <= trip_end_date,
@@ -1143,7 +1109,7 @@ server <- function(input, output, session) {
   })
   
   output$graph <- renderForceNetwork({
-    x <- filtered_view_trip_coincidences_network()
+    x <- view_all_trips_people_meetings_venues_filtered_network()
     show_graph <- FALSE
     if(!is.null(x)){
       if(nrow(x) > 0){
@@ -1166,7 +1132,7 @@ server <- function(input, output, session) {
   
   output$visit_info_table <- DT::renderDataTable({
     
-    x <- view_trips_and_meetings_filtered()
+    x <- view_all_trips_people_meetings_venues_filtered()
     # Filter for wbg only if relevant
     if(input$wbg_only == 'WBG only'){
       x <- x %>% dplyr::filter(is_wbg == 1)
@@ -1270,233 +1236,233 @@ server <- function(input, output, session) {
   # }
   # })
   
-  output$MainBody<-renderUI({
-    fluidPage(
-      shinydashboard::box(width=12,
-                          h3(strong("Create, modify, and delete travel events"),align="center"),
-                          hr(),
-                          column(12,#offset = 6,
-                                 HTML('<div class="btn-group" role="group" aria-label="Basic example">'),
-                                 actionButton(inputId = "Add_row_head",label = "Add a new row"),
-                                 actionButton(inputId = "Del_row_head",label = "Delete selected rows"),
-                                 actionButton(inputId = "submit2",label = "Save changes"),
-                                 HTML('</div>')
-                          ),
-                          
-                          column(12,dataTableOutput("Main_table")),
-                          tags$script(HTML('$(document).on("click", "input", function () {
-                                           var checkboxes = document.getElementsByName("row_selected");
-                                           var checkboxesChecked = [];
-                                           for (var i=0; i<checkboxes.length; i++) {
-                                           
-                                           if (checkboxes[i].checked) {
-                                           checkboxesChecked.push(checkboxes[i].value);
-                                           }
-                                           }
-                                           Shiny.onInputChange("checked_rows",checkboxesChecked);
-  })')),
-      tags$script("$(document).on('click', '#Main_table button', function () {
-                  Shiny.onInputChange('lastClickId',this.id);
-                  Shiny.onInputChange('lastClick', Math.random())
-                  });")
-
-      )
-      )
-    })
-  
-  output$Main_table<-renderDataTable({
-    DT=vals$events
-    DT[["Select"]]<-paste0('<input type="checkbox" name="row_selected" value="Row',1:nrow(vals$events),'"><br>')
-    
-    DT[["Actions"]]<-
-      paste0('
-             <div class="btn-group" role="group" aria-label="Basic example">
-             <button type="button" class="btn btn-secondary delete" id=delete_',1:nrow(vals$events),'>Delete</button>
-             <button type="button" class="btn btn-secondary modify"id=modify_',1:nrow(vals$events),'>Modify</button>
-             </div>
-             
-             ')
-    datatable(DT,
-              escape=F,
-              options = list(scrollX = TRUE))}
-      )
-  
-  observeEvent(input$Add_row_head,{
-    new_row=data_frame(
-      Person = 'Jane Doe',
-      Organization = 'Organization',
-      `City of visit` = 'Bermuda Triangle',
-      `Country of visit` = 'International Waters',
-      Counterpart = 'Jack Sparrow',
-      `Visit start` = Sys.Date() - 3,
-      `Visit end` = Sys.Date())
-    new_row <- new_row %>%
-      mutate(Lat = 31,
-             Long = -65)
-    new_row$Event <- 'Some event'
-    vals$events<-bind_rows(new_row,vals$events)
-  })
-  
-  
-  observeEvent(input$Del_row_head,{
-    row_to_del=as.numeric(gsub("Row","",input$checked_rows))
-    vals$events=vals$events[-row_to_del,]}
-  )
-  
-  ##Managing in row deletion
-  # modal_modify <- modalDialog(h3('Test'))
-  modal_modify<-modalDialog(
-    fluidPage(
-      h3(strong("Row modification"),align="center"),
-      hr(),
-      dataTableOutput('row_modif'),
-      actionButton("save_changes","Save changes"),
-      
-      tags$script(HTML("$(document).on('click', '#save_changes', function () {
-                       var list_value=[]
-                       for (i = 0; i < $( '.new_input' ).length; i++)
-                       {
-                       list_value.push($( '.new_input' )[i].value)
-                       
-                       
-                       
-                       }
-                       
-                       Shiny.onInputChange('newValue', list_value)
-                       });"))
-    ),
-    size="l"
-      )
-  
-  
-  observeEvent(input$lastClick,
-               {
-                 if (input$lastClickId%like%"delete")
-                 {
-                   row_to_del=as.numeric(gsub("delete_","",input$lastClickId))
-                   vals$events=vals$events[-row_to_del,]
-                 }
-                 else if (input$lastClickId%like%"modify")
-                 {
-                   showModal(modal_modify)
-                 }
-               }
-  )
-  
-  output$row_modif<-renderDataTable({
-    selected_row=as.numeric(gsub("modify_","",input$lastClickId))
-    old_row=vals$events[selected_row,]
-    the_dates <- the_nums <- rep(FALSE, ncol(old_row))
-    for(j in 1:ncol(old_row)){
-      if(class(data.frame(old_row)[,j]) == 'Date'){
-        the_dates[j] <- TRUE
-      } else if (class(data.frame(old_row)[,j]) %in% c('numeric', 'integer')){
-        the_nums[j] <- TRUE
-      }
-    }
-    copycat <- old_row
-    for(j in which(the_dates)){
-      copycat[,j] <- as.character(as.Date(copycat[,j] %>% as.numeric, origin = '1970-01-01'))
-    }
-    for(j in which(the_nums)){
-      copycat[,j] <- as.character(copycat[,j])
-    }
-    
-    row_change=list()
-    for (i in 1:length(colnames(old_row))){
-      message(i)
-      cn <- names(old_row)[i]
-      message(cn)
-      if (is.numeric(vals$events[[cn]])){
-        message('ok')
-        row_change[[i]]<-paste0('<input class="new_input" value="',
-                                copycat[1,cn],
-                                '" type="number" id=new_',cn,'>')
-      } else {
-        row_change[[i]]<-paste0('<input class="new_input" value="',
-                                copycat[1,cn],
-                                '" type="text" id=new_',cn,'>')
-      }
-      
-    }
-    names(row_change) <- names(old_row)
-    print(row_change)
-    row_change = bind_rows(row_change)
-    setnames(row_change,colnames(old_row))
-    DT=bind_rows(copycat,row_change)
-    DT <- t(DT)
-    DT <- as.data.frame(DT)
-    
-    names(DT) <- c('Old', 'New')
-    DT::datatable(DT,
-                  escape=F,
-                  options=list(dom='t',
-                               ordering=F,
-                               pageLength = nrow(DT)),
-                  selection="none")
-  }
-  )
-  
-  
-  observeEvent(input$newValue,
-               {
-                 newValue=lapply(input$newValue, function(col) {
-                   if (suppressWarnings(all(!is.na(as.numeric(as.character(col)))))) {
-                     as.numeric(as.character(col))
-                   } else {
-                     col
-                   }
-                 })
-                 print(newValue)
-                 values = unlist(newValue)
-                 hh <- events %>% sample_n(0)
-                 hh[1,] <- NA
-                 classes <- unlist(lapply(hh, class))
-                 for(j in 1:length(values)){
-                   this_class <- classes[j]
-                   if(this_class == 'Date'){
-                     print(values[j])
-                     hh[1,j] <- as.Date(values[j])
-                   } else if(names(hh)[j] %in% c('Lat', 'Long')){
-                     hh[1,j] <- as.numeric(values[j])
-                   } else {
-                     hh[1,j] <- values[j]
-                   }
-                 }
-                 DF <- hh
-                 # Give lat lon if not aa
-                 if(is.na(DF$Lat)){
-                   DF$Lat <- 0
-                 }
-                 if(is.na(DF$Long)){
-                   DF$Long <- 0
-                 }
-                 new_classes <- lapply(vals$events, class)
-                 vals$events[as.numeric(gsub("modify_","",input$lastClickId)),]<-DF
-               })
-  
-  plotReady <- reactiveValues(ok = FALSE)
-  
-  observeEvent(input$action_back, {
-    shinyjs::disable("action_back")
-    shinyjs::show("text1")
-    plotReady$ok <- FALSE
-    Sys.sleep(0.1)
-    plotReady$ok <- TRUE
-  })
-  observeEvent(input$action_forward, {
-    shinyjs::disable("action_forward")
-    shinyjs::show("text2")
-    plotReady$ok <- FALSE
-    Sys.sleep(0.1)
-    plotReady$ok <- TRUE
-  })
+  # output$MainBody<-renderUI({
+  #   fluidPage(
+  #     shinydashboard::box(width=12,
+  #                         h3(strong("Create, modify, and delete travel events"),align="center"),
+  #                         hr(),
+  #                         column(12,#offset = 6,
+  #                                HTML('<div class="btn-group" role="group" aria-label="Basic example">'),
+  #                                actionButton(inputId = "Add_row_head",label = "Add a new row"),
+  #                                actionButton(inputId = "Del_row_head",label = "Delete selected rows"),
+  #                                actionButton(inputId = "submit2",label = "Save changes"),
+  #                                HTML('</div>')
+  #                         ),
+  #                         
+  #                         column(12,dataTableOutput("Main_table")),
+  #                         tags$script(HTML('$(document).on("click", "input", function () {
+  #                                          var checkboxes = document.getElementsByName("row_selected");
+  #                                          var checkboxesChecked = [];
+  #                                          for (var i=0; i<checkboxes.length; i++) {
+  #                                          
+  #                                          if (checkboxes[i].checked) {
+  #                                          checkboxesChecked.push(checkboxes[i].value);
+  #                                          }
+  #                                          }
+  #                                          Shiny.onInputChange("checked_rows",checkboxesChecked);
+  # })')),
+  #     tags$script("$(document).on('click', '#Main_table button', function () {
+  #                 Shiny.onInputChange('lastClickId',this.id);
+  #                 Shiny.onInputChange('lastClick', Math.random())
+  #                 });")
+  # 
+  #     )
+  #     )
+  #   })
+  # 
+  # output$Main_table<-renderDataTable({
+  #   DT=vals$events
+  #   DT[["Select"]]<-paste0('<input type="checkbox" name="row_selected" value="Row',1:nrow(vals$events),'"><br>')
+  #   
+  #   DT[["Actions"]]<-
+  #     paste0('
+  #            <div class="btn-group" role="group" aria-label="Basic example">
+  #            <button type="button" class="btn btn-secondary delete" id=delete_',1:nrow(vals$events),'>Delete</button>
+  #            <button type="button" class="btn btn-secondary modify"id=modify_',1:nrow(vals$events),'>Modify</button>
+  #            </div>
+  #            
+  #            ')
+  #   datatable(DT,
+  #             escape=F,
+  #             options = list(scrollX = TRUE))}
+  #     )
+  # 
+  # observeEvent(input$Add_row_head,{
+  #   new_row=data_frame(
+  #     Person = 'Jane Doe',
+  #     Organization = 'Organization',
+  #     `City of visit` = 'Bermuda Triangle',
+  #     `Country of visit` = 'International Waters',
+  #     Counterpart = 'Jack Sparrow',
+  #     `Visit start` = Sys.Date() - 3,
+  #     `Visit end` = Sys.Date())
+  #   new_row <- new_row %>%
+  #     mutate(Lat = 31,
+  #            Long = -65)
+  #   new_row$Event <- 'Some event'
+  #   vals$events<-bind_rows(new_row,vals$events)
+  # })
+  # 
+  # 
+  # observeEvent(input$Del_row_head,{
+  #   row_to_del=as.numeric(gsub("Row","",input$checked_rows))
+  #   vals$events=vals$events[-row_to_del,]}
+  # )
+  # 
+  # ##Managing in row deletion
+  # # modal_modify <- modalDialog(h3('Test'))
+  # modal_modify<-modalDialog(
+  #   fluidPage(
+  #     h3(strong("Row modification"),align="center"),
+  #     hr(),
+  #     dataTableOutput('row_modif'),
+  #     actionButton("save_changes","Save changes"),
+  #     
+  #     tags$script(HTML("$(document).on('click', '#save_changes', function () {
+  #                      var list_value=[]
+  #                      for (i = 0; i < $( '.new_input' ).length; i++)
+  #                      {
+  #                      list_value.push($( '.new_input' )[i].value)
+  #                      
+  #                      
+  #                      
+  #                      }
+  #                      
+  #                      Shiny.onInputChange('newValue', list_value)
+  #                      });"))
+  #   ),
+  #   size="l"
+  #     )
+  # 
+  # 
+  # observeEvent(input$lastClick,
+  #              {
+  #                if (input$lastClickId%like%"delete")
+  #                {
+  #                  row_to_del=as.numeric(gsub("delete_","",input$lastClickId))
+  #                  vals$events=vals$events[-row_to_del,]
+  #                }
+  #                else if (input$lastClickId%like%"modify")
+  #                {
+  #                  showModal(modal_modify)
+  #                }
+  #              }
+  # )
+  # 
+  # output$row_modif<-renderDataTable({
+  #   selected_row=as.numeric(gsub("modify_","",input$lastClickId))
+  #   old_row=vals$events[selected_row,]
+  #   the_dates <- the_nums <- rep(FALSE, ncol(old_row))
+  #   for(j in 1:ncol(old_row)){
+  #     if(class(data.frame(old_row)[,j]) == 'Date'){
+  #       the_dates[j] <- TRUE
+  #     } else if (class(data.frame(old_row)[,j]) %in% c('numeric', 'integer')){
+  #       the_nums[j] <- TRUE
+  #     }
+  #   }
+  #   copycat <- old_row
+  #   for(j in which(the_dates)){
+  #     copycat[,j] <- as.character(as.Date(copycat[,j] %>% as.numeric, origin = '1970-01-01'))
+  #   }
+  #   for(j in which(the_nums)){
+  #     copycat[,j] <- as.character(copycat[,j])
+  #   }
+  #   
+  #   row_change=list()
+  #   for (i in 1:length(colnames(old_row))){
+  #     message(i)
+  #     cn <- names(old_row)[i]
+  #     message(cn)
+  #     if (is.numeric(vals$events[[cn]])){
+  #       message('ok')
+  #       row_change[[i]]<-paste0('<input class="new_input" value="',
+  #                               copycat[1,cn],
+  #                               '" type="number" id=new_',cn,'>')
+  #     } else {
+  #       row_change[[i]]<-paste0('<input class="new_input" value="',
+  #                               copycat[1,cn],
+  #                               '" type="text" id=new_',cn,'>')
+  #     }
+  #     
+  #   }
+  #   names(row_change) <- names(old_row)
+  #   print(row_change)
+  #   row_change = bind_rows(row_change)
+  #   setnames(row_change,colnames(old_row))
+  #   DT=bind_rows(copycat,row_change)
+  #   DT <- t(DT)
+  #   DT <- as.data.frame(DT)
+  #   
+  #   names(DT) <- c('Old', 'New')
+  #   DT::datatable(DT,
+  #                 escape=F,
+  #                 options=list(dom='t',
+  #                              ordering=F,
+  #                              pageLength = nrow(DT)),
+  #                 selection="none")
+  # }
+  # )
+  # 
+  # 
+  # observeEvent(input$newValue,
+  #              {
+  #                newValue=lapply(input$newValue, function(col) {
+  #                  if (suppressWarnings(all(!is.na(as.numeric(as.character(col)))))) {
+  #                    as.numeric(as.character(col))
+  #                  } else {
+  #                    col
+  #                  }
+  #                })
+  #                print(newValue)
+  #                values = unlist(newValue)
+  #                hh <- events %>% sample_n(0)
+  #                hh[1,] <- NA
+  #                classes <- unlist(lapply(hh, class))
+  #                for(j in 1:length(values)){
+  #                  this_class <- classes[j]
+  #                  if(this_class == 'Date'){
+  #                    print(values[j])
+  #                    hh[1,j] <- as.Date(values[j])
+  #                  } else if(names(hh)[j] %in% c('Lat', 'Long')){
+  #                    hh[1,j] <- as.numeric(values[j])
+  #                  } else {
+  #                    hh[1,j] <- values[j]
+  #                  }
+  #                }
+  #                DF <- hh
+  #                # Give lat lon if not aa
+  #                if(is.na(DF$Lat)){
+  #                  DF$Lat <- 0
+  #                }
+  #                if(is.na(DF$Long)){
+  #                  DF$Long <- 0
+  #                }
+  #                new_classes <- lapply(vals$events, class)
+  #                vals$events[as.numeric(gsub("modify_","",input$lastClickId)),]<-DF
+  #              })
+  # 
+  # plotReady <- reactiveValues(ok = FALSE)
+  # 
+  # observeEvent(input$action_back, {
+  #   shinyjs::disable("action_back")
+  #   shinyjs::show("text1")
+  #   plotReady$ok <- FALSE
+  #   Sys.sleep(0.1)
+  #   plotReady$ok <- TRUE
+  # })
+  # observeEvent(input$action_forward, {
+  #   shinyjs::disable("action_forward")
+  #   shinyjs::show("text2")
+  #   plotReady$ok <- FALSE
+  #   Sys.sleep(0.1)
+  #   plotReady$ok <- TRUE
+  # })
   
   # Test table for graph
   output$click_table <- DT::renderDataTable({
     
     # Data used for network
-    x <- filtered_view_trip_coincidences_network()
+    x <- view_all_trips_people_meetings_venues_filtered_network()
     show_graph <- FALSE
     if(!is.null(x)){
       if(nrow(x) > 0){
@@ -1649,7 +1615,7 @@ server <- function(input, output, session) {
       td <- this_date()
       
       # Get trips and meetings, filtered for date range
-      df <- view_trips_and_meetings_filtered()
+      df <- view_all_trips_people_meetings_venues_filtered()
       
       # Filter for this date only
       df <- df %>% filter(trip_start_date <= td,
