@@ -1163,6 +1163,9 @@ server <- function(input, output, session) {
       mutate(event = paste0(ifelse(!is.na(meeting_with) & short_name != meeting_with, ' With ', ''),
                             ifelse(!is.na(meeting_with) & short_name != meeting_with, meeting_with, ''))) %>%
       mutate(event = Hmisc::capitalize(event)) %>%
+      mutate(event = ifelse(!is.na(venue_name),
+                            paste0(event, ' At ', venue_name),
+                            event)) %>%
       dplyr::select(name, date, location, event)
     names(x) <- Hmisc::capitalize(names(x))
     x$Date <- factor(x$Date, levels = unique(x$Date))
@@ -1496,7 +1499,8 @@ server <- function(input, output, session) {
                         trip_start_date,
                         trip_end_date,
                         meeting_person_name,
-                        coincidence_is_wbg) %>%
+                        coincidence_is_wbg,
+                        venue_name) %>%
           dplyr::rename(Person = person_name,
                         Counterpart = meeting_person_name)  %>%
           filter(!is.na(Counterpart))
@@ -1509,7 +1513,8 @@ server <- function(input, output, session) {
                         trip_start_date,
                         trip_end_date,
                         coincidence_person_name,
-                        coincidence_is_wbg) %>%
+                        coincidence_is_wbg,
+                        venue_name) %>%
           dplyr::rename(Person = person_name,
                         Counterpart = coincidence_person_name)
       }
