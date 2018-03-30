@@ -2,10 +2,10 @@ library(shiny)
 library(shinydashboard)
 source('global.R')
 library(shinyjs)
-the_width <- 200
+the_width <- 280
 
 # Header
-header <- dashboardHeader(title="Travel dash",
+header <- dashboardHeader(title="Travel dashboard",
                           
                           tags$li(class = 'dropdown',  
                                   tags$style(type='text/css', "#reset_date_range { width:100%; margin-top: 22px; margin-right: 10px; margin-left: 10px; font-size:80%}"),
@@ -756,7 +756,8 @@ server <- function(input, output, session) {
                     country_name,
                     trip_start_date,
                     trip_end_date,
-                    meeting_with)
+                    meeting_with,
+                    venue_name)
     
     # Get city id
     df <- df %>%
@@ -789,7 +790,7 @@ server <- function(input, output, session) {
     
     # Make only one head per person/place
     df <- df %>%
-      group_by(id, short_name, title, is_wbg, city_id) %>%
+      group_by(id, short_name, title, is_wbg, city_id, venue_name) %>%
       summarise(date = paste0(dates, collapse = ';'),
                 event = paste0(event, collapse = ';')) %>% ungroup
     
@@ -810,6 +811,9 @@ server <- function(input, output, session) {
         caption <- paste0(x$short_name[1], ' (', x$title[1], ') in ', x$city_name[1])
       } else {
         caption <- paste0(x$short_name[1], ' in ', x$city_name[1])
+      }
+      if(!is.na(x$venue_name[1])){
+        caption <- paste0(caption, ' at ', x$venue_name[1])
       }
       
       x <- x %>%
@@ -898,6 +902,7 @@ server <- function(input, output, session) {
     # Get trips and meetings, filtered for date range    
     df <- view_all_trips_people_meetings_venues_filtered()
     
+    
     # Filter for wbg only if relevant
     if(input$wbg_only == 'WBG only'){
       df <- df %>% dplyr::filter(is_wbg == 1)
@@ -921,6 +926,7 @@ server <- function(input, output, session) {
     # Get whether wbg or not
     df$is_wbg <- as.logical(df$is_wbg)
     
+    
     # Select down
     df <- df %>%
       dplyr::select(is_wbg,
@@ -930,7 +936,8 @@ server <- function(input, output, session) {
                     country_name,
                     trip_start_date,
                     trip_end_date,
-                    meeting_with)
+                    meeting_with,
+                    venue_name)
     
     # Get city id
     df <- df %>%
@@ -963,7 +970,7 @@ server <- function(input, output, session) {
     
     # Make only one head per person/place
     df <- df %>%
-      group_by(id, short_name, title, is_wbg, city_id) %>%
+      group_by(id, short_name, title, is_wbg, city_id, venue_name) %>%
       summarise(date = paste0(dates, collapse = ';'),
                 event = paste0(event, collapse = ';')) %>% ungroup
     
@@ -973,7 +980,7 @@ server <- function(input, output, session) {
                   dplyr::select(city_name, country_name, city_id,
                                 latitude, longitude),
                 by = 'city_id') 
-
+    
     
     popups = lapply(rownames(df), function(row){
       this_id <- unlist(df[row,'id'])
@@ -984,6 +991,9 @@ server <- function(input, output, session) {
         caption <- paste0(x$short_name[1], ' (', x$title[1], ') in ', x$city_name[1])
       } else {
         caption <- paste0(x$short_name[1], ' in ', x$city_name[1])
+      }
+      if(!is.na(x$venue_name[1])){
+        caption <- paste0(caption, ' at ', x$venue_name[1])
       }
       
       x <- x %>%
