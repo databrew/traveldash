@@ -1948,12 +1948,21 @@ server <- function(input, output, session) {
 
   output$photo_editor <- renderUI({
     
+    temp_name <- paste0('www/temp', Sys.time(), '.png')
+    temp_name <- gsub(' ', '', temp_name)
+    temp_name <- gsub(':', '', temp_name, fixed = TRUE)
+    temp_name <- gsub('-', '', temp_name, fixed = TRUE)
+    
     # Refresh
     uploaded_photo_path()
     
-    if(file.exists('www/temp.png')){
-      file.remove('www/temp.png')
+    delete_old_ones <- dir('www')[grepl('temp', dir('www')) & grepl('png', dir('www'))]
+    if(length(delete_old_ones) > 0){
+      for(i in 1:length(delete_old_ones)){
+        file.remove(paste0('www/', delete_old_ones[i]))
+      }
     }
+
     this_time <- as.numeric(Sys.time())
     zz <- -1# *(20000000000 - this_time - app_start_time)
     
@@ -1996,9 +2005,9 @@ server <- function(input, output, session) {
     
     if(!external_url){
       file.copy(img_url,
-                to = 'www/temp.png',
+                to = temp_name,
                 overwrite = TRUE)
-      img_url <- 'www/temp.png'
+      img_url <- temp_name
       url_text <- paste0("'", img_url, "'")
     }
     url_text <- paste0('url(', img_url, ')')
