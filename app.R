@@ -787,6 +787,7 @@ server <- function(input, output, session) {
     df <- df %>%
       dplyr::select(is_wbg,
                     short_name,
+                    title,
                     city_name,
                     country_name,
                     trip_start_date,
@@ -824,7 +825,7 @@ server <- function(input, output, session) {
     
     # Make only one head per person/place
     df <- df %>%
-      group_by(id, short_name, is_wbg, city_id) %>%
+      group_by(id, short_name, title, is_wbg, city_id) %>%
       summarise(date = paste0(dates, collapse = ';'),
                 event = paste0(event, collapse = ';')) %>% ungroup
     
@@ -841,7 +842,12 @@ server <- function(input, output, session) {
       # Get the original rows from full df for each of the ids
       x <- full_df %>%
         filter(id == this_id)
-      caption <- paste0(x$short_name[1], ' in ', x$city_name[1])
+      if(!is.na(x$title[1])){
+        caption <- paste0(x$short_name[1], ' (', x$title[1], ') in ', x$city_name[1])
+      } else {
+        caption <- paste0(x$short_name[1], ' in ', x$city_name[1])
+      }
+      
       x <- x %>%
         dplyr::select(dates, event)
       names(x) <- Hmisc::capitalize(names(x))
@@ -955,6 +961,7 @@ server <- function(input, output, session) {
     df <- df %>%
       dplyr::select(is_wbg,
                     short_name,
+                    title,
                     city_name,
                     country_name,
                     trip_start_date,
@@ -992,7 +999,7 @@ server <- function(input, output, session) {
     
     # Make only one head per person/place
     df <- df %>%
-      group_by(id, short_name, is_wbg, city_id) %>%
+      group_by(id, short_name, title, is_wbg, city_id) %>%
       summarise(date = paste0(dates, collapse = ';'),
                 event = paste0(event, collapse = ';')) %>% ungroup
     
@@ -1009,7 +1016,12 @@ server <- function(input, output, session) {
       # Get the original rows from full df for each of the ids
       x <- full_df %>%
         filter(id == this_id)
-      caption <- paste0(x$short_name[1], ' in ', x$city_name[1])
+      if(!is.na(x$title[1])){
+        caption <- paste0(x$short_name[1], ' (', x$title[1], ') in ', x$city_name[1])
+      } else {
+        caption <- paste0(x$short_name[1], ' in ', x$city_name[1])
+      }
+      
       x <- x %>%
         dplyr::select(dates, event)
       names(x) <- Hmisc::capitalize(names(x))
@@ -1933,6 +1945,15 @@ server <- function(input, output, session) {
 
   output$photo_editor <- renderUI({
     
+    # Refresh
+    uploaded_photo_path()
+    
+    if(file.exists('www/temp.png')){
+      file.remove('www/temp.png')
+    }
+    this_time <- as.numeric(Sys.time())
+    zz <- -1# *(20000000000 - this_time - app_start_time)
+    
     scale <- input$scale
     print(paste("Scale: ",scale))
     # upp <- uploaded_photo_path()
@@ -1959,9 +1980,9 @@ server <- function(input, output, session) {
       }
     }
     ss <- switcher()
-    # if(!ss){
-    #   go <- FALSE
-    # }
+    if(!ss){
+      go <- FALSE
+    }
     if(!go){
       return(NULL)
     }
@@ -1978,8 +1999,6 @@ server <- function(input, output, session) {
       url_text <- paste0("'", img_url, "'")
     }
     url_text <- paste0('url(', img_url, ')')
-    message('URL TEXT IS')
-    print(url_text)
     html<- list(
       HTML(paste0("<p>Uploaded Image</p>
                   <img src='www/mask.png'
@@ -1987,7 +2006,7 @@ server <- function(input, output, session) {
                   onmousedown=\"dragstart(event);\" 
                   onmouseup=\"dragend(event);\" 
                   onmousemove=\"dodrag(event);\" 
-                  style=\"z-index:-1;background-image:", url_text, ";
+                  style=\"z-index:", zz, ";background-image:", url_text, ";
                   background-repeat: no-repeat;background-size:",xscale,"px ",yscale,"px;\" width='300px';>"))
     )
     

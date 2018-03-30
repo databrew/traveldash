@@ -261,3 +261,6 @@ maskc <- image_read("www/mask-circle.png")
 masks <- image_read("www/mask-square.png")
 mask <- image_composite(maskc, masks, "out") 
 
+# Get app start time
+app_start_time <- Sys.time()
+app_start_time <- as.numeric(app_start_time)
