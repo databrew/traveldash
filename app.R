@@ -1581,7 +1581,7 @@ server <- function(input, output, session) {
     
   })
   
-  timer <- reactiveTimer(2000)
+  timer <- reactiveTimer(4000)
   
   # Create a date for looping through
   this_date <- reactiveVal(value = NULL)
