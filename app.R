@@ -813,15 +813,23 @@ server <- function(input, output, session) {
       } else {
         caption <- paste0(x$short_name[1], ' in ', x$city_name[1])
       }
-      if(!is.na(x$venue_name[1]) & x$venue_name[1] != ''){
-        caption <- paste0(caption, ' at ', x$venue_name[1])
-      }
-      if(!is.na(x$agenda[1]) & x$agenda[1] != ''){
-        caption <- paste0(caption, ' for ', x$agenda[1])
-      }
+      # vn <- paste0(unique(x$venue_name[!is.na(x$venue_name)]), collapse = ', ')
+      # if(!is.na(vn)){
+      #   if(nchar(vn) > 0){
+      #     caption <- paste0(caption, ' at ', vn)
+      #   }
+      # }
+      # ag <- paste0(unique(x$agenda[!is.na(x$agenda)]), collapse = ', ')
+      # if(!is.na(ag)){
+      #   if(nchar(ag) > 0){
+      #     caption <- paste0(caption, ' for ', ag)
+      #   }
+      # }
       
       x <- x %>%
-        dplyr::select(dates, event)
+        mutate(event = ifelse(!is.na(venue_name), paste0(event, ' at ', venue_name),
+                              event)) %>%
+        dplyr::select(dates, event, agenda)
       names(x) <- Hmisc::capitalize(names(x))
       knitr::kable(x,
                    rnames = FALSE,
@@ -967,7 +975,8 @@ server <- function(input, output, session) {
                                    ''))) %>%
       mutate(event = paste0(ifelse(!is.na(meeting_with) & short_name != meeting_with, ' With ', ''),
                             ifelse(!is.na(meeting_with) & short_name != meeting_with, meeting_with, ''))) %>%
-      mutate(event = Hmisc::capitalize(event)) 
+      mutate(event = Hmisc::capitalize(event)) %>%
+      mutate(event = ifelse(trimws(event) == 'With', '', event))
     
     
     # Keep a "full" df with one row per trip
@@ -997,15 +1006,23 @@ server <- function(input, output, session) {
       } else {
         caption <- paste0(x$short_name[1], ' in ', x$city_name[1])
       }
-      if(!is.na(x$venue_name[1]) & x$venue_name[1] != ''){
-        caption <- paste0(caption, ' at ', x$venue_name[1])
-      }
-      if(!is.na(x$agenda[1]) & x$agenda[1] != ''){
-        caption <- paste0(caption, ' for ', x$agenda[1])
-      }
+      # vn <- paste0(unique(x$venue_name[!is.na(x$venue_name)]), collapse = ', ')
+      # if(!is.na(vn)){
+      #   if(nchar(vn) > 0){
+      #     caption <- paste0(caption, ' at ', vn)
+      #   }
+      # }
+      # ag <- paste0(unique(x$agenda[!is.na(x$agenda)]), collapse = ', ')
+      # if(!is.na(ag)){
+      #   if(nchar(ag) > 0){
+      #     caption <- paste0(caption, ' for ', ag)
+      #   }
+      # }
       
       x <- x %>%
-        dplyr::select(dates, event)
+        mutate(event = ifelse(!is.na(venue_name), paste0(event, ' at ', venue_name),
+                              event)) %>%
+        dplyr::select(dates, event, agenda)
       names(x) <- Hmisc::capitalize(names(x))
       knitr::kable(x,
                    rnames = FALSE,
@@ -1176,7 +1193,9 @@ server <- function(input, output, session) {
       mutate(event = ifelse(!is.na(venue_name),
                             paste0(event, ' At ', venue_name),
                             event)) %>%
-      dplyr::select(name, date, location, event)
+      dplyr::select(name, date, location, event) %>%
+
+      mutate(event = ifelse(trimws(event) == 'With', '', event))
     names(x) <- Hmisc::capitalize(names(x))
     x$Date <- factor(x$Date, levels = unique(x$Date))
     
@@ -1540,6 +1559,8 @@ server <- function(input, output, session) {
                                     Counterpart_title = title),
                     by = 'Counterpart')
         
+
+        
         # Extract the clicked id
         ii <- input$id
         if(!is.null(ii)){
@@ -1557,6 +1578,9 @@ server <- function(input, output, session) {
                                    '', format(tc$trip_end_date, '%B %d, %Y')))
           tc <- tc %>%
             dplyr::select(-is_wbg, -coincidence_is_wbg, -country_name, -trip_start_date, -trip_end_date) 
+          # Reorder columns
+          tc <- tc %>%
+            dplyr::select(Person, city_name, venue_name, Counterpart_title, Counterpart, date)
           names(tc) <- Hmisc::capitalize(gsub('_', ' ', names(tc)))
           DT::datatable(tc,
                         escape=F,
@@ -1692,9 +1716,10 @@ server <- function(input, output, session) {
                               ifelse(trip_start_date != trip_end_date,
                                      as.character(trip_end_date),
                                      ''))) %>%
-        mutate(event = paste0(ifelse(!is.na(meeting_with) & short_name != meeting_with, ' With ', ''),
-                              ifelse(!is.na(meeting_with) & short_name != meeting_with, meeting_with, ''))) %>%
-        mutate(event = Hmisc::capitalize(event))
+        mutate(event = paste0(ifelse(!is.na(meeting_with) & short_name != meeting_with & meeting_with != '', ' With ', ''),
+                              ifelse(!is.na(meeting_with) & short_name != meeting_with, meeting_with & meeting_with != '', ''))) %>%
+        mutate(event = Hmisc::capitalize(event)) %>%
+        mutate(event = ifelse(trimws(event) == 'With', '', event))
       
       
       # Keep a "full" df with one row per trip

@@ -68,7 +68,8 @@ view_all_trips_people_meetings_venues <-
             by = 'person_id') %>%
   # Create a "meeting with" column
   mutate(meeting_with = meeting_person_short_names,
-         meeting_person_name = meeting_person_short_names) %>%
+         meeting_person_name = meeting_person_short_names,
+         coincidence_person_name = meeting_person_short_names) %>%
   # Create a "person_name" column
   mutate(person_name = short_name) %>%
   # get whether the coincidence person is wbg too
@@ -317,3 +318,6 @@ mask <- image_composite(maskc, masks, "out")
 # Get app start time
 app_start_time <- Sys.time()
 app_start_time <- as.numeric(app_start_time)
+
+# Overwrite "unsepcified venue"
+view_all_trips_people_meetings_venues$venue_name[view_all_trips_people_meetings_venues$venue_name == 'Unspecified Venue'] <- NA
