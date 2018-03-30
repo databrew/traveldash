@@ -196,9 +196,7 @@ body <- dashboardBody(
         fluidRow(
           fluidRow(forceNetworkOutput('graph'),
                    fluidRow(
-                     column(6,
-                            align = 'center'),
-                     column(6,
+                     column(12,
                             align = 'center',
                             radioButtons('network_meeting',
                                          'Show meetings only or any trip overlaps',choices = c('Meetings only', 'Trip overlaps'),
@@ -1009,7 +1007,7 @@ server <- function(input, output, session) {
                   dplyr::select(city_name, country_name, city_id,
                                 latitude, longitude),
                 by = 'city_id') 
-    
+
     
     popups = lapply(rownames(df), function(row){
       this_id <- unlist(df[row,'id'])
@@ -1539,6 +1537,15 @@ server <- function(input, output, session) {
       tc <- tc %>% dplyr::filter(!is.na(Counterpart))
       
       if(nrow(tc) > 0){
+        
+        # Get the title of the counterpart
+        tc <- tc %>%
+          left_join(people %>%
+                      dplyr::select(short_name, title) %>%
+                      dplyr::rename(Counterpart = short_name,
+                                    Counterpart_title = title),
+                    by = 'Counterpart')
+        
         # Extract the clicked id
         ii <- input$id
         if(!is.null(ii)){

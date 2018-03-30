@@ -18,6 +18,8 @@ db_to_memory <- function(pool,
               # 'trip_meetings', 
               'trips',
               'user_action_log',
+              'venue_events',
+              'view_all_trips_people_meetings_venues',
               'users')#,
               # 'venue_events',
               # 'venue_types'
