@@ -1176,18 +1176,21 @@ server <- function(input, output, session) {
     x <- x %>%
       mutate(location = city_name) %>%
       mutate(name = short_name) %>%
-      mutate(date = paste0(as.character(trip_start_date),
+      arrange(trip_start_date) %>%
+      mutate(date = paste0(as.character(format(trip_start_date, '%B %d, %Y')),
                            ifelse(trip_start_date != trip_end_date,
                                   ' through ', 
                                   ''),
                            ifelse(trip_start_date != trip_end_date,
-                                  as.character(trip_end_date), 
+                                  as.character(format(trip_end_date, '%B, %d, %Y')), 
                                   ''))) %>%
       mutate(event = paste0(ifelse(!is.na(meeting_with) & short_name != meeting_with, ' With ', ''),
                             ifelse(!is.na(meeting_with) & short_name != meeting_with, meeting_with, ''))) %>%
       mutate(event = Hmisc::capitalize(event)) %>%
       dplyr::select(name, date, location, event)
     names(x) <- Hmisc::capitalize(names(x))
+    x$Date <- factor(x$Date, levels = unique(x$Date))
+    
     # prettify(x,
     #          download_options = FALSE) #%>%
     DT::datatable(x,
