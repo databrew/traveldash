@@ -234,7 +234,7 @@ body <- dashboardBody(
                       
                       <h4>
 <img src="partnershiplogo.png" alt="logo" hspace="20" height=90 style="float: right;">
-The dashboard was developed as a part of activities under the <a href="http://www.ifc.org/wps/wcm/connect/region__ext_content/ifc_external_corporate_site/sub-saharan+africa/priorities/financial+inclusion/za_ifc_partnership_financial_inclusion">Partnership for Financial Inclusion</a>, a $37.4 million joint initiative of the <a href="http://www.ifc.org/wps/wcm/connect/corp_ext_content/ifc_external_corporate_site/home">IFC</a> and the <a href="http://www.mastercardfdn.org/">Mastercard Foundation</a> to expand microfinance and advance digital financial services in Sub-Saharan Africa) by the FIG Africa Digital Financial Services unit (the MEL team).
+The dashboard was originally developed as a part of activities under the <a href="http://www.ifc.org/wps/wcm/connect/region__ext_content/ifc_external_corporate_site/sub-saharan+africa/priorities/financial+inclusion/za_ifc_partnership_financial_inclusion">Partnership for Financial Inclusion</a>, a $37.4 million joint initiative of the <a href="http://www.ifc.org/wps/wcm/connect/corp_ext_content/ifc_external_corporate_site/home">IFC</a> and the <a href="http://www.mastercardfdn.org/">Mastercard Foundation</a> to expand microfinance and advance digital financial services in Sub-Saharan Africa) by the FIG Africa Digital Financial Services unit (the MEL team).
 </h4>
                       '))
         ),
@@ -757,7 +757,8 @@ server <- function(input, output, session) {
                     trip_start_date,
                     trip_end_date,
                     meeting_with,
-                    venue_name)
+                    venue_name,
+                    agenda)
     
     # Get city id
     df <- df %>%
@@ -812,8 +813,11 @@ server <- function(input, output, session) {
       } else {
         caption <- paste0(x$short_name[1], ' in ', x$city_name[1])
       }
-      if(!is.na(x$venue_name[1])){
+      if(!is.na(x$venue_name[1]) & x$venue_name[1] != ''){
         caption <- paste0(caption, ' at ', x$venue_name[1])
+      }
+      if(!is.na(x$agenda[1]) & x$agenda[1] != ''){
+        caption <- paste0(caption, ' for ', x$agenda[1])
       }
       
       x <- x %>%
@@ -937,7 +941,8 @@ server <- function(input, output, session) {
                     trip_start_date,
                     trip_end_date,
                     meeting_with,
-                    venue_name)
+                    venue_name,
+                    agenda)
     
     # Get city id
     df <- df %>%
@@ -992,8 +997,11 @@ server <- function(input, output, session) {
       } else {
         caption <- paste0(x$short_name[1], ' in ', x$city_name[1])
       }
-      if(!is.na(x$venue_name[1])){
+      if(!is.na(x$venue_name[1]) & x$venue_name[1] != ''){
         caption <- paste0(caption, ' at ', x$venue_name[1])
+      }
+      if(!is.na(x$agenda[1]) & x$agenda[1] != ''){
+        caption <- paste0(caption, ' for ', x$agenda[1])
       }
       
       x <- x %>%
@@ -1005,6 +1013,8 @@ server <- function(input, output, session) {
                    align = paste(rep("l", ncol(x)), collapse = ''),
                    format = 'html')
     })
+    
+    
     
     
     # Get faces
@@ -1537,14 +1547,16 @@ server <- function(input, output, session) {
           # Keep only one of each
           tc <- tc %>%
             dplyr::distinct(Person, city_name, trip_start_date, trip_end_date, Counterpart, .keep_all = TRUE)
-          tc$date <- paste0(tc$trip_start_date,
+          # Arrange by date
+          tc <- tc %>% 
+            arrange(trip_start_date)
+          tc$date <- paste0(format(tc$trip_start_date, '%B %d, %Y'),
                             ifelse(tc$trip_start_date == tc$trip_end_date, '', ' through ')
                             ,
                             ifelse(tc$trip_start_date == tc$trip_end_date,
-                                   '', as.character(tc$trip_end_date)))
+                                   '', format(tc$trip_end_date, '%B %d, %Y')))
           tc <- tc %>%
-            dplyr::select(-is_wbg, -coincidence_is_wbg, -country_name, -trip_start_date, -trip_end_date) %>%
-            arrange(date)
+            dplyr::select(-is_wbg, -coincidence_is_wbg, -country_name, -trip_start_date, -trip_end_date) 
           names(tc) <- Hmisc::capitalize(gsub('_', ' ', names(tc)))
           DT::datatable(tc,
                         escape=F,

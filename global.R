@@ -174,6 +174,10 @@ expand_trips <- function(trips, cities, people, view_all_trips_people_meetings_v
                   by = 'city_id')
   # Get the event into
   df <- left_join(df, old_df, by = c('city_id', 'event_id'))
+  
+  # Remove non-event stuff
+  df <- df %>% dplyr::filter(!is.na(venue_name) & venue_name != '' & venue_name != 'Unspecified Venue')
+  
   # Make a content variale
   df <- df %>%
     mutate(content = ifelse(!is.na(venue_name) & venue_name != '',
@@ -182,6 +186,9 @@ expand_trips <- function(trips, cities, people, view_all_trips_people_meetings_v
     mutate(content = ifelse(content == 'Unspecified Venue',
                             paste0('Unspecified event in ', city_name),
                             content))
+
+  
+  
   # Keep only one observation for each event
   df <- df %>%
     dplyr::distinct(city_id, event_id, start, end, city_name, content, .keep_all = TRUE)
