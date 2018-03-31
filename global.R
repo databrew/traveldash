@@ -48,8 +48,7 @@ for(i in 1:length(functions)){
 use_sqlite <- FALSE
 
 # Create a connection pool
-pool <- create_pool(options_list = credentials_extract(),
-                    use_sqlite = use_sqlite)
+pool <- create_pool(options_list = credentials_extract())
 
 # Geocode the cities in the db if necessary 
 # //SAH 2-22-2018: Called after upload or changes, should be unnecessary on app start-up and generate unnecessary db query each time
