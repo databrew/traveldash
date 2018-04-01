@@ -61,10 +61,7 @@ db_to_memory(pool = pool)
 
 # Bring the is_wbg field from people into view_all_trips_people_meetings_venues
 view_all_trips_people_meetings_venues <- 
-  left_join(x = view_all_trips_people_meetings_venues,
-            y = people %>%
-              dplyr::select(person_id, is_wbg),
-            by = 'person_id') %>%
+  view_all_trips_people_meetings_venues %>%
   # Create a "meeting with" column
   mutate(meeting_with = meeting_person_short_names,
          meeting_person_name = meeting_person_short_names,
@@ -306,7 +303,6 @@ joe_jitter <- function(x, zoom = 2){
 populate_images_from_www(pool = pool) # www to db
 populate_images_to_www(pool = pool) # db to www
 images <- get_images(pool = pool)
-message('############ Done with global.R')
 
 # Image manipulation
 resourcepath <- paste0(getwd(),"/www")
@@ -320,3 +316,5 @@ app_start_time <- as.numeric(app_start_time)
 
 # Overwrite "unsepcified venue"
 view_all_trips_people_meetings_venues$venue_name[view_all_trips_people_meetings_venues$venue_name == 'Unspecified Venue'] <- NA
+
+message('############ Done with global.R')
