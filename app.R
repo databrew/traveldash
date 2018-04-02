@@ -2017,9 +2017,9 @@ server <- function(input, output, session) {
       }
     }
     ss <- switcher()
-    if(!ss){
-      go <- FALSE
-    }
+    # if(!ss){
+    #   go <- FALSE
+    # }
     if(!go){
       return(NULL)
     }
