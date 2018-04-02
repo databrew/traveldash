@@ -170,7 +170,7 @@ body <- dashboardBody(
             
             fluidPage(
               fluidRow(
-                column(4,
+                column(5,
                        align = 'center',
                        div(uiOutput('date_ui'),
                            style = 'text-align:center;'),
@@ -182,7 +182,7 @@ body <- dashboardBody(
                                     inline = TRUE),
                        sankeyNetworkOutput('sank',
                                            height = '400px')),
-                column(8,
+                column(7,
                        div(
                          uiOutput('leaf_ui'),
                            style = 'text-align:right;'),
