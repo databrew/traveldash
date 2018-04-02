@@ -572,13 +572,13 @@ server <- function(input, output, session) {
     message('new data has ', nrow(new_data), ' rows')
     # Upload the new data to the database
     upload_results <-
-      upload_raw_data(pool = pool,
+      upload_raw_data(pool = GLOBAL_DB_POOL,
                       data = new_data,
                       logged_in_user_id = 1,
                       return_upload_results = TRUE)
     message('Uploaded raw data')
     # Update the session
-    updated_data <- db_to_memory(pool = pool, return_list = TRUE)
+    updated_data <- db_to_memory(pool = GLOBAL_DB_POOL, return_list = TRUE)
     vals$events <- updated_data$events
     vals$cities <- updated_data$cities
     vals$people <- updated_data$people
@@ -600,7 +600,7 @@ server <- function(input, output, session) {
     new_data <- geo_code(new_data)
     # Update the underlying data
     # Update the underlying data
-    write_table(connection_object = pool,
+    write_table(connection_object = GLOBAL_DB_POOL,
                 table = 'dev_events',
                 schema = 'pd_wbgtravel',
                 value = new_data,
@@ -1937,7 +1937,7 @@ server <- function(input, output, session) {
     # Having updated the www folder, we can now uppdate the database
     message('--- updating the database')
     Sys.sleep(0.2)
-    populate_images_from_www(pool = pool)
+    populate_images_from_www(pool = GLOBAL_DB_POOL)
     # # Update the reactive object
     # message('--- updating the reactive in-session object')
     # images <- get_images(pool = pool)
@@ -2066,7 +2066,7 @@ server <- function(input, output, session) {
   # On session end, close
   session$onSessionEnded(function() {
     message('Session ended. Closing the connection pool.')
-    tryCatch(pool::poolClose(pool), error = function(e) {message('')})
+    tryCatch(pool::poolClose(GLOBAL_DB_POOL), error = function(e) {message('')})
     if(file.exists('www/temp.png')){
       file.remove('www/temp.png')
     }

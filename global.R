@@ -48,7 +48,7 @@ for(i in 1:length(functions)){
 use_sqlite <- FALSE
 
 # Create a connection pool
-pool <- create_pool(options_list = credentials_extract())
+GLOBAL_DB_POOL <- db_get_pool()
 
 # Geocode the cities in the db if necessary 
 # //SAH 2-22-2018: Called after upload or changes, should be unnecessary on app start-up and generate unnecessary db query each time
@@ -57,7 +57,7 @@ pool <- create_pool(options_list = credentials_extract())
 
 
 # Get the data from the db into memory
-db_to_memory(pool = pool)
+db_to_memory(pool = GLOBAL_DB_POOL)
 
 # Bring the is_wbg field from people into view_all_trips_people_meetings_venues
 view_all_trips_people_meetings_venues <- 
@@ -300,9 +300,9 @@ joe_jitter <- function(x, zoom = 2){
 }
 
 # Syncronize the www photo storage with the database
-populate_images_from_www(pool = pool) # www to db
-populate_images_to_www(pool = pool) # db to www
-images <- get_images(pool = pool)
+populate_images_from_www(pool = GLOBAL_DB_POOL) # www to db
+populate_images_to_www(pool = GLOBAL_DB_POOL) # db to www
+images <- get_images(pool = GLOBAL_DB_POOL)
 
 # Image manipulation
 resourcepath <- paste0(getwd(),"/www")
