@@ -23,6 +23,8 @@ populate_images_from_www <- function(pool)
   images[["files"]] <- lapply(images$path,file,open="rb")
   images[["binaries"]] <- lapply(images$files,readBin,what="raw",n=1000000,size=1)
   images[["person_image"]] <- mapply(postgresqlEscapeBytea,raw_data=images$binaries,MoreArgs=list(con=conn))
+  # Close the connections
+  closeAllConnections()
   
   people_upload <- images[,c("person_id","person_image")]
   dbSendQuery(conn,"drop table if exists public._temp_headshots_upload;")
