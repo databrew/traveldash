@@ -1962,7 +1962,7 @@ server <- function(input, output, session) {
         fluidRow(
           column(12,
                  uiOutput('photo_editor'),
-                 sliderInput(inputId="scale",label="Resize",min=1,max=100,step=1,value=100),
+                 sliderInput(inputId="scale",label="Resize",min=1,max=200,step=1,value=100),
                  hidden(textInput(inputId="cropX","Crop X",value="0"),
                         textInput(inputId="cropY","Crop Y",value="0")))
         )
