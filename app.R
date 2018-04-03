@@ -306,7 +306,7 @@ The dashboard was originally developed as a part of activities under the <a href
               fluidRow(column(6, align = 'center',
                               selectInput('photo_person',
                                           'Who are you uploading a photo for?',
-                                          choices = sort(unique(people$short_name))),
+                                          choices = sort(unique(view_all_trips_people_meetings_venues$person_name))),
                               h4('Current photo'),
                               imageOutput('current_photo_output')),
 
