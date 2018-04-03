@@ -835,7 +835,7 @@ server <- function(input, output, session) {
                    format = 'html') %>%
         kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"), full_width = FALSE,
                       font_size = 9) %>%
-        scroll_box()
+        scroll_box(height = '200px', width = '300px')
     })
     
     
@@ -1019,7 +1019,7 @@ server <- function(input, output, session) {
                    format = 'html') %>%
         kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"), full_width = FALSE,
                       font_size = 9) %>%
-        scroll_box()
+        scroll_box(height = '200px', width = '300px')
     })
     
     
