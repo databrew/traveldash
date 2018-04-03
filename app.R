@@ -804,6 +804,7 @@ server <- function(input, output, session) {
       # Get the original rows from full df for each of the ids
       x <- full_df %>%
         filter(id == this_id)
+      x$short_name <- oleksiy_name(x$short_name)
       if(!is.na(x$title[1])){
         caption <- paste0(x$short_name[1], ' (', x$title[1], ') in ', x$city_name[1])
       } else {
@@ -995,6 +996,7 @@ server <- function(input, output, session) {
       # Get the original rows from full df for each of the ids
       x <- full_df %>%
         filter(id == this_id)
+      x$short_name <- oleksiy_name(x$short_name)
       if(!is.na(x$title[1])){
         caption <- paste0(x$short_name[1], ' (', x$title[1], ') in ', x$city_name[1])
       } else {
