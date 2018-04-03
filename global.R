@@ -320,7 +320,7 @@ view_all_trips_people_meetings_venues$venue_name[view_all_trips_people_meetings_
 # Function for creating oleksiy-formatted date range
 oleksiy_date <- function(date1, date2){
   if(date1 == date2){
-    out <- format(date1, '%B %d, %Y')
+    out <- format(date1, '%B %d')
   } else {
     the_dates <- c(date1, date2)
     the_dates <- sort(the_dates)
@@ -330,13 +330,11 @@ oleksiy_date <- function(date1, date2){
     if(the_months[1] == the_months[2]){
       out <- paste0(the_months[1], 
                     ' ',
-                    the_days[1], '-', the_days[2],
-                    ', ',
-                    the_years[1])
+                    the_days[1], '-', the_days[2])
     } else {
-      out <- paste0(format(the_dates[1], '%B %d, %Y'),
+      out <- paste0(format(the_dates[1], '%B %d'),
                     ' - ',
-                    format(the_dates[2], '%B %d, %Y'))
+                    format(the_dates[2], '%B %d'))
     }
   }
   return(out)
