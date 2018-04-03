@@ -776,13 +776,7 @@ server <- function(input, output, session) {
     
     # Create some more columns
     df <- df %>%
-      mutate(dates = paste0(as.character(trip_start_date),
-                            ifelse(trip_start_date != trip_end_date,
-                                   ' through ', 
-                                   ''),
-                            ifelse(trip_start_date != trip_end_date,
-                                   as.character(trip_end_date), 
-                                   ''))) %>%
+      mutate(dates = oleksiy_date(trip_start_date, trip_end_date)) %>%
       mutate(event = paste0(ifelse(!is.na(meeting_with) & short_name != meeting_with, ' With ', ''),
                             ifelse(!is.na(meeting_with) & short_name != meeting_with, meeting_with, ''))) %>%
       mutate(event = Hmisc::capitalize(event)) 
@@ -971,13 +965,7 @@ server <- function(input, output, session) {
     
     # Create some more columns
     df <- df %>%
-      mutate(dates = paste0(as.character(trip_start_date),
-                            ifelse(trip_start_date != trip_end_date,
-                                   ' through ', 
-                                   ''),
-                            ifelse(trip_start_date != trip_end_date,
-                                   as.character(trip_end_date), 
-                                   ''))) %>%
+      mutate(dates = oleksiy_date(trip_start_date, trip_end_date)) %>%
       mutate(event = paste0(ifelse(!is.na(meeting_with) & short_name != meeting_with, ' With ', ''),
                             ifelse(!is.na(meeting_with) & short_name != meeting_with, meeting_with, ''))) %>%
       mutate(event = Hmisc::capitalize(event)) %>%
@@ -986,6 +974,7 @@ server <- function(input, output, session) {
     
     # Keep a "full" df with one row per trip
     full_df <- df
+    
     
     # Make only one head per person/place
     df <- df %>%
@@ -1000,7 +989,7 @@ server <- function(input, output, session) {
                                 latitude, longitude),
                 by = 'city_id') 
     
-    save(df, file = '~/Desktop/df.RData')
+    save(df, full_df, file = '~/Desktop/df.RData')
     popups = lapply(rownames(df), function(row){
       this_id <- unlist(df[row,'id'])
       # Get the original rows from full df for each of the ids
@@ -1011,19 +1000,7 @@ server <- function(input, output, session) {
       } else {
         caption <- paste0(x$short_name[1], ' in ', x$city_name[1])
       }
-      # vn <- paste0(unique(x$venue_name[!is.na(x$venue_name)]), collapse = ', ')
-      # if(!is.na(vn)){
-      #   if(nchar(vn) > 0){
-      #     caption <- paste0(caption, ' at ', vn)
-      #   }
-      # }
-      # ag <- paste0(unique(x$agenda[!is.na(x$agenda)]), collapse = ', ')
-      # if(!is.na(ag)){
-      #   if(nchar(ag) > 0){
-      #     caption <- paste0(caption, ' for ', ag)
-      #   }
-      # }
-      
+
       x <- x %>%
         mutate(event = ifelse(!is.na(venue_name), paste0(event, ' at ', venue_name),
                               event)) %>%
@@ -1189,13 +1166,7 @@ server <- function(input, output, session) {
       mutate(location = city_name) %>%
       mutate(name = short_name) %>%
       arrange(trip_start_date) %>%
-      mutate(date = paste0(as.character(format(trip_start_date, '%B %d, %Y')),
-                           ifelse(trip_start_date != trip_end_date,
-                                  ' through ', 
-                                  ''),
-                           ifelse(trip_start_date != trip_end_date,
-                                  as.character(format(trip_end_date, '%B, %d, %Y')), 
-                                  ''))) %>%
+      mutate(date = oleksiy_date(trip_start_date, trip_end_date)) %>%
       mutate(event = paste0(ifelse(!is.na(meeting_with) & short_name != meeting_with, ' With ', ''),
                             ifelse(!is.na(meeting_with) & short_name != meeting_with, meeting_with, ''))) %>%
       mutate(event = Hmisc::capitalize(event)) %>%
@@ -1230,7 +1201,7 @@ server <- function(input, output, session) {
     if(!is.null(fet)){
       if(nrow(fet) > 0){
         # Decide whether to show meetings or not
-        sm<- input$show_meetings
+        sm <- input$show_meetings
         
         if(!sm){
           out <- timevis(data = fet,
@@ -1580,11 +1551,9 @@ server <- function(input, output, session) {
           # Arrange by date
           tc <- tc %>% 
             arrange(trip_start_date)
-          tc$date <- paste0(format(tc$trip_start_date, '%B %d, %Y'),
-                            ifelse(tc$trip_start_date == tc$trip_end_date, '', ' through ')
-                            ,
-                            ifelse(tc$trip_start_date == tc$trip_end_date,
-                                   '', format(tc$trip_end_date, '%B %d, %Y')))
+          tc <- tc %>%
+            mutate(date = oleksiy_date(trip_start_date, trip_end_date)) %>%
+
           tc <- tc %>%
             dplyr::select(-is_wbg, -coincidence_is_wbg, -country_name, -trip_start_date, -trip_end_date) 
           # Reorder columns
@@ -1724,13 +1693,7 @@ server <- function(input, output, session) {
       if(nrow(df) > 0){
         
         df <- df %>%
-          mutate(dates = paste0(as.character(trip_start_date),
-                                ifelse(trip_start_date != trip_end_date,
-                                       ' through ',
-                                       ''),
-                                ifelse(trip_start_date != trip_end_date,
-                                       as.character(trip_end_date),
-                                       ''))) %>%
+          mutate(dates = oleksiy_date(trip_start_date, trip_end_date)) %>%
           mutate(event = paste0(ifelse(!is.na(meeting_with) & short_name != meeting_with & meeting_with != '', ' With ', ''),
                                 ifelse(!is.na(meeting_with) & short_name != meeting_with, meeting_with & meeting_with != '', ''))) %>%
           mutate(event = Hmisc::capitalize(event)) %>%
