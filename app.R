@@ -806,9 +806,9 @@ server <- function(input, output, session) {
         filter(id == this_id)
       x$short_name <- oleksiy_name(x$short_name)
       if(!is.na(x$title[1])){
-        caption <- paste0(x$short_name[1], ' (', x$title[1], ') in ', x$city_name[1])
+        caption <- paste0(x$short_name[1], '<br>(', x$title[1], ') in ', x$city_name[1])
       } else {
-        caption <- paste0(x$short_name[1], ' in ', x$city_name[1])
+        caption <- paste0(x$short_name[1], '<br>in ', x$city_name[1])
       }
       # vn <- paste0(unique(x$venue_name[!is.na(x$venue_name)]), collapse = ', ')
       # if(!is.na(vn)){
@@ -998,9 +998,9 @@ server <- function(input, output, session) {
         filter(id == this_id)
       x$short_name <- oleksiy_name(x$short_name)
       if(!is.na(x$title[1])){
-        caption <- paste0(x$short_name[1], ' (', x$title[1], ') in ', x$city_name[1])
+        caption <- paste0(x$short_name[1], '<br>(', x$title[1], ') in ', x$city_name[1])
       } else {
-        caption <- paste0(x$short_name[1], ' in ', x$city_name[1])
+        caption <- paste0(x$short_name[1], '<br>in ', x$city_name[1])
       }
 
       x <- x %>%
