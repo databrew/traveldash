@@ -990,7 +990,6 @@ server <- function(input, output, session) {
                                 latitude, longitude),
                 by = 'city_id') 
     
-    save(df, full_df, file = '~/Desktop/df.RData')
     popups = lapply(rownames(df), function(row){
       this_id <- unlist(df[row,'id'])
       # Get the original rows from full df for each of the ids
@@ -1687,7 +1686,6 @@ server <- function(input, output, session) {
         mutate(id = as.numeric(factor(id))) %>%
         arrange(trip_start_date)
       
-      # save(df, file = '~/Desktop/df.RData')
       # Create some more columns
      
       
