@@ -967,8 +967,13 @@ server <- function(input, output, session) {
     # Create some more columns
     df <- df %>%
       mutate(dates = oleksiy_date(trip_start_date, trip_end_date)) %>%
-      mutate(event = paste0(ifelse(!is.na(meeting_with) & short_name != meeting_with, ' With ', ''),
-                            ifelse(!is.na(meeting_with) & short_name != meeting_with, meeting_with, ''))) %>%
+      mutate(short_name = ifelse(is.na(short_name), '', short_name)) %>%
+      mutate(meeting_with = ifelse(is.na(meeting_with), '', meeting_with)) %>%
+      mutate(event = ifelse(short_name != meeting_with &
+                              meeting_with != '' &
+                              short_name != '',
+                            paste0(short_name, ' with ', meeting_with),
+                            '')) %>%
       mutate(event = Hmisc::capitalize(event)) %>%
       mutate(event = ifelse(trimws(event) == 'With', '', event))
     
@@ -1694,8 +1699,13 @@ server <- function(input, output, session) {
         
         df <- df %>%
           mutate(dates = oleksiy_date(trip_start_date, trip_end_date)) %>%
-          mutate(event = paste0(ifelse(!is.na(meeting_with) & short_name != meeting_with & meeting_with != '', ' With ', ''),
-                                ifelse(!is.na(meeting_with) & short_name != meeting_with, meeting_with & meeting_with != '', ''))) %>%
+          mutate(short_name = ifelse(is.na(short_name), '', short_name)) %>%
+          mutate(meeting_with = ifelse(is.na(meeting_with), '', meeting_with)) %>%
+          mutate(event = ifelse(short_name != meeting_with &
+                                  meeting_with != '' &
+                                short_name != '',
+                                paste0(short_name, ' with ', meeting_with),
+                                '')) %>%
           mutate(event = Hmisc::capitalize(event)) %>%
           mutate(event = ifelse(trimws(event) == 'With', '', event))
         
