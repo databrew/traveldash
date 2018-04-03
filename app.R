@@ -824,7 +824,7 @@ server <- function(input, output, session) {
       # }
       
       x <- x %>%
-        mutate(event = ifelse(!is.na(venue_name), paste0(event, ' at ', venue_name),
+        mutate(event = ifelse(!is.na(venue_name) & venue_name != '' & !is.na(event) & event != '', paste0(event, ' at ', venue_name),
                               event)) %>%
         dplyr::select(dates, event, agenda)
       names(x) <- Hmisc::capitalize(names(x))
@@ -1004,7 +1004,7 @@ server <- function(input, output, session) {
       }
 
       x <- x %>%
-        mutate(event = ifelse(!is.na(venue_name), paste0(event, ' at ', venue_name),
+        mutate(event = ifelse(!is.na(venue_name) & venue_name != '' & !is.na(event) & event != '', paste0(event, ' at ', venue_name),
                               event)) %>%
         dplyr::select(dates, event, agenda)
       names(x) <- Hmisc::capitalize(names(x))
