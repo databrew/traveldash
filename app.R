@@ -2,6 +2,8 @@ library(shiny)
 library(shinydashboard)
 source('global.R')
 library(shinyjs)
+library(knitr)
+library(kableExtra)
 the_width <- 280
 
 # Header
@@ -835,7 +837,10 @@ server <- function(input, output, session) {
                    rnames = FALSE,
                    caption = caption,
                    align = paste(rep("l", ncol(x)), collapse = ''),
-                   format = 'html')
+                   format = 'html') %>%
+        kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"), full_width = FALSE,
+                      font_size = 9) %>%
+        scroll_box()
     })
     
     
@@ -995,7 +1000,7 @@ server <- function(input, output, session) {
                                 latitude, longitude),
                 by = 'city_id') 
     
-    
+    save(df, file = '~/Desktop/df.RData')
     popups = lapply(rownames(df), function(row){
       this_id <- unlist(df[row,'id'])
       # Get the original rows from full df for each of the ids
@@ -1028,7 +1033,10 @@ server <- function(input, output, session) {
                    rnames = FALSE,
                    caption = caption,
                    align = paste(rep("l", ncol(x)), collapse = ''),
-                   format = 'html')
+                   format = 'html') %>%
+        kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"), full_width = FALSE,
+                      font_size = 9) %>%
+        scroll_box()
     })
     
     
@@ -1076,6 +1084,7 @@ server <- function(input, output, session) {
       mutate(longitude = joe_jitter(longitude, zoom = zoom_level),
              latitude = joe_jitter(latitude, zoom = zoom_level))
     
+
     l <- leafletProxy('leafy') %>%
       clearMarkers() %>%
       # clearControls() %>%
