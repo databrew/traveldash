@@ -1558,7 +1558,7 @@ server <- function(input, output, session) {
           tc <- tc %>% 
             arrange(trip_start_date)
           tc <- tc %>%
-            mutate(date = oleksiy_date(trip_start_date, trip_end_date)) %>%
+            mutate(date = oleksiy_date(trip_start_date, trip_end_date)) 
 
           tc <- tc %>%
             dplyr::select(-is_wbg, -coincidence_is_wbg, -country_name, -trip_start_date, -trip_end_date) 
