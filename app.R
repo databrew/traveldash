@@ -1707,53 +1707,57 @@ server <- function(input, output, session) {
         mutate(id = as.numeric(factor(id))) %>%
         arrange(trip_start_date)
       
+      # save(df, file = '~/Desktop/df.RData')
       # Create some more columns
-      df <- df %>%
-        mutate(dates = paste0(as.character(trip_start_date),
-                              ifelse(trip_start_date != trip_end_date,
-                                     ' through ',
-                                     ''),
-                              ifelse(trip_start_date != trip_end_date,
-                                     as.character(trip_end_date),
-                                     ''))) %>%
-        mutate(event = paste0(ifelse(!is.na(meeting_with) & short_name != meeting_with & meeting_with != '', ' With ', ''),
-                              ifelse(!is.na(meeting_with) & short_name != meeting_with, meeting_with & meeting_with != '', ''))) %>%
-        mutate(event = Hmisc::capitalize(event)) %>%
-        mutate(event = ifelse(trimws(event) == 'With', '', event))
-      
-      
-      # Keep a "full" df with one row per trip
-      full_df <- df
-      
-      # Make only one head per person/place
-      df <- df %>%
-        group_by(id, short_name, is_wbg, city_id) %>%
-        summarise(date = paste0(dates, collapse = ';'),
-                  event = paste0(event, collapse = ';')) %>% ungroup
-      
-      # Join to city names
-      df <- df %>%
-        left_join(cities %>%
-                    dplyr::select(city_name, country_name, city_id,
-                                  latitude, longitude),
-                  by = 'city_id')
-      
-      # Get faces
-      faces_dir <- paste0('www/headshots/circles/')
-      faces <- dir(faces_dir)
-      faces <- data_frame(joiner = gsub('.png', '', faces, fixed = TRUE),
-                          file = paste0(faces_dir, faces))
-      
-      # Create a join column
-      faces$joiner <- ifelse(is.na(faces$joiner) | faces$joiner == 'NA',
-                             'Unknown',
-                             faces$joiner)
-      df$joiner <- ifelse(df$short_name %in% faces$joiner,
-                          df$short_name,
-                          'Unknown')
+     
       
       # Join the files to the df data
       if(nrow(df) > 0){
+        
+        df <- df %>%
+          mutate(dates = paste0(as.character(trip_start_date),
+                                ifelse(trip_start_date != trip_end_date,
+                                       ' through ',
+                                       ''),
+                                ifelse(trip_start_date != trip_end_date,
+                                       as.character(trip_end_date),
+                                       ''))) %>%
+          mutate(event = paste0(ifelse(!is.na(meeting_with) & short_name != meeting_with & meeting_with != '', ' With ', ''),
+                                ifelse(!is.na(meeting_with) & short_name != meeting_with, meeting_with & meeting_with != '', ''))) %>%
+          mutate(event = Hmisc::capitalize(event)) %>%
+          mutate(event = ifelse(trimws(event) == 'With', '', event))
+        
+        
+        # Keep a "full" df with one row per trip
+        full_df <- df
+        
+        # Make only one head per person/place
+        df <- df %>%
+          group_by(id, short_name, is_wbg, city_id) %>%
+          summarise(date = paste0(dates, collapse = ';'),
+                    event = paste0(event, collapse = ';')) %>% ungroup
+        
+        # Join to city names
+        df <- df %>%
+          left_join(cities %>%
+                      dplyr::select(city_name, country_name, city_id,
+                                    latitude, longitude),
+                    by = 'city_id')
+        
+        # Get faces
+        faces_dir <- paste0('www/headshots/circles/')
+        faces <- dir(faces_dir)
+        faces <- data_frame(joiner = gsub('.png', '', faces, fixed = TRUE),
+                            file = paste0(faces_dir, faces))
+        
+        # Create a join column
+        faces$joiner <- ifelse(is.na(faces$joiner) | faces$joiner == 'NA',
+                               'Unknown',
+                               faces$joiner)
+        df$joiner <- ifelse(df$short_name %in% faces$joiner,
+                            df$short_name,
+                            'Unknown')
+        
         df <-
           left_join(df,
                     faces,
@@ -1763,16 +1767,17 @@ server <- function(input, output, session) {
                          !df$is_wbg,
                        'orange',
                        'blue')
+        zoom_level <- input$leafy_zoom
+        
+        df <- df %>%
+          mutate(longitude = joe_jitter(longitude, zoom = zoom_level),
+                 latitude = joe_jitter(latitude, zoom = zoom_level))
       } else {
         df <- df[0,]
       }
 
       
-      zoom_level <- input$leafy_zoom
-
-      df <- df %>%
-        mutate(longitude = joe_jitter(longitude, zoom = zoom_level),
-               latitude = joe_jitter(latitude, zoom = zoom_level))
+      
       
       rr <- tags$div(
         h2(format(td, '%B %d, %Y'), align = 'center'),
