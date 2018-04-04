@@ -130,18 +130,18 @@ sidebar <- dashboardSidebar(
     
     
   )
-)
+  )
 
 body <- dashboardBody(
   useShinyjs(),
   
   # jquery daterange picker: # Using https://longbill.github.io/jquery-date-range-picker/
   tags$head(tags$style(HTML('
-
-                        .modal-lg {
-                        width: 90%;
-                        }
-                      '))),
+                            
+                            .modal-lg {
+                            width: 90%;
+                            }
+                            '))),
   tags$head(tags$link(rel = 'stylesheet', type = 'text/css', href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css')),
   tags$head(tags$link(rel = 'stylesheet', type = 'text/css', href = 'dist/daterangepicker.min.css')),
   # Commenting out the below, since jquery is already included in shinydashboard
@@ -177,7 +177,7 @@ body <- dashboardBody(
                        div(uiOutput('date_ui'),
                            style = 'text-align:center;'),
                        checkboxInput('play', 'Day-by-day map',
-                                    value = FALSE),
+                                     value = FALSE),
                        radioButtons('sankey_meeting',
                                     '',choices = c('Meetings only', 'Trip overlaps'),
                                     selected = 'Meetings only',
@@ -187,7 +187,7 @@ body <- dashboardBody(
                 column(7,
                        div(
                          uiOutput('leaf_ui'),
-                           style = 'text-align:right;'),
+                         style = 'text-align:right;'),
                        DT::dataTableOutput('visit_info_table')))
             )
             
@@ -233,13 +233,13 @@ body <- dashboardBody(
       fluidPage(
         fluidRow(
           tags$div(HTML('
-                      
-                      <h4>
-<img src="partnershiplogo.png" alt="logo" hspace="20" height=90 style="float: right;">
-The dashboard was originally developed as a part of activities under the <a href="http://www.ifc.org/wps/wcm/connect/region__ext_content/ifc_external_corporate_site/sub-saharan+africa/priorities/financial+inclusion/za_ifc_partnership_financial_inclusion">Partnership for Financial Inclusion</a>, a $37.4 million joint initiative of the <a href="http://www.ifc.org/wps/wcm/connect/corp_ext_content/ifc_external_corporate_site/home">IFC</a> and the <a href="http://www.mastercardfdn.org/">Mastercard Foundation</a> to expand microfinance and advance digital financial services in Sub-Saharan Africa) by the FIG Africa Digital Financial Services unit (the MEL team).
-</h4>
-                      '))
-        ),
+                        
+                        <h4>
+                        <img src="partnershiplogo.png" alt="logo" hspace="20" height=90 style="float: right;">
+                        The dashboard was originally developed as a part of activities under the <a href="http://www.ifc.org/wps/wcm/connect/region__ext_content/ifc_external_corporate_site/sub-saharan+africa/priorities/financial+inclusion/za_ifc_partnership_financial_inclusion">Partnership for Financial Inclusion</a>, a $37.4 million joint initiative of the <a href="http://www.ifc.org/wps/wcm/connect/corp_ext_content/ifc_external_corporate_site/home">IFC</a> and the <a href="http://www.mastercardfdn.org/">Mastercard Foundation</a> to expand microfinance and advance digital financial services in Sub-Saharan Africa) by the FIG Africa Digital Financial Services unit (the MEL team).
+                        </h4>
+                        '))
+          ),
         br(),
         fluidRow(
           shinydashboard::box(
@@ -296,8 +296,8 @@ The dashboard was originally developed as a part of activities under the <a href
         ),
         fluidRow(div(helpText(creds),
                      style = 'text-align:right'))
-      )
-    ),
+          )
+        ),
     tabItem(tabName = 'upload_data',
             fluidPage(
               fluidRow(
@@ -307,7 +307,7 @@ The dashboard was originally developed as a part of activities under the <a href
                        h3('Manually add data'),
                        helpText('Create a travel event manually by clicking the below button.'),
                        actionButton('action_add', 'Add data',
-                                                    icon = icon('plus'))),
+                                    icon = icon('plus'))),
                 column(4, align = 'center',
                        h3('Upload data'),
                        helpText('Upload a dataset from your computer. This should be either a .csv or .xls file.'),
@@ -348,27 +348,33 @@ The dashboard was originally developed as a part of activities under the <a href
                                               h1('People'))
                                      ),
                                      fluidRow(
-                                       column(8,
-                                              rHandsontableOutput("hot_people"),
-                                              actionButton('hot_people_submit',
-                                                           'Submit changes',
-                                                           icon = icon('check'))),
-                                     column(4, align = 'center',
-                                            selectInput('photo_person',
-                                                        'Who are you uploading a photo for?',
-                                                        choices = sort(unique(view_all_trips_people_meetings_venues$person_name))),
-                                            h4('Current photo'),
-                                            imageOutput('current_photo_output', height = '250px'),
-                                            h4('New photo'),
-                                            radioButtons('url_or_upload',
-                                                         '',
-                                                         choices = c('Upload from disk',
-                                                                     'Get from web')),
-                                            uiOutput('upload_url_ui'),
-                                            # imageOutput('new_photo_output'),
-                                            uiOutput('new_photo_ui'),
-                                            uiOutput('photo_confirmation_ui')
-                                           )))),
+                                       column(3, align = 'center',
+                                              selectInput('photo_person',
+                                                          'Person',
+                                                          choices = sort(unique(view_all_trips_people_meetings_venues$person_name)))),
+                                       column(9,
+                                              fluidRow(column(6, align = 'center',
+                                                              h3('Current photo'),
+                                                              imageOutput('current_photo_output', height = '250px')),
+                                                       column(6, 
+                                                              align = 'center',
+                                                              h3('New photo'),
+                                                              # imageOutput('new_photo_output'),
+                                                              uiOutput('new_photo_ui'),
+                                                              radioButtons('url_or_upload',
+                                                                           '',
+                                                                           choices = c('Upload from disk',
+                                                                                       'Get from web')),
+                                                              uiOutput('upload_url_ui'),
+                                                              uiOutput('photo_confirmation_ui'))))),
+                                     br(),
+                                     fluidRow(column(12,
+                                                     rHandsontableOutput("hot_people"),
+                                                     br(),
+                                                     column(12, align = 'center',
+                                                            actionButton('hot_people_submit',
+                                                                         'Submit changes',
+                                                                         icon = icon('check'))))))),
                           tabPanel("Trips",
                                    fluidPage(
                                      fluidRow(
@@ -404,8 +410,8 @@ The dashboard was originally developed as a part of activities under the <a href
                                    )))
             )
     )
+    )
   )
-)
 
 
 ui <- dashboardPage(header, sidebar, body)
@@ -503,7 +509,7 @@ server <- function(input, output, session) {
   })
   
   
-
+  
   uploaded_photo_path <- reactive({
     inFile <- input$photo_upload
     
@@ -779,7 +785,7 @@ server <- function(input, output, session) {
     
     # Get trips and meetings, filtered for date range    
     df <- view_all_trips_people_meetings_venues_filtered()
-
+    
     
     # Filter for wbg only if relevant
     if(input$wbg_only == 'WBG only'){
@@ -803,7 +809,7 @@ server <- function(input, output, session) {
     
     # Get whether wbg or not
     df$is_wbg <- as.logical(df$is_wbg)
-
+    
     
     # Select down
     df <- df %>%
@@ -926,15 +932,15 @@ server <- function(input, output, session) {
     face_icons <- icons(df$file,
                         iconWidth = 25, iconHeight = 25)
     
-   
-  zoom_level <- 2
-
+    
+    zoom_level <- 2
+    
     df <- df %>%
       mutate(longitude = joe_jitter(longitude, zoom = zoom_level),
              latitude = joe_jitter(latitude, zoom = zoom_level))
     
     l <- leaflet(#options = leafletOptions(zoomControl = FALSE)
-                 ) %>%
+    ) %>%
       addProviderTiles("Esri.WorldStreetMap") %>%
       leaflet.extras::addFullscreenControl(position = 'topright') %>%
       addLegend(position = 'bottomright', colors = c('orange', 'blue'), labels = c('Non-WBG', 'WBG')) %>%
@@ -1062,7 +1068,7 @@ server <- function(input, output, session) {
       } else {
         caption <- paste0(x$short_name[1], '<br>in ', x$city_name[1])
       }
-
+      
       x <- x %>%
         mutate(event = ifelse(!is.na(venue_name) & venue_name != '' & !is.na(event) & event != '', paste0(event, ' at ', venue_name),
                               event)) %>%
@@ -1123,7 +1129,7 @@ server <- function(input, output, session) {
       mutate(longitude = joe_jitter(longitude, zoom = zoom_level),
              latitude = joe_jitter(latitude, zoom = zoom_level))
     
-
+    
     l <- leafletProxy('leafy') %>%
       clearMarkers() %>%
       # clearControls() %>%
@@ -1236,7 +1242,7 @@ server <- function(input, output, session) {
                             paste0(event, ' At ', venue_name),
                             event)) %>%
       dplyr::select(name, date, location, event) %>%
-
+      
       mutate(event = ifelse(trimws(event) == 'With', '', event))
     names(x) <- Hmisc::capitalize(names(x))
     x$Date <- factor(x$Date, levels = unique(x$Date))
@@ -1601,7 +1607,7 @@ server <- function(input, output, session) {
                                     Counterpart_title = title),
                     by = 'Counterpart')
         
-
+        
         
         # Extract the clicked id
         ii <- input$id
@@ -1615,7 +1621,7 @@ server <- function(input, output, session) {
             arrange(trip_start_date)
           tc <- tc %>%
             mutate(date = oleksiy_date(trip_start_date, trip_end_date)) 
-
+          
           tc <- tc %>%
             dplyr::select(-is_wbg, -coincidence_is_wbg, -country_name, -trip_start_date, -trip_end_date) 
           # Reorder columns
@@ -1669,13 +1675,13 @@ server <- function(input, output, session) {
   
   # Play    
   observeEvent(timer(),{
-      td <- this_date()
-      dr <- date_range()
-      if(td >= max(dr)){
-        this_date(dr[1])
-      } else {
-        this_date(td + 1)
-      }
+    td <- this_date()
+    dr <- date_range()
+    if(td >= max(dr)){
+      this_date(dr[1])
+    } else {
+      this_date(td + 1)
+    }
   })
   observeEvent(input$play,{
     # Reset the this_date object to beginning of date range
@@ -1699,7 +1705,7 @@ server <- function(input, output, session) {
     }
     
     
-    })
+  })
   
   observeEvent(this_date(),{
     if(input$play){
@@ -1748,7 +1754,7 @@ server <- function(input, output, session) {
         arrange(trip_start_date)
       
       # Create some more columns
-     
+      
       
       # Join the files to the df data
       if(nrow(df) > 0){
@@ -1759,7 +1765,7 @@ server <- function(input, output, session) {
           mutate(meeting_with = ifelse(is.na(meeting_with), '', meeting_with)) %>%
           mutate(event = ifelse(short_name != meeting_with &
                                   meeting_with != '' &
-                                short_name != '',
+                                  short_name != '',
                                 paste0(short_name, ' with ', meeting_with),
                                 '')) %>%
           mutate(event = Hmisc::capitalize(event)) %>%
@@ -1813,7 +1819,7 @@ server <- function(input, output, session) {
       } else {
         df <- df[0,]
       }
-
+      
       
       
       
@@ -1821,7 +1827,7 @@ server <- function(input, output, session) {
         h2(format(td, '%B %d, %Y'), align = 'center'),
         style = 'text-align: center; padding-bottom: 20px;'
       )
-
+      
       l <- leafletProxy('leafy_play') %>%
         clearMarkers() %>%
         clearControls() %>%
@@ -1975,7 +1981,7 @@ server <- function(input, output, session) {
               to = destination_file,
               overwrite = TRUE)
     message('Just copied the cropped image to ', destination_file)
-
+    
     
     # Having updated the www folder, we can now uppdate the database
     message('--- updating the database')
@@ -2013,7 +2019,7 @@ server <- function(input, output, session) {
     }
   })
   addResourcePath("www", resourcepath)
-
+  
   output$photo_editor <- renderUI({
     
     temp_name <- paste0('www/temp', Sys.time(), '.png')
@@ -2030,7 +2036,7 @@ server <- function(input, output, session) {
         file.remove(paste0('www/', delete_old_ones[i]))
       }
     }
-
+    
     this_time <- as.numeric(Sys.time())
     zz <- -1# *(20000000000 - this_time - app_start_time)
     
@@ -2112,13 +2118,15 @@ server <- function(input, output, session) {
       dplyr::select(short_name,
                     title,
                     organization,
-                    is_wbg)
+                    is_wbg) %>%
+      filter(short_name == input$photo_person)
     if(!is.null(df)){
-      
-      rhandsontable(df, #useTypes = TRUE,
-                    stretchH = 'all',
-                    # width = 1000, height = 100,
-                    rowHeaders = NULL)
+      if(nrow(df) > 0){
+        rhandsontable(df, #useTypes = TRUE,
+                      stretchH = 'all',
+                      # width = 1000, height = 100,
+                      rowHeaders = NULL)
+      }
     }
   })
   
@@ -2162,7 +2170,7 @@ server <- function(input, output, session) {
     }
   })
   
-
+  
   
   # Observe the submissions of the hands on tables and send info to database
   # (not finished)
@@ -2187,7 +2195,7 @@ server <- function(input, output, session) {
     # For now, not doing anything with the data
     message('--- Nothing actually being changed in the database. ')
   })
-
+  
   
   # Add data table
   output$add_table <- renderRHandsontable({
@@ -2218,7 +2226,7 @@ server <- function(input, output, session) {
         hot_col(col = 'Agenda', type = 'autocomplete', source = clean_vector(trip_meetings$agenda), strict = FALSE) %>%
         hot_cols(colWidths = 90)
       
-        
+      
       
     }
   })
@@ -2230,10 +2238,10 @@ server <- function(input, output, session) {
     df <- hot_to_r(input$add_table)
     upload_results <- 
       upload_raw_data(pool = GLOBAL_DB_POOL,
-                    data = df,
-                    logged_in_user_id = 1,
-                    return_upload_results = TRUE)
-
+                      data = df,
+                      logged_in_user_id = 1,
+                      return_upload_results = TRUE)
+    
     # Update the session
     updated_data <- db_to_memory(pool = GLOBAL_DB_POOL, return_list = TRUE)
     # Fix the dates
@@ -2251,9 +2259,9 @@ server <- function(input, output, session) {
     vals$view_trips_and_meetings <- updated_data$view_trips_and_meetings
     vals$view_trip_coincidences <- updated_data$view_trip_coincidences
     vals$upload_results <- upload_results
-
+    
   })
-
+  
   # Observe the add table action button and give a menu
   observeEvent(input$action_add, {
     showModal(
