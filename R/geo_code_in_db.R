@@ -18,10 +18,10 @@ get_geo <- function(city_id,q)
   return (df)
 }
 
-geo_code_in_db <- function(pool)
+geo_code_in_db <- function()
 {
-  conn <- poolCheckout(pool)
-
+  #conn <- poolCheckout(pool)
+  conn <- db_get_connection()
   cities <- dbGetQuery(conn,"select city_id,city_name,country_name from pd_wbgtravel.cities where latitude is null or longitude is null or ceiling(latitude*100) = floor(latitude*100) or ceiling(longitude*100)=floor(longitude*100)")
   
   geo_cities <- NULL
@@ -45,7 +45,7 @@ geo_code_in_db <- function(pool)
     }
   }
   
-  poolReturn(conn)
-  
+  #poolReturn(conn)
+  db_release_connection(conn)
   return (geo_cities)
 }
