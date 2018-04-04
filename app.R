@@ -115,10 +115,6 @@ sidebar <- dashboardSidebar(
       tabName="edit_data",
       icon=icon("pencil")),
     menuItem(
-      text="Add data",
-      tabName="add_data",
-      icon=icon("plus")),
-    menuItem(
       text = 'About',
       tabName = 'about',
       icon = icon("cog", lib = "glyphicon")),
@@ -333,25 +329,31 @@ The dashboard was originally developed as a part of activities under the <a href
     tabItem(tabName = 'upload_data',
             fluidPage(
               fluidRow(
-                column(12,
-                       h3('Upload your own data to the dashboard'),
-                       p('You can upload your own data, which will be geocoded, formatted, and then integrated into the dashboard. To do see, follow the instructions to the left. If you want a sample data set (with the format for upload), click one of the button to the right.')),
-                column(6,
-                       h4('Upload data'),
+                column(12, align = 'center',
+                       p('You can upload your own data, which will be geocoded, formatted, and then integrated into the dashboard. You can manually enter data (left), bulk upload from a spreadsheet (center), or download sample data set in the bulk format (right).')),
+                column(4, align = 'center',
+                       h3('Manually add data'),
+                       helpText('Create a travel event manually by clicking the below button.'),
+                       actionButton('action_add', 'Add data',
+                                                    icon = icon('plus'))),
+                column(4, align = 'center',
+                       h3('Upload data'),
                        helpText('Upload a dataset from your computer. This should be either a .csv or .xls file.'),
                        fileInput('file1',
                                  '',
                                  accept=c('text/csv',
                                           'text/comma-separated-values,text/plain',
                                           '.csv'))),
-                column(6,
-                       h4('Download sample dataset'),
-                       helpText('Click the "Download" button to get a sample dataset in the correct upload format.'),
+                column(4, align = 'center',
+                       h3('Download sample dataset'),
+                       helpText('Click the "Download" button to get a sample dataset in the correct bulk upload format.'),
                        downloadButton("download_correct", "Download correct format"))),
               uiOutput('upload_ui'),
+              # Results from most recent upload (bulk or manual)
               fluidRow(
-                h3(textOutput('your_data_text')),
-                DT::dataTableOutput('uploaded_table')
+                column(12, align = 'center',
+                       h3(textOutput('your_data_text')),
+                       DT::dataTableOutput('uploaded_table'))
               )
               
             )),
@@ -416,28 +418,7 @@ The dashboard was originally developed as a part of activities under the <a href
                                      )
                                    )))
             )
-    ),
-    tabItem(tabName = 'add_data',
-            fluidPage(
-              fluidRow(
-                column(12, align = 'center',
-                       h1('Add data'))
-              ),
-              fluidRow(
-                rHandsontableOutput('add_table')
-              ),
-              fluidRow(
-                column(12, align = 'center',
-                       actionButton('add_table_submit',
-                                    'Submit new data',
-                                    icon = icon('check')))
-              ),
-              fluidRow(
-                column(12, align = 'center',
-                       h2(textOutput('add_results_text')),
-                       tableOutput('add_results_table'))
-              )
-            ))
+    )
   )
 )
 
@@ -614,11 +595,10 @@ server <- function(input, output, session) {
       x <- uploaded()
       if(is.null(x)){
         fluidRow(
-          column(8,
+          column(12, align = 'center',
                  helpText(paste0('Your uploaded data should be in the following format')),
                  h4('Correct format'),
-                 tableOutput('column_table_correct')),
-          column(4)
+                 tableOutput('column_table_correct'))
         )
       } else {
         fluidPage(
@@ -2248,9 +2228,6 @@ server <- function(input, output, session) {
     }
   })
   
-  add_results <- reactiveValues(x = data.frame())
-  add_results_counter <- reactiveVal(value = 0)
-  
   # Observe the confirmation of an add and process it
   observeEvent(input$add_table_submit, {
     message('A manual addition to the database was submitted.')
@@ -2261,29 +2238,50 @@ server <- function(input, output, session) {
                     data = df,
                     logged_in_user_id = 1,
                     return_upload_results = TRUE)
-    print('UPLOAD RESULTS LOOK LIKE')
-    print(upload_results)
-    add_results$x <- upload_results
-    n <- add_results_counter()
-    add_results_counter(n +1)
-    message('ADD RESULTS COUNTER IS ', add_results_counter())
+
+    # Update the session
+    updated_data <- db_to_memory(pool = GLOBAL_DB_POOL, return_list = TRUE)
+    # Fix the dates
+    upload_results$Start <- fix_date(upload_results$Start)
+    upload_results$End <- fix_date(upload_results$End)
+    print('upload_results looks like')
+    print(head(upload_results))
+    vals$events <- updated_data$events
+    vals$cities <- updated_data$cities
+    vals$people <- updated_data$people
+    # vals$trip_meetings <- updated_data$trip_meetings
+    vals$trips <- updated_data$trips
+    # vals$venue_events <- updated_data$venue_events
+    # vals$venue_types <- updated_data$venue_types
+    vals$view_trips_and_meetings <- updated_data$view_trips_and_meetings
+    vals$view_trip_coincidences <- updated_data$view_trip_coincidences
+    vals$upload_results <- upload_results
 
   })
-  
-  output$add_results_text <- renderText({
-    n <- add_results_counter()
-    if(n > 0){
-      'Data add results'
-    } else {
-      ''
-    }
+
+  # Observe the add table action button and give a menu
+  observeEvent(input$action_add, {
+    showModal(
+      modalDialog(
+        title = 'Manually add data',
+        size = 'l',
+        easyClose = TRUE,
+        fade = TRUE,
+        fluidPage(
+          fluidRow(
+            rHandsontableOutput('add_table')
+          ),
+          fluidRow(
+            column(12, align = 'center',
+                   actionButton('add_table_submit',
+                                'Submit new data',
+                                icon = icon('check')))
+          )
+        )
+      )
+    )
+    
   })
-  
-  output$add_results_table <- renderTable({
-    x <- add_results$x
-    x
-  })
-  
   
   
   # On session end, close

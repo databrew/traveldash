@@ -29,23 +29,7 @@ upload_raw_data <- function(pool,
   data[,unspecified_cols] <- NA #Set missing to NA
   data <- data[,valid_cols] #Get the dataset, including missing cols in the expected order and SQL data type definition specified below
   
-  # Define function for fixing date issues
-  # necessary since people's spreadsheet programs may do some inconsistent formatting
   
-  fix_date <- function(x){
-    if(!is.Date(x)){
-      if(any(grepl('/', x, fixed = TRUE))){
-        out <- as.Date(x, format = '%m/%d/%Y')
-      } else if(any(grepl('-', x, fixed = TRUE))){
-        out <- as.Date(x)
-      } else {
-        out <- openxlsx::convertToDate(x)
-      }
-    } else {
-      out <- x
-    }
-    return(out)
-  }
   
   data$Start <- fix_date(data$Start)
   data$End <- fix_date(data$End)
