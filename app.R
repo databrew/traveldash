@@ -1245,7 +1245,7 @@ server <- function(input, output, session) {
       
       mutate(event = ifelse(trimws(event) == 'With', '', event))
     names(x) <- Hmisc::capitalize(names(x))
-    x$Date <- factor(x$Date, levels = unique(x$Date))
+    x$Date <- factor(x$Date, levels = sort(unique(x$Date)))
     
     # prettify(x,
     #          download_options = FALSE) #%>%
@@ -2132,23 +2132,52 @@ server <- function(input, output, session) {
   
   # Trips edit table
   output$hot_trips <- renderRHandsontable({
-    df <- trips %>%
-      dplyr::select(person_id,
-                    city_id,
+    
+    df <- view_all_trips_people_meetings_venues %>%
+      dplyr::select(short_name,
+                    organization,
+                    title,
+                    city_name,
+                    country_name,
                     trip_start_date,
                     trip_end_date,
-                    trip_group) %>%
-      left_join(cities %>% dplyr::select(city_id, city_name), by = 'city_id') %>%
-      left_join(people %>% dplyr::select(person_id, short_name), by = 'person_id') %>%
-      dplyr::select(-city_id, -person_id)
+                    trip_group,
+                    venue_name, 
+                    meeting_with,
+                    agenda) %>%
+      dplyr::rename(Person = short_name,
+                    Organization = organization,
+                    Title = title,
+                    City= city_name,
+                    Country = country_name,
+                    Start = trip_start_date,
+                    End = trip_end_date,
+                    `Trip Group` = trip_group,
+                    Venue = venue_name,
+                    Meeting = meeting_with,
+                    Agenda = agenda)
+    
     if(!is.null(df)){
-      rhandsontable(df, useTypes = TRUE,
-                    stretchH = 'all')
+      rhandsontable(df, 
+                    stretchH = 'all',
+                    # width = 1000, height = 300,
+                    rowHeaders = NULL) %>%
+        hot_col(col = "Person", type = "autocomplete", source = clean_vector(view_all_trips_people_meetings_venues$short_name), strict = FALSE)  %>%
+        hot_col(col = "Organization", type = "autocomplete", source = clean_vector(view_all_trips_people_meetings_venues$organization), strict = FALSE)  %>%
+        hot_col(col = "Title", type = "autocomplete", source = clean_vector(view_all_trips_people_meetings_venues$title), strict = FALSE)  %>%
+        hot_col(col = "City", type = "autocomplete", source = clean_vector(view_all_trips_people_meetings_venues$city_name), strict = FALSE)  %>%
+        hot_col(col = "Country", type = "autocomplete", source = clean_vector(view_all_trips_people_meetings_venues$country_name), strict = FALSE)  %>%
+        hot_col(col = "Trip Group", type = "autocomplete", source = clean_vector(view_all_trips_people_meetings_venues$trip_group), strict = FALSE)  %>%
+        hot_col(col = "Venue", type = "autocomplete", source = clean_vector(view_all_trips_people_meetings_venues$venue_name), strict = FALSE)  %>%
+        hot_col(col = "Meeting", type = "autocomplete", source = clean_vector(view_all_trips_people_meetings_venues$meeting_with), strict = FALSE)  %>%
+        hot_col(col = "Agenda", type = "autocomplete", source = clean_vector(view_all_trips_people_meetings_venues$agenda), strict = FALSE)  
+      
     }
   })
   
   # Events edit table
   output$hot_venue_events <- renderRHandsontable({
+    
     df <- venue_events %>%
       dplyr::select(venue_type_id,
                     venue_city_id,
@@ -2185,6 +2214,9 @@ server <- function(input, output, session) {
     message('Edits to the trips hands-on-table were submitted.')
     # Get the data
     df <- hot_to_r(input$hot_trips)
+    print('DF IS')
+    print(head(df))
+    save(df, file = '~/Desktop/df.RData')
     # For now, not doing anything with the data
     message('--- Nothing actually being changed in the database. ')
   })
