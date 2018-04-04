@@ -376,6 +376,7 @@ The dashboard was originally developed as a part of activities under the <a href
                                               h1('Trips'))
                                      ),
                                      fluidRow(
+                                       helpText('Under construction. The upload_format view will go here.'),
                                        rHandsontableOutput("hot_trips")
                                      ),
                                      fluidRow(
@@ -385,18 +386,18 @@ The dashboard was originally developed as a part of activities under the <a href
                                                            icon = icon('check')))
                                      )
                                    )),
-                          tabPanel("Events",
+                          tabPanel("Venues & Events",
                                    fluidPage(
                                      fluidRow(
                                        column(12, align = 'center',
-                                              h1('Events'))
+                                              h1('Venues & Events'))
                                      ),
                                      fluidRow(
-                                       rHandsontableOutput("hot_events")
+                                       rHandsontableOutput("hot_venue_events")
                                      ),
                                      fluidRow(
                                        column(12, align = 'center',
-                                              actionButton('hot_events_submit',
+                                              actionButton('hot_venue_events_submit',
                                                            'Submit changes',
                                                            icon = icon('check')))
                                      )
@@ -2139,17 +2140,25 @@ server <- function(input, output, session) {
   })
   
   # Events edit table
-  output$hot_events <- renderRHandsontable({
+  output$hot_venue_events <- renderRHandsontable({
     df <- venue_events %>%
-      dplyr::select(event_title,
+      dplyr::select(venue_type_id,
+                    venue_city_id,
+                    event_title,
                     event_start_date,
                     event_end_date,
-                    venue_city_id) %>%
+                    display_flag) %>%
       left_join(cities %>% dplyr::select(city_id, city_name), by = c('venue_city_id' = 'city_id')) %>%
       dplyr::select(-venue_city_id)
     if(!is.null(df)){
-      rhandsontable(df, useTypes = TRUE,
-                    stretchH = 'all')
+      rhandsontable(df, 
+                    stretchH = 'all',
+                    # width = 1000, height = 300,
+                    rowHeaders = NULL) %>%
+        hot_col(col = "venue_type_id", type = "autocomplete", source = clean_vector(venue_events$venue_type_id), strict = FALSE)  %>%
+        hot_col(col = "city_name", type = "autocomplete", source = clean_vector(cities$city_name), strict = FALSE)  %>%
+        hot_col(col = "event_title", type = "autocomplete", source = clean_vector(venue_events$event_title), strict = FALSE)  %>%
+        hot_col(col = "display_flag", type = "checkbox") 
     }
   })
   
@@ -2171,10 +2180,10 @@ server <- function(input, output, session) {
     # For now, not doing anything with the data
     message('--- Nothing actually being changed in the database. ')
   })
-  observeEvent(input$hot_events_submit, {
-    message('Edits to the events hands-on-table were submitted.')
+  observeEvent(input$hot_venue_events_submit, {
+    message('Edits to the venue_events hands-on-table were submitted.')
     # Get the data
-    df <- hot_to_r(input$hot_events)
+    df <- hot_to_r(input$hot_venue_events)
     # For now, not doing anything with the data
     message('--- Nothing actually being changed in the database. ')
   })
