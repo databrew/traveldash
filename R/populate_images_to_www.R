@@ -1,9 +1,24 @@
-populate_images_to_www <- function(pool){
-  conn <- poolCheckout(pool)
+#populate_images_to_www <- function(){
+populate_images_to_www <- function()
+{
+  #conn <- poolCheckout(pool)
+  conn <- db_get_connection()
   
   start_time <- Sys.time()
   
-  images <- dbGetQuery(conn,paste0("select person_id,short_name,image_data from pd_wbgtravel.people where image_data is not null;"))
+  headshots_path <- "www/headshots/circles"
+  images_on_disk <- list.files(path=headshots_path,pattern="*.png")
+  sql_names <- ""
+  
+  if (length(images_on_disk)>0)
+  {
+    image_names_in_db <- tolower(images_on_disk)
+    image_names_in_db <- gsub(".png","",image_names_in_db)
+    image_names_in_db <- paste0(paste0("'",image_names_in_db,"'"),collapse=",")
+    sql_names <- paste0(" and lower(short_name) not in (",image_names_in_db,") ")
+  }
+  
+  images <- dbGetQuery(conn,paste0("select person_id,short_name,image_data from pd_wbgtravel.people where image_data is not null ",sql_names,";"))
   
   images[["binaries"]] <- lapply(images$image_data,postgresqlUnescapeBytea)
   images[["person_image"]] <- lapply(images$binaries,function(x){
@@ -12,8 +27,6 @@ populate_images_to_www <- function(pool){
 
   if(nrow(images) > 0){
     images$file_name <- paste0(images$short_name, '.png')
-    headshots_path <- "www/headshots/circles"
-    images_on_disk <- list.files(path=headshots_path,pattern="*.png")
     
     # If an image is in db and not on disk, put on disk
     for (i in 1:nrow(images)){
@@ -39,5 +52,6 @@ populate_images_to_www <- function(pool){
     message('No image_data in the people table. Skipping.')
   }
   
-  poolReturn(conn)
+  #poolReturn(conn)
+  db_release_connection(conn)
 }

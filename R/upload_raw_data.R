@@ -12,8 +12,7 @@
 #' @export
 
 #logged_in_user_id=0 is SYSTEM account -- this should not be left as default
-upload_raw_data <- function(pool,
-                            data,
+upload_raw_data <- function(data,
                             logged_in_user_id,
                             return_upload_results = TRUE){
   print('Debug Start: in upload_raw_data()')
@@ -92,7 +91,8 @@ upload_raw_data <- function(pool,
                  ID="varchar(50)")
   
   # Create the connection
-  conn <- poolCheckout(pool)
+  #conn <- poolCheckout(pool)
+  conn <- db_get_connection()
   
   # Drop a previous temporary table if it's around
   dbSendQuery(conn,"drop table if exists public._temp_travel_uploads;") 
@@ -107,7 +107,8 @@ upload_raw_data <- function(pool,
   # Drop the temporary table
   #dbSendQuery(conn,"drop table if exists public._temp_travel_uploads;") 
   
-  poolReturn(conn)
+  #poolReturn(conn)
+  db_release_connection(conn)
   
   # Geocode the cities table if it has been changed
   geo_results <- geo_code_in_db(pool = pool)

@@ -665,13 +665,13 @@ server <- function(input, output, session) {
     message('new data has ', nrow(new_data), ' rows')
     # Upload the new data to the database
     upload_results <-
-      upload_raw_data(pool = GLOBAL_DB_POOL,
-                      data = new_data,
+      upload_raw_data(data = new_data,
                       logged_in_user_id = 1,
                       return_upload_results = TRUE)
     message('Uploaded raw data')
     # Update the session
-    updated_data <- db_to_memory(pool = GLOBAL_DB_POOL, return_list = TRUE)
+    warning('need to depricate db_to_memory: Line 673 in app.R')
+    updated_data <- db_to_memory(return_list = TRUE)
     vals$events <- updated_data$events
     vals$cities <- updated_data$cities
     vals$people <- updated_data$people
@@ -684,22 +684,22 @@ server <- function(input, output, session) {
     vals$upload_results <- upload_results
   })
   
-  # After modification is confirmed, update the data stores
-  observeEvent(input$submit2, {
-    # THIS NEEDS CHANGES
-    message('Modification confirmed, geocoding and overwriting data.')
-    new_data <- vals$events
-    # Geocode if applicable
-    new_data <- geo_code(new_data)
-    # Update the underlying data
-    # Update the underlying data
-    write_table(connection_object = GLOBAL_DB_POOL,
-                table = 'dev_events',
-                schema = 'pd_wbgtravel',
-                value = new_data,
-                use_sqlite = use_sqlite)
-    message('Ovewrote the database')
-  })
+  # # After modification is confirmed, update the data stores
+  # observeEvent(input$submit2, {
+  #   # THIS NEEDS CHANGES
+  #   message('Modification confirmed, geocoding and overwriting data.')
+  #   new_data <- vals$events
+  #   # Geocode if applicable
+  #   new_data <- geo_code(new_data)
+  #   # Update the underlying data
+  #   # Update the underlying data
+  #   write_table(connection_object = GLOBAL_DB_POOL,
+  #               table = 'dev_events',
+  #               schema = 'pd_wbgtravel',
+  #               value = new_data,
+  #               use_sqlite = use_sqlite)
+  #   message('Ovewrote the database')
+  # })
   
   
   submit_text <- reactiveVal(value = '')
@@ -2015,7 +2015,7 @@ server <- function(input, output, session) {
     # Having updated the www folder, we can now uppdate the database
     message('--- updating the database')
     Sys.sleep(0.2)
-    populate_images_from_www(pool = GLOBAL_DB_POOL)
+    populate_image_from_www(name=person)
     # # Update the reactive object
     # message('--- updating the reactive in-session object')
     # images <- get_images(pool = pool)
@@ -2257,8 +2257,7 @@ server <- function(input, output, session) {
     # Get the data
     df <- hot_to_r(input$add_table)
     upload_results <- 
-      upload_raw_data(pool = GLOBAL_DB_POOL,
-                    data = df,
+      upload_raw_data(data = df,
                     logged_in_user_id = 1,
                     return_upload_results = TRUE)
     print('UPLOAD RESULTS LOOK LIKE')
@@ -2289,7 +2288,8 @@ server <- function(input, output, session) {
   # On session end, close
   session$onSessionEnded(function() {
     message('Session ended. Closing the connection pool.')
-    tryCatch(pool::poolClose(GLOBAL_DB_POOL), error = function(e) {message('')})
+    #tryCatch(pool::poolClose(GLOBAL_DB_POOL), error = function(e) {message('')})
+    tryCatch(db_disconnect(), error = function(e) {message('')})
     if(file.exists('www/temp.png')){
       file.remove('www/temp.png')
     }
