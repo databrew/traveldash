@@ -2214,11 +2214,25 @@ server <- function(input, output, session) {
     message('Edits to the trips hands-on-table were submitted.')
     # Get the data
     df <- hot_to_r(input$hot_trips)
-    print('DF IS')
-    print(head(df))
-    save(df, file = '~/Desktop/df.RData')
     # For now, not doing anything with the data
-    message('--- Nothing actually being changed in the database. ')
+    message('--- Uploading new trips data ')
+    upload_results <- 
+      upload_raw_data(pool = GLOBAL_DB_POOL,
+                      data = df,
+                      logged_in_user_id = 1,
+                      return_upload_results = TRUE)
+    
+    # Update the session
+    updated_data <- db_to_memory(pool = GLOBAL_DB_POOL, return_list = TRUE)
+    vals$events <- updated_data$events
+    vals$cities <- updated_data$cities
+    vals$people <- updated_data$people
+    vals$trips <- updated_data$trips
+    vals$view_trips_and_meetings <- updated_data$view_trips_and_meetings
+    vals$view_trip_coincidences <- updated_data$view_trip_coincidences
+    # vals$upload_results <- upload_results
+    message('--- Done uploading new trips data.')
+    
   })
   observeEvent(input$hot_venue_events_submit, {
     message('Edits to the venue_events hands-on-table were submitted.')
