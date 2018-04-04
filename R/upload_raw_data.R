@@ -109,7 +109,6 @@ upload_raw_data <- function(data,
   
   #poolReturn(conn)
   db_release_connection(conn)
-  
   # Geocode the cities table if it has been changed
   geo_results <- geo_code_in_db(pool = pool)
   if (!is.null(geo_results) && sum(geo_results$error)>0)
