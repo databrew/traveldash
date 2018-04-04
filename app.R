@@ -2211,8 +2211,7 @@ server <- function(input, output, session) {
     df <- hot_to_r(input$hot_people)
     # For now, not doing anything with the data
     message('--- Nothing actually being changed in the database. Waiting on function from Soren.')
-    upload_edited_people_data(data = df,
-                              pool = GLOBAL_DB_POOL)
+    upload_edited_people_data(data = df)
     
     # Update the session
     updated_data <- db_to_memory(return_list = TRUE)
@@ -2253,8 +2252,7 @@ server <- function(input, output, session) {
     df <- hot_to_r(input$hot_venue_events)
     # For now, not doing anything with the data
     message('--- Nothing actually being changed in the database. Waiting on function from Soren.')
-    upload_edited_venue_events_data(data = df,
-                              pool = GLOBAL_DB_POOL)
+    upload_edited_venue_events_data(data = df)
     
     # Update the session
     updated_data <- db_to_memory(return_list = TRUE)
