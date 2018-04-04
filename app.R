@@ -2269,7 +2269,6 @@ server <- function(input, output, session) {
     # Get the data
     df <- hot_to_r(input$add_table)
     upload_results <- 
-<<<<<<< HEAD
       upload_raw_data(data = df,
                     logged_in_user_id = 1,
                     return_upload_results = TRUE)
@@ -2289,14 +2288,13 @@ server <- function(input, output, session) {
     } else {
       ''
     }
-=======
-      upload_raw_data(pool = GLOBAL_DB_POOL,
-                      data = df,
+
+    upload_raw_data(data = df,
                       logged_in_user_id = 1,
                       return_upload_results = TRUE)
     
     # Update the session
-    updated_data <- db_to_memory(pool = GLOBAL_DB_POOL, return_list = TRUE)
+    updated_data <- db_to_memory(return_list = TRUE)
     # Fix the dates
     upload_results$Start <- fix_date(upload_results$Start)
     upload_results$End <- fix_date(upload_results$End)
@@ -2313,7 +2311,6 @@ server <- function(input, output, session) {
     vals$view_trip_coincidences <- updated_data$view_trip_coincidences
     vals$upload_results <- upload_results
     
->>>>>>> 8122e694b20876a8c12cd631091c02de060f8041
   })
   
   # Observe the add table action button and give a menu

@@ -110,7 +110,9 @@ upload_raw_data <- function(data,
   #poolReturn(conn)
   db_release_connection(conn)
   # Geocode the cities table if it has been changed
-  geo_results <- geo_code_in_db(pool = pool)
+  #geo_results <- geo_code_in_db(pool = pool)
+  geo_results <- geo_code_in_db()
+  
   if (!is.null(geo_results) && sum(geo_results$error)>0)
   {
     STATUS <- paste0(">ERROR< No geo-coordinates for: ",geo_results$query[geo_results$error==T])
