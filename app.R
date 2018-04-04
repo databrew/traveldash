@@ -2208,7 +2208,19 @@ server <- function(input, output, session) {
     # Get the data
     df <- hot_to_r(input$hot_people)
     # For now, not doing anything with the data
-    message('--- Nothing actually being changed in the database. ')
+    message('--- Nothing actually being changed in the database. Waiting on function from Soren.')
+    upload_edited_people_data(data = df,
+                              pool = GLOBAL_DB_POOL)
+    
+    # Update the session
+    updated_data <- db_to_memory(pool = GLOBAL_DB_POOL, return_list = TRUE)
+    vals$events <- updated_data$events
+    vals$cities <- updated_data$cities
+    vals$people <- updated_data$people
+    vals$trips <- updated_data$trips
+    vals$view_trips_and_meetings <- updated_data$view_trips_and_meetings
+    vals$view_trip_coincidences <- updated_data$view_trip_coincidences
+    
   })
   observeEvent(input$hot_trips_submit, {
     message('Edits to the trips hands-on-table were submitted.')
@@ -2239,7 +2251,19 @@ server <- function(input, output, session) {
     # Get the data
     df <- hot_to_r(input$hot_venue_events)
     # For now, not doing anything with the data
-    message('--- Nothing actually being changed in the database. ')
+    message('--- Nothing actually being changed in the database. Waiting on function from Soren.')
+    upload_edited_venue_events_data(data = df,
+                              pool = GLOBAL_DB_POOL)
+    
+    # Update the session
+    updated_data <- db_to_memory(pool = GLOBAL_DB_POOL, return_list = TRUE)
+    vals$events <- updated_data$events
+    vals$cities <- updated_data$cities
+    vals$people <- updated_data$people
+    vals$trips <- updated_data$trips
+    vals$view_trips_and_meetings <- updated_data$view_trips_and_meetings
+    vals$view_trip_coincidences <- updated_data$view_trip_coincidences
+    
   })
   
   
