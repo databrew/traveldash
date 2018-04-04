@@ -23,7 +23,6 @@ upload_raw_data <- function(pool,
   data_cols <- names(data)
   valid_cols <- c("Person","Title","Organization","City","Country","Start","End","Trip Group","Venue","Meeting","Agenda","CMD","ID")
   
-  if (!any(length(data_cols) %in% c(10,12))) stop("Data upload row mismatch")
   if (!(all(data_cols %in% valid_cols) || all(data_cols[1:10]==valid_cols[1:10]))) stop(paste0("Data upload columns mismatch: ",paste0(data_cols, collapse=",")))
   
   unspecified_cols <- setdiff(valid_cols,data_cols) #For optional columns (or having added new Title col and client uses old template)

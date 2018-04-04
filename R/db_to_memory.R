@@ -15,7 +15,7 @@ db_to_memory <- function(pool,
   # tables <- unique(dbListTables(pool))
   tables <- c('cities', 
               'people',
-              # 'trip_meetings', 
+              'trip_meetings',
               'trips',
               'user_action_log',
               'venue_events',

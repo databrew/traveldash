@@ -30,6 +30,7 @@ library(timevis)
 library(lubridate)
 library(readxl)
 library(htmlTable)
+library(rhandsontable)
 
 message('############ Done with package loading')
 #setwd("C:/Users/SHeitmann/WBG/Sinja Buri - FIG SSA MEL/MEL Program Operations/Knowledge Products/Dashboards & Viz/WBG Travel/GitHub/traveldash")
@@ -358,5 +359,13 @@ oleksiy_date <- Vectorize(oleksiy_date)
 # }
 oleksiy_name <- function(name){return(name)}
 oleksiy_name <- Vectorize(oleksiy_name)
+
+# Define function for sorting, removing NAs, and removing '' from vectors
+clean_vector <- function(x){
+  x <- x[!is.na(x)]
+  x <- x[x != '']
+  x <- sort(unique(x))
+  return(x)
+}
 
 message('############ Done with global.R')

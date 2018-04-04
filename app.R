@@ -99,17 +99,25 @@ sidebar <- dashboardSidebar(
       tabName="timeline",
       icon=icon("calendar")),
     menuItem(
+      text="Upload photos",
+      tabName="upload_photos",
+      icon=icon("camera")),
+    menuItem(
       text="Upload data",
       tabName="upload_data",
       icon=icon("upload")),
     menuItem(
-      text="Upload photos",
-      tabName="upload_photos",
-      icon=icon("camera")),
-    # menuItem(
-    #   text="Edit data",
-    #   tabName="edit_data",
-    #   icon=icon("edit")),
+      text="Download data",
+      tabName="download_data",
+      icon=icon("download")),
+    menuItem(
+      text="Edit data",
+      tabName="edit_data",
+      icon=icon("pencil")),
+    menuItem(
+      text="Add data",
+      tabName="add_data",
+      icon=icon("plus")),
     menuItem(
       text = 'About',
       tabName = 'about',
@@ -346,6 +354,89 @@ The dashboard was originally developed as a part of activities under the <a href
                 DT::dataTableOutput('uploaded_table')
               )
               
+            )),
+    tabItem(tabName = 'download_data',
+            fluidPage(
+              fluidRow(
+                column(12, align = 'center',
+                       h1('Download data'))
+              ),
+              fluidRow(helpText('This is only a placeholder. Eventually, the "view" for downloads will go here.'))
+            )),
+    tabItem(tabName = 'edit_data',
+            fluidPage(
+              fluidRow(helpText('The below is a placeholder only. The back-end is not yet set-up to handle edits.')),
+              tabsetPanel(type = "tabs",
+                          tabPanel("People",
+                                   fluidPage(
+                                     fluidRow(
+                                       column(12, align = 'center',
+                                              h1('People'))
+                                     ),
+                                     fluidRow(
+                                       rHandsontableOutput("hot_people")
+                                     ),
+                                     fluidRow(
+                                       column(12, align = 'center',
+                                              actionButton('hot_people_submit',
+                                                           'Submit changes',
+                                                           icon = icon('check')))
+                                     )
+                                   )),
+                          tabPanel("Trips",
+                                   fluidPage(
+                                     fluidRow(
+                                       column(12, align = 'center',
+                                              h1('Trips'))
+                                     ),
+                                     fluidRow(
+                                       rHandsontableOutput("hot_trips")
+                                     ),
+                                     fluidRow(
+                                       column(12, align = 'center',
+                                              actionButton('hot_trips_submit',
+                                                           'Submit changes',
+                                                           icon = icon('check')))
+                                     )
+                                   )),
+                          tabPanel("Events",
+                                   fluidPage(
+                                     fluidRow(
+                                       column(12, align = 'center',
+                                              h1('Events'))
+                                     ),
+                                     fluidRow(
+                                       rHandsontableOutput("hot_events")
+                                     ),
+                                     fluidRow(
+                                       column(12, align = 'center',
+                                              actionButton('hot_events_submit',
+                                                           'Submit changes',
+                                                           icon = icon('check')))
+                                     )
+                                   )))
+            )
+    ),
+    tabItem(tabName = 'add_data',
+            fluidPage(
+              fluidRow(
+                column(12, align = 'center',
+                       h1('Add data'))
+              ),
+              fluidRow(
+                rHandsontableOutput('add_table')
+              ),
+              fluidRow(
+                column(12, align = 'center',
+                       actionButton('add_table_submit',
+                                    'Submit new data',
+                                    icon = icon('check')))
+              ),
+              fluidRow(
+                column(12, align = 'center',
+                       h2(textOutput('add_results_text')),
+                       tableOutput('add_results_table'))
+              )
             ))
   )
 )
@@ -2049,6 +2140,151 @@ server <- function(input, output, session) {
       textInput(inputId='img_url', 'Image Url',value='https://petapixel.com/assets/uploads/2017/11/Donald_Trump_official_portraitt-640x800.jpg')
     }
   })
+  
+  # People edit table
+  output$hot_people <- renderRHandsontable({
+    df <- people %>%
+      dplyr::select(short_name,
+                    title,
+                    organization,
+                    sub_organization,
+                    is_wbg)
+    if(!is.null(df)){
+      rhandsontable(df, useTypes = TRUE,
+                    stretchH = 'all')
+    }
+  })
+  
+  # Trips edit table
+  output$hot_trips <- renderRHandsontable({
+    df <- trips %>%
+      dplyr::select(person_id,
+                    city_id,
+                    trip_start_date,
+                    trip_end_date,
+                    trip_group) %>%
+      left_join(cities %>% dplyr::select(city_id, city_name), by = 'city_id') %>%
+      left_join(people %>% dplyr::select(person_id, short_name), by = 'person_id') %>%
+      dplyr::select(-city_id, -person_id)
+    if(!is.null(df)){
+      rhandsontable(df, useTypes = TRUE,
+                    stretchH = 'all')
+    }
+  })
+  
+  # Events edit table
+  output$hot_events <- renderRHandsontable({
+    df <- venue_events %>%
+      dplyr::select(event_title,
+                    event_start_date,
+                    event_end_date,
+                    venue_city_id) %>%
+      left_join(cities %>% dplyr::select(city_id, city_name), by = c('venue_city_id' = 'city_id')) %>%
+      dplyr::select(-venue_city_id)
+    if(!is.null(df)){
+      rhandsontable(df, useTypes = TRUE,
+                    stretchH = 'all')
+    }
+  })
+  
+
+  
+  # Observe the submissions of the hands on tables and send info to database
+  # (not finished)
+  observeEvent(input$hot_people_submit, {
+    message('Edits to the people hands-on-table were submitted.')
+    # Get the data
+    df <- hot_to_r(input$hot_people)
+    # For now, not doing anything with the data
+    message('--- Nothing actually being changed in the database. ')
+  })
+  observeEvent(input$hot_trips_submit, {
+    message('Edits to the trips hands-on-table were submitted.')
+    # Get the data
+    df <- hot_to_r(input$hot_trips)
+    # For now, not doing anything with the data
+    message('--- Nothing actually being changed in the database. ')
+  })
+  observeEvent(input$hot_events_submit, {
+    message('Edits to the events hands-on-table were submitted.')
+    # Get the data
+    df <- hot_to_r(input$hot_events)
+    # For now, not doing anything with the data
+    message('--- Nothing actually being changed in the database. ')
+  })
+
+  
+  # Add data table
+  output$add_table <- renderRHandsontable({
+    df <- data.frame(Person = as.character(NA),
+                     Organization = as.character(NA),
+                     Title = as.character(NA),
+                     City = as.character(NA),
+                     Country = as.character(NA),
+                     Start = as.Date(NA),
+                     End = as.Date(NA),
+                     `Trip Group` = as.character(NA),
+                     Venue = as.character(NA),
+                     Meeting = as.character(NA),
+                     Agenda = as.character(NA))
+    names(df) <- gsub('.', ' ', names(df), fixed = TRUE)
+    
+    
+    if(!is.null(df)){
+      rhandsontable(df, rowHeaders = NULL, width = 1000, height = 100) %>%
+        hot_col(col = "Person", type = "autocomplete", source = clean_vector(people$short_name), strict = FALSE) %>%
+        hot_col(col = "Organization", type = "autocomplete", source = clean_vector(people$organization), strict = FALSE) %>%
+        hot_col(col = 'Title', type = 'autocomplete', source = clean_vector(people$title), strict = FALSE) %>%
+        hot_col(col = 'City', type = 'autocomplete', source = clean_vector(cities$city_name), strict = FALSE) %>%
+        hot_col(col = 'Country', type = 'autocomplete', source = clean_vector(cities$country_name), strict = FALSE) %>%
+        hot_col(col = 'Trip Group', type = 'autocomplete', source = clean_vector(trips$trip_group), strict = FALSE) %>%
+        hot_col(col = 'Venue', type = 'autocomplete', source = clean_vector(venue_events$venue_name), strict = FALSE) %>%
+        hot_col(col = 'Meeting', type = 'autocomplete', source = clean_vector(people$short_name), strict = FALSE) %>%
+        hot_col(col = 'Agenda', type = 'autocomplete', source = clean_vector(trip_meetings$agenda), strict = FALSE) %>%
+        hot_cols(colWidths = 90)
+      
+        
+      
+    }
+  })
+  
+  add_results <- reactiveValues(x = data.frame())
+  add_results_counter <- reactiveVal(value = 0)
+  
+  # Observe the confirmation of an add and process it
+  observeEvent(input$add_table_submit, {
+    message('A manual addition to the database was submitted.')
+    # Get the data
+    df <- hot_to_r(input$add_table)
+    upload_results <- 
+      upload_raw_data(pool = GLOBAL_DB_POOL,
+                    data = df,
+                    logged_in_user_id = 1,
+                    return_upload_results = TRUE)
+    print('UPLOAD RESULTS LOOK LIKE')
+    print(upload_results)
+    add_results$x <- upload_results
+    n <- add_results_counter()
+    add_results_counter(n +1)
+    message('ADD RESULTS COUNTER IS ', add_results_counter())
+
+  })
+  
+  output$add_results_text <- renderText({
+    n <- add_results_counter()
+    if(n > 0){
+      'Data add results'
+    } else {
+      ''
+    }
+  })
+  
+  output$add_results_table <- renderTable({
+    x <- add_results$x
+    x
+  })
+  
+  
   
   # On session end, close
   session$onSessionEnded(function() {
