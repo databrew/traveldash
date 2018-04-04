@@ -6,7 +6,7 @@
 #' @return Objects assigned to global environment
 #' @export
 
-db_to_memory <- function(pool,
+db_to_memory <- function(
                          return_list = FALSE){
   
   out_list <- list()
@@ -25,6 +25,7 @@ db_to_memory <- function(pool,
               # 'venue_types'
               # )
   # Add the views to the tables
+  conn <- db_get_connection()
   tables <- c(tables, 'view_trip_coincidences',  
               # 'events',
               'view_trips_and_meetings')
@@ -33,7 +34,7 @@ db_to_memory <- function(pool,
     message(paste0('Reading in the ', this_table, ' from the database and assigning to global environment.'))
     x <- get_data(tab = this_table,
                   schema = 'pd_wbgtravel',
-                  connection_object = pool,
+                  connection_object = conn,
                   use_sqlite = use_sqlite)
     # Re-shape events before assigning to global environment
     if(this_table == 'events'){
@@ -64,7 +65,7 @@ db_to_memory <- function(pool,
              envir = .GlobalEnv)
     }
   }
-  
+  db_release_connection(conn)
   # Get the events view too (we do this separately since we modify its format)
   if(return_list){
     i <- length(tables) + 1

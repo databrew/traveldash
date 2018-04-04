@@ -49,7 +49,8 @@ for(i in 1:length(functions)){
 use_sqlite <- FALSE
 
 # Create a connection pool
-GLOBAL_DB_POOL <- db_get_pool()
+#This creates a static pool instance and won't have any effect if the pool is closed for some other reason.
+#GLOBAL_DB_POOL <- db_get_pool()
 
 # Geocode the cities in the db if necessary 
 # //SAH 2-22-2018: Called after upload or changes, should be unnecessary on app start-up and generate unnecessary db query each time
@@ -58,7 +59,8 @@ GLOBAL_DB_POOL <- db_get_pool()
 
 
 # Get the data from the db into memory
-db_to_memory(pool = GLOBAL_DB_POOL)
+#SAH: Let's please depricate this.  Pulls in a lot of unncessary data and is time consuming to do it.
+db_to_memory()
 
 # Bring the is_wbg field from people into view_all_trips_people_meetings_venues
 view_all_trips_people_meetings_venues <- 
@@ -86,6 +88,29 @@ date_dictionary <-
 date_dictionary <- date_dictionary %>%
   mutate(day_number = 1:nrow(date_dictionary))
 
+# Define functions for getting start and end date (appropriate range)
+get_start_date <- function(x){
+  day <- as.numeric(format(x, '%d'))
+  month <- as.numeric(format(x, '%m'))
+  year <- as.numeric(format(x, '%Y'))
+  if(day > 15){
+    out <- floor_date(x, unit = 'month')
+  } else {
+    out <- floor_date(x %m-% months(1), unit = 'month')
+  }
+  return(out)
+}
+get_end_date <- function(x){
+  day <- as.numeric(format(x, '%d'))
+  month <- as.numeric(format(x, '%m'))
+  year <- as.numeric(format(x, '%Y'))
+  if(day > 15){
+    out <- ceiling_date(x %m+% months(1), unit = 'month') - 1
+  } else {
+    out <- ceiling_date(x, unit = 'month') -1 
+  }
+  return(out)
+}
 
 # Read in short and long format examples
 upload_format <- read_csv('upload_format.csv')
@@ -94,9 +119,124 @@ upload_format <- read_csv('upload_format.csv')
 skin <- ifelse(use_sqlite, 'red', 'blue')
 
 # Timevis data prep
+# Get all "events" - which are any period in which someone is at a place continuously
+expand_trips <- function(trips, cities, people, view_all_trips_people_meetings_venues){
+  out <- list()
+  for(i in 1:nrow(trips)){
+    dates <- seq(trips$trip_start_date[i],
+                 trips$trip_end_date[i],
+                 by = 1)
+    df <- trips[i,] %>% dplyr::select(trip_id, person_id, city_id, trip_uid)
+    df1 <- df
+    while(length(dates) > nrow(df)){
+      df <- bind_rows(df, df1)
+    }
+    df$date <- dates
+    out[[i]] <- df
+  }
+  df <- bind_rows(out)
+  # Bring in venue
+  df <- left_join(df,
+                  view_all_trips_people_meetings_venues %>%
+                    group_by(trip_uid) %>%
+                    summarise(venue_name = dplyr::first(venue_name)) %>%
+                    ungroup,
+                  by = 'trip_uid')
+  
+  # Get rid of dulicates
+  df <- df %>% dplyr::distinct(city_id, date,
+                               venue_name) %>%
+    arrange(city_id, date)
+  # Get gap between previous days
+  df <- df %>%
+    group_by(city_id,venue_name) %>%
+    mutate(date_dif = date - dplyr::lag(date, 1)) %>% ungroup
+  # Get a "event_id"
+  df$event_id <- NA
+  df$event_id[1] <- 1
+  for(i in 2:nrow(df)){
+    df$event_id[i] <- 
+      ifelse(any(is.na(df$date_dif[i]), df$date_dif[i] > 1),
+             df$event_id[i-1] + 1,
+             df$event_id[i-1])
+  }
+  # Group by event id and get start / end
+  old_df <- df
+  df <- df %>%
+    group_by(city_id, event_id) %>%
+    summarise(start = min(date),
+              end = max(date)) %>%
+    ungroup
+  # Get the cities (events)
+  df <- left_join(df,
+                  cities %>% 
+                    dplyr::select(city_id, city_name),
+                  by = 'city_id')
+  # Get the event into
+  df <- left_join(df, old_df, by = c('city_id', 'event_id'))
+  
+  # Remove non-event stuff
+  df <- df %>% dplyr::filter(!is.na(venue_name) & venue_name != '' & venue_name != 'Unspecified Venue')
+  
+  # Make a content variale
+  df <- df %>%
+    mutate(content = ifelse(!is.na(venue_name) & venue_name != '',
+                            venue_name,
+                            city_name)) %>%
+    mutate(content = ifelse(content == 'Unspecified Venue',
+                            paste0('Unspecified event in ', city_name),
+                            content))
+
+  
+  
+  # Keep only one observation for each event
+  df <- df %>%
+    dplyr::distinct(city_id, event_id, start, end, city_name, content, .keep_all = TRUE)
+  # Remove those with nothing
+  df <- df %>%
+    mutate(type = 'range',
+           title = content) %>%
+    mutate(group = 1)
+  # Get the meetings in each event
+  meetings <- view_all_trips_people_meetings_venues %>%
+    dplyr::select(person_id, city_id, trip_group,
+                  trip_start_date,
+                  trip_end_date,
+                  short_name,
+                  agenda) %>%
+    dplyr::mutate(content = paste0(short_name, 
+                                   ifelse(!is.na(agenda) & agenda != '',
+                                          ': ',
+                                          ''), agenda)) %>%
+    left_join(df %>% dplyr::select(-content,
+                                   -type)) %>%
+    # Keep only those dates which fall in the range
+    filter(trip_start_date >= start,
+           trip_end_date <= end) %>%
+    mutate(group = 2) %>%
+    mutate(type = 'point')
+  meetings <- meetings[,names(df)]
+  # Combine everything
+  df <- bind_rows(df, meetings)
+  df$id <- 1:nrow(df)
+  df$subgroup <- df $event_id
+  cols <- colorRampPalette(brewer.pal(8, 'Dark2'))(length(unique(df$subgroup)))
+  df$style <- paste0('color: ', cols[df$subgroup], ';')
+  df <- df %>% arrange(start, city_name)
+  # Make 23 hour event for those which are events
+  df$start <- as.POSIXct(df$start)
+  df$end <- as.POSIXct(df$end)
+  df$end[df$group == 1] <- df$end[df$group == 1] + hours(23)
+  return(df)
+}
 
 
-
+make_empty <- function(cn){
+  d <- as.data.frame(x = t(rep(NA, length(cn))), stringsAsFactors = FALSE)
+  names(d) <- cn
+  d <- d[0,]
+  return(d)
+}
 if(nrow(cities) == 0){
   cn <- c("city_id", "city_name", "country_name", "latitude", "longitude")
   cities <- make_empty(cn)
@@ -153,12 +293,20 @@ creds <- paste0(paste0(#unlist(names(creds)),
 message('Using the following credentials:')
 message(creds)
 
-
+# function for jittering
+# Jitter
+joe_jitter <- function(x, zoom = 2){
+  z <- (0.1 / (zoom/ 20))^2
+  return(x + rnorm(n = length(x),
+                   mean = 0,
+                   sd = z))
+}
 
 # Syncronize the www photo storage with the database
-populate_images_from_www(pool = GLOBAL_DB_POOL) # www to db
-populate_images_to_www(pool = GLOBAL_DB_POOL) # db to www
-images <- get_images(pool = GLOBAL_DB_POOL)
+#This should already be happening, see commented note in populate_images_from_www
+#populate_images_from_www(pool = GLOBAL_DB_POOL) # www to db
+populate_images_to_www() # db to www
+images <- get_images()
 
 # Image manipulation
 resourcepath <- paste0(getwd(),"/www")
@@ -173,5 +321,54 @@ app_start_time <- as.numeric(app_start_time)
 # Overwrite "unsepcified venue"
 view_all_trips_people_meetings_venues$venue_name[view_all_trips_people_meetings_venues$venue_name == 'Unspecified Venue'] <- NA
 
+# Function for creating oleksiy-formatted date range
+oleksiy_date <- function(date1, date2){
+  if(date1 == date2){
+    out <- format(date1, '%B %d')
+  } else {
+    the_dates <- c(date1, date2)
+    the_dates <- sort(the_dates)
+    the_months <- format(the_dates, '%B')
+    the_days <- format(the_dates, '%d')
+    the_years <- format(the_dates, '%Y')
+    if(the_months[1] == the_months[2]){
+      out <- paste0(the_months[1], 
+                    ' ',
+                    the_days[1], '-', the_days[2])
+    } else {
+      out <- paste0(format(the_dates[1], '%B %d'),
+                    ' - ',
+                    format(the_dates[2], '%B %d'))
+    }
+  }
+  return(out)
+}
+oleksiy_date <- Vectorize(oleksiy_date)
+
+# Function for formatting names per oleksiy's request (Donald Trump > D. Trump)
+# oleksiy_name <- function(name){
+#   name_split <- unlist(strsplit(name, ' '))
+#   if(length(name_split) == 1){
+#     return(name)
+#   } else {
+#     last_name <- name_split[length(name_split)]
+#     first_names <- name_split[1:(length(name_split) - 1)]
+#     first_names <- 
+#       paste0(unlist(lapply(first_names, function(x){
+#       substr(x, 1, 1)
+#     })), collapse = '.')
+#   }
+#   return(paste0(first_names, '. ', last_name))
+# }
+oleksiy_name <- function(name){return(name)}
+oleksiy_name <- Vectorize(oleksiy_name)
+
+# Define function for sorting, removing NAs, and removing '' from vectors
+clean_vector <- function(x){
+  x <- x[!is.na(x)]
+  x <- x[x != '']
+  x <- sort(unique(x))
+  return(x)
+}
 
 message('############ Done with global.R')
