@@ -99,10 +99,6 @@ sidebar <- dashboardSidebar(
       tabName="timeline",
       icon=icon("calendar")),
     menuItem(
-      text="Upload photos",
-      tabName="upload_photos",
-      icon=icon("camera")),
-    menuItem(
       text="Upload data",
       tabName="upload_data",
       icon=icon("upload")),
@@ -302,30 +298,6 @@ The dashboard was originally developed as a part of activities under the <a href
                      style = 'text-align:right'))
       )
     ),
-    # tabItem(
-    #   tabName = 'edit_data',
-    #   uiOutput("MainBody")),
-    tabItem(tabName = 'upload_photos',
-            fluidPage(
-              fluidRow(column(6, align = 'center',
-                              selectInput('photo_person',
-                                          'Who are you uploading a photo for?',
-                                          choices = sort(unique(view_all_trips_people_meetings_venues$person_name))),
-                              h4('Current photo'),
-                              imageOutput('current_photo_output')),
-
-                       column(6,
-                              h2('New photo'),
-                              radioButtons('url_or_upload',
-                                           '',
-                                           choices = c('Upload from disk',
-                                                       'Get from web')),
-                              uiOutput('upload_url_ui'),
-                              
-                              # imageOutput('new_photo_output'),
-                              uiOutput('new_photo_ui'))),
-              uiOutput('photo_confirmation_ui')
-            )),
     tabItem(tabName = 'upload_data',
             fluidPage(
               fluidRow(
@@ -376,15 +348,27 @@ The dashboard was originally developed as a part of activities under the <a href
                                               h1('People'))
                                      ),
                                      fluidRow(
-                                       rHandsontableOutput("hot_people")
-                                     ),
-                                     fluidRow(
-                                       column(12, align = 'center',
+                                       column(8,
+                                              rHandsontableOutput("hot_people"),
                                               actionButton('hot_people_submit',
                                                            'Submit changes',
-                                                           icon = icon('check')))
-                                     )
-                                   )),
+                                                           icon = icon('check'))),
+                                     column(4, align = 'center',
+                                            selectInput('photo_person',
+                                                        'Who are you uploading a photo for?',
+                                                        choices = sort(unique(view_all_trips_people_meetings_venues$person_name))),
+                                            h4('Current photo'),
+                                            imageOutput('current_photo_output', height = '250px'),
+                                            h4('New photo'),
+                                            radioButtons('url_or_upload',
+                                                         '',
+                                                         choices = c('Upload from disk',
+                                                                     'Get from web')),
+                                            uiOutput('upload_url_ui'),
+                                            # imageOutput('new_photo_output'),
+                                            uiOutput('new_photo_ui'),
+                                            uiOutput('photo_confirmation_ui')
+                                           )))),
                           tabPanel("Trips",
                                    fluidPage(
                                      fluidRow(
@@ -2127,11 +2111,13 @@ server <- function(input, output, session) {
       dplyr::select(short_name,
                     title,
                     organization,
-                    sub_organization,
                     is_wbg)
     if(!is.null(df)){
-      rhandsontable(df, useTypes = TRUE,
-                    stretchH = 'all')
+      
+      rhandsontable(df, #useTypes = TRUE,
+                    stretchH = 'all',
+                    # width = 1000, height = 100,
+                    rowHeaders = NULL)
     }
   })
   
