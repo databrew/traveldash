@@ -385,7 +385,6 @@ body <- dashboardBody(
                                               h1('Trips'))
                                      ),
                                      fluidRow(
-                                       helpText('Under construction. The upload_format view will go here.'),
                                        rHandsontableOutput("hot_trips")
                                      ),
                                      fluidRow(
@@ -2216,7 +2215,7 @@ server <- function(input, output, session) {
                               pool = GLOBAL_DB_POOL)
     
     # Update the session
-    updated_data <- db_to_memory(pool = GLOBAL_DB_POOL, return_list = TRUE)
+    updated_data <- db_to_memory(return_list = TRUE)
     vals$events <- updated_data$events
     vals$cities <- updated_data$cities
     vals$people <- updated_data$people
@@ -2232,13 +2231,12 @@ server <- function(input, output, session) {
     # For now, not doing anything with the data
     message('--- Uploading new trips data ')
     upload_results <- 
-      upload_raw_data(pool = GLOBAL_DB_POOL,
-                      data = df,
+      upload_raw_data(data = df,
                       logged_in_user_id = 1,
                       return_upload_results = TRUE)
     
     # Update the session
-    updated_data <- db_to_memory(pool = GLOBAL_DB_POOL, return_list = TRUE)
+    updated_data <- db_to_memory(return_list = TRUE)
     vals$events <- updated_data$events
     vals$cities <- updated_data$cities
     vals$people <- updated_data$people
@@ -2259,7 +2257,7 @@ server <- function(input, output, session) {
                               pool = GLOBAL_DB_POOL)
     
     # Update the session
-    updated_data <- db_to_memory(pool = GLOBAL_DB_POOL, return_list = TRUE)
+    updated_data <- db_to_memory(return_list = TRUE)
     vals$events <- updated_data$events
     vals$cities <- updated_data$cities
     vals$people <- updated_data$people
@@ -2313,46 +2311,10 @@ server <- function(input, output, session) {
       upload_raw_data(data = df,
                     logged_in_user_id = 1,
                     return_upload_results = TRUE)
-    print('UPLOAD RESULTS LOOK LIKE')
-    print(upload_results)
-    add_results$x <- upload_results
-    n <- add_results_counter()
-    add_results_counter(n +1)
-    message('ADD RESULTS COUNTER IS ', add_results_counter())
 
   })
   
-  output$add_results_text <- renderText({
-    n <- add_results_counter()
-    if(n > 0){
-      'Data add results'
-    } else {
-      ''
-    }
-
-    upload_raw_data(data = df,
-                      logged_in_user_id = 1,
-                      return_upload_results = TRUE)
-    
-    # Update the session
-    updated_data <- db_to_memory(return_list = TRUE)
-    # Fix the dates
-    upload_results$Start <- fix_date(upload_results$Start)
-    upload_results$End <- fix_date(upload_results$End)
-    print('upload_results looks like')
-    print(head(upload_results))
-    vals$events <- updated_data$events
-    vals$cities <- updated_data$cities
-    vals$people <- updated_data$people
-    # vals$trip_meetings <- updated_data$trip_meetings
-    vals$trips <- updated_data$trips
-    # vals$venue_events <- updated_data$venue_events
-    # vals$venue_types <- updated_data$venue_types
-    vals$view_trips_and_meetings <- updated_data$view_trips_and_meetings
-    vals$view_trip_coincidences <- updated_data$view_trip_coincidences
-    vals$upload_results <- upload_results
-    
-  })
+  
   
   # Observe the add table action button and give a menu
   observeEvent(input$action_add, {
