@@ -108,9 +108,20 @@ psql -d dev -f dev_database/create_function_travel_uploads.sql
 
 ## Database set-up on AWS
 
+- Create a local dump of the pd_wbgtravel schema:
+```
+pg_dump -d dev_local -n pd_wbgtravel -f /home/joebrew/Desktop/dev_here.sql
+```
+
+
 - Open a psql session within our AWS DB instance.
 ```
 psql --host=databrewdb.cfejspjhdciw.us-east-2.rds.amazonaws.com --port=8080 --username=worldbank --dbname=dev 
+```
+
+Create a dump from WB AWS RDS endpoint:
+```
+pg_dump -h figssamel1.cosjv4zx2mww.us-east-1.rds.amazonaws.com -U postgres -f ~/Desktop/dump.sql dev
 ```
 
 - Restore a locally created dump from within psql
