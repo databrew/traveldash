@@ -335,7 +335,10 @@ body <- dashboardBody(
                 column(12, align = 'center',
                        h1('Download data'))
               ),
-              fluidRow(helpText('This is only a placeholder. Eventually, the "view" for downloads will go here.'))
+              fluidRow(column(12, align = 'center',
+                              downloadButton('download', 
+                                           'Click here to download',
+                                           icon = icon('download', 'fa-3x'))))
             )),
     tabItem(tabName = 'edit_data',
             fluidPage(
@@ -2355,6 +2358,39 @@ server <- function(input, output, session) {
     )
     
   })
+  
+  # Download
+  output$download <- downloadHandler(
+    filename = function(){
+      paste0('file.csv')
+    },
+    content = function(file){
+      x <- view_all_trips_people_meetings_venues %>%
+        dplyr::select(short_name,
+                      organization,
+                      title,
+                      city_name,
+                      country_name,
+                      trip_start_date,
+                      trip_end_date,
+                      trip_group,
+                      venue_name, 
+                      meeting_with,
+                      agenda) %>%
+        dplyr::rename(Person = short_name,
+                      Organization = organization,
+                      Title = title,
+                      City= city_name,
+                      Country = country_name,
+                      Start = trip_start_date,
+                      End = trip_end_date,
+                      `Trip Group` = trip_group,
+                      Venue = venue_name,
+                      Meeting = meeting_with,
+                      Agenda = agenda)
+      write_csv(x, file)
+    }
+  )
   
   
   # On session end, close
