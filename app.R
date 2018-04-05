@@ -342,7 +342,6 @@ body <- dashboardBody(
             )),
     tabItem(tabName = 'edit_data',
             fluidPage(
-              fluidRow(helpText('The below is a placeholder only. The back-end is not yet set-up to handle edits.')),
               tabsetPanel(type = "tabs",
                           tabPanel("People",
                                    fluidPage(
@@ -350,16 +349,24 @@ body <- dashboardBody(
                                        column(12, align = 'center',
                                               h1('People'))
                                      ),
+                                     fluidRow(column(12, align = 'center',
+                                                     selectInput('photo_person',
+                                                                 'Person',
+                                                                 choices = sort(unique(view_all_trips_people_meetings_venues$person_name))))),
                                      fluidRow(
-                                       column(3, align = 'center',
-                                              selectInput('photo_person',
-                                                          'Person',
-                                                          choices = sort(unique(view_all_trips_people_meetings_venues$person_name)))),
-                                       column(9,
-                                              fluidRow(column(6, align = 'center',
+                                       column(6, 
+                                              fluidRow(column(12, align = 'center',
+                                                              h3('Current information'),
+                                                              actionButton('hot_people_submit',
+                                                                           'Submit changes',
+                                                                           icon = icon('check')))),
+                                              br(),
+                                              fluidRow(rHandsontableOutput("hot_people"))),
+                                       column(6, align = 'center',
+                                              fluidRow(column(12,
+                                                              align = 'center',
                                                               h3('Current photo'),
-                                                              imageOutput('current_photo_output', height = '250px')),
-                                                       column(6, 
+                                                              imageOutput('current_photo_output', height = '200px'),
                                                               align = 'center',
                                                               h3('New photo'),
                                                               # imageOutput('new_photo_output'),
@@ -369,14 +376,9 @@ body <- dashboardBody(
                                                                            choices = c('Upload from disk',
                                                                                        'Get from web')),
                                                               uiOutput('upload_url_ui'),
-                                                              uiOutput('photo_confirmation_ui'))))),
-                                     br(),
-                                     fluidRow(column(12, align = 'center',
-                                                     actionButton('hot_people_submit',
-                                                                  'Submit changes',
-                                                                  icon = icon('check')))),
-                                              br(),
-                                              fluidRow(rHandsontableOutput("hot_people")))),
+                                                              uiOutput('photo_confirmation_ui')
+                                                              ))
+                                                              )))),
                           tabPanel("Trips",
                                    fluidPage(
                                      fluidRow(
@@ -2096,14 +2098,13 @@ server <- function(input, output, session) {
     }
     url_text <- paste0('url(', img_url, ')')
     html<- list(
-      HTML(paste0("<p>Uploaded Image</p>
-                  <img src='www/mask.png'
+      HTML(paste0("<img src='www/mask.png'
                   id='crop' name='crop' 
                   onmousedown=\"dragstart(event);\" 
                   onmouseup=\"dragend(event);\" 
                   onmousemove=\"dodrag(event);\" 
                   style=\"z-index:", zz, ";background-image:", url_text, ";
-                  background-repeat: no-repeat;background-size:",xscale,"px ",yscale,"px;\" width='300px';>"))
+                  background-repeat: no-repeat;background-size:",xscale,"px ",yscale,"px;\" width='200px';>"))
     )
     
     print(html)
