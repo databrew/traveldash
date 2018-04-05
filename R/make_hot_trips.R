@@ -9,7 +9,7 @@ make_hot_trips <- function(data, filter){
                   trip_end_date,
                   trip_group,
                   venue_name, 
-                  meeting_with,
+                  meeting_person_short_names,
                   agenda,
                   trip_uid) %>%
     arrange(desc(trip_start_date)) %>%
@@ -22,7 +22,7 @@ make_hot_trips <- function(data, filter){
                   End = trip_end_date,
                   `Trip Group` = trip_group,
                   Venue = venue_name,
-                  Meeting = meeting_with,
+                  Meeting = meeting_person_short_names,
                   Agenda = agenda)
   if(!is.null(filter)){
     df <- df %>% search_df(filter)
