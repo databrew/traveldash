@@ -351,6 +351,7 @@ body <- dashboardBody(
                                               fluidRow(column(12,
                                                               align = 'center',
                                                               h3('Current photo'),
+                                                              uiOutput('photo_confirmation_ui'),
                                                               imageOutput('current_photo_output', height = '200px'),
                                                               align = 'center',
                                                               h3('New photo'),
@@ -360,8 +361,7 @@ body <- dashboardBody(
                                                                            '',
                                                                            choices = c('Upload from disk',
                                                                                        'Get from web')),
-                                                              uiOutput('upload_url_ui'),
-                                                              uiOutput('photo_confirmation_ui')
+                                                              uiOutput('upload_url_ui')
                                                               ))
                                                               )))),
                           tabPanel("Trips",
@@ -1923,7 +1923,8 @@ server <- function(input, output, session) {
             column(12, 
                    align = 'center',
                    actionButton("button_crop", "Crop & Save",
-                                icon = icon('calendar', 'fa-3x')))
+                                icon = icon('calendar')),
+                   br())
           )
         )
       }
