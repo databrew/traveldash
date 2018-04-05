@@ -2127,7 +2127,7 @@ server <- function(input, output, session) {
                       rowHeaders = NULL,
                       colHeaders = c('Name', 'Title', 'Organization', 'World Bank Group')) %>%
           hot_col(col = "World Bank Group", type = "checkbox") %>%
-          hot_cols(manualColumnResize = TRUE)
+          hot_cols(manualColumnResize = TRUE, columnSorting = TRUE)
       }
     }
   })
@@ -2181,7 +2181,7 @@ server <- function(input, output, session) {
           hot_col(col = "Venue", type = "autocomplete", source = clean_vector(view_all_trips_people_meetings_venues$venue_name), strict = FALSE)  %>%
           hot_col(col = "Meeting", type = "autocomplete", source = clean_vector(view_all_trips_people_meetings_venues$meeting_with), strict = FALSE)  %>%
           hot_col(col = "Agenda", type = "autocomplete", source = clean_vector(view_all_trips_people_meetings_venues$agenda), strict = FALSE) %>%
-          hot_cols(manualColumnResize=TRUE, colWidths = 70)
+          hot_cols(manualColumnResize=TRUE, columnSorting = TRUE, colWidths = 70)
       }
     }
   })
@@ -2217,7 +2217,7 @@ server <- function(input, output, session) {
           hot_col(col = "City", type = "autocomplete", source = clean_vector(cities$city_name), strict = FALSE)  %>%
           hot_col(col = "Event", type = "autocomplete", source = clean_vector(venue_events$event_title), strict = FALSE)  %>%
           hot_col(col = "Display on timeline", type = "checkbox") %>%
-          hot_cols(manualColumnResize=TRUE)
+          hot_cols(manualColumnResize=TRUE, columnSorting = TRUE)
       }
     }
   })
@@ -2277,6 +2277,8 @@ server <- function(input, output, session) {
     df <- hot_to_r(input$hot_venue_events)
     # Get the hidden ids
     df$venue_id <- hidden_ids$venue_id
+    message('Venue ids are ')
+    print(df$venue_id)
     # Convert venue type name to venue type id
     df <- left_join(x = df,
                     y = venue_types %>% dplyr::select(-is_temporal_venue),
@@ -2325,7 +2327,7 @@ server <- function(input, output, session) {
         hot_col(col = 'Venue', type = 'autocomplete', source = clean_vector(venue_events$venue_name), strict = FALSE) %>%
         hot_col(col = 'Meeting', type = 'autocomplete', source = clean_vector(people$short_name), strict = FALSE) %>%
         hot_col(col = 'Agenda', type = 'autocomplete', source = clean_vector(trip_meetings$agenda), strict = FALSE) %>%
-        hot_cols(colWidths = 90, manualColumnResize = TRUE)
+        hot_cols(colWidths = 90, manualColumnResize = TRUE, columnSorting = TRUE)
     }
   })
   
