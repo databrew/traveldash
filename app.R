@@ -772,24 +772,8 @@ server <- function(input, output, session) {
       dplyr::filter(fd[1] <= trip_end_date,
                     fd[2] >= trip_start_date)
     
-    # Filter for search box too
-    if(!is.null(input$search)){
-      if(nchar(input$search) > 0){
-        search <- input$search
-        print(search)
-        search_items <- unlist(strsplit(search, split = ','))
-        search_items <- trimws(search_items, which = 'both')
-        keeps <- c()
-        for(i in 1:length(search_items)){
-          these_keeps <- apply(mutate_all(.tbl = x, .funs = function(x){grepl(tolower(search_items[i]), tolower(x))}),1, any)
-          these_keeps <- which(these_keeps)
-          keeps <- c(keeps, these_keeps)
-        }
-        keeps <- sort(unique(keeps))
-        x <- x[keeps,]
-      }
-    }
-    
+    x <- search_df(data = x,
+                   input$search)
     return(x)
   })
   
@@ -1190,23 +1174,9 @@ server <- function(input, output, session) {
     x <- vd %>%
       dplyr::filter(fd[1] <= trip_end_date,
                     fd[2] >= trip_start_date)
-    # Filter for search box too
-    if(!is.null(input$search)){
-      if(nchar(input$search) > 0){
-        search <- input$search
-        search_items <- unlist(strsplit(search, split = ','))
-        search_items <- trimws(search_items, which = 'both')
-        keeps <- c()
-        for(i in 1:length(search_items)){
-          these_keeps <- apply(mutate_all(.tbl = x, .funs = function(x){grepl(tolower(search_items[i]), tolower(x))}),1, any)
-          these_keeps <- which(these_keeps)
-          keeps <- c(keeps, these_keeps)
-        }
-        keeps <- sort(unique(keeps))
-        x <- x[keeps,]
-      }
-    }
-    
+    x <- search_df(data = x,
+                   input$search)
+
     return(x)
     
   })
