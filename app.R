@@ -384,6 +384,10 @@ body <- dashboardBody(
                                        column(12, align = 'center',
                                               h1('Trips'))
                                      ),
+                                     fluidRow(column(12, align = 'center',
+                                                     textInput('trips_filter',
+                                                               'Filter',
+                                                               placeholder = 'filter by name, title, location, etc.'))),
                                      fluidRow(
                                        rHandsontableOutput("hot_trips")
                                      ),
@@ -2114,20 +2118,33 @@ server <- function(input, output, session) {
     }
   })
   
+  # Create hidden ids associated with the hands on tables
+  hidden_ids <- reactiveValues()
+  hidden_ids$person_id <- NA
+  hidden_ids$trip_uid <- NA
+  hidden_ids$venue_id <- NA
+  
   # People edit table
   output$hot_people <- renderRHandsontable({
     df <- people %>%
-      dplyr::select(short_name,
+      dplyr::select(person_id,
+                    short_name,
                     title,
                     organization,
                     is_wbg) %>%
       filter(short_name == input$photo_person)
     if(!is.null(df)){
       if(nrow(df) > 0){
+        hidden_ids$person_id <- df$person_id
+        df <- df %>% dplyr::select(-person_id) %>%
+          mutate(is_wbg = ifelse(is_wbg == 1, TRUE, FALSE))
         rhandsontable(df, #useTypes = TRUE,
                       stretchH = 'all',
                       # width = 1000, height = 100,
-                      rowHeaders = NULL)
+                      rowHeaders = NULL,
+                      colHeaders = c('Name', 'Title', 'Organization', 'World Bank Group')) %>%
+          hot_col(col = "World Bank Group", type = "checkbox") %>%
+          hot_cols(manualColumnResize = TRUE)
       }
     }
   })
@@ -2146,7 +2163,8 @@ server <- function(input, output, session) {
                     trip_group,
                     venue_name, 
                     meeting_with,
-                    agenda) %>%
+                    agenda,
+                    trip_uid) %>%
       dplyr::rename(Person = short_name,
                     Organization = organization,
                     Title = title,
@@ -2160,20 +2178,26 @@ server <- function(input, output, session) {
                     Agenda = agenda)
     
     if(!is.null(df)){
-      rhandsontable(df, 
-                    stretchH = 'all',
-                    # width = 1000, height = 300,
-                    rowHeaders = NULL) %>%
-        hot_col(col = "Person", type = "autocomplete", source = clean_vector(view_all_trips_people_meetings_venues$short_name), strict = FALSE)  %>%
-        hot_col(col = "Organization", type = "autocomplete", source = clean_vector(view_all_trips_people_meetings_venues$organization), strict = FALSE)  %>%
-        hot_col(col = "Title", type = "autocomplete", source = clean_vector(view_all_trips_people_meetings_venues$title), strict = FALSE)  %>%
-        hot_col(col = "City", type = "autocomplete", source = clean_vector(view_all_trips_people_meetings_venues$city_name), strict = FALSE)  %>%
-        hot_col(col = "Country", type = "autocomplete", source = clean_vector(view_all_trips_people_meetings_venues$country_name), strict = FALSE)  %>%
-        hot_col(col = "Trip Group", type = "autocomplete", source = clean_vector(view_all_trips_people_meetings_venues$trip_group), strict = FALSE)  %>%
-        hot_col(col = "Venue", type = "autocomplete", source = clean_vector(view_all_trips_people_meetings_venues$venue_name), strict = FALSE)  %>%
-        hot_col(col = "Meeting", type = "autocomplete", source = clean_vector(view_all_trips_people_meetings_venues$meeting_with), strict = FALSE)  %>%
-        hot_col(col = "Agenda", type = "autocomplete", source = clean_vector(view_all_trips_people_meetings_venues$agenda), strict = FALSE)  
-      
+      if(nrow(df) > 0){
+        
+        # Update the hidden ids
+        hidden_ids$trip_uid <- df$trip_uid
+        df <- df %>% dplyr::select(-trip_uid)
+        rhandsontable(df, 
+                      stretchH = 'all',
+                      # width = 1000, height = 300,
+                      rowHeaders = NULL) %>%
+          hot_col(col = "Person", type = "autocomplete", source = clean_vector(view_all_trips_people_meetings_venues$short_name), strict = FALSE)  %>%
+          hot_col(col = "Organization", type = "autocomplete", source = clean_vector(view_all_trips_people_meetings_venues$organization), strict = FALSE)  %>%
+          hot_col(col = "Title", type = "autocomplete", source = clean_vector(view_all_trips_people_meetings_venues$title), strict = FALSE)  %>%
+          hot_col(col = "City", type = "autocomplete", source = clean_vector(view_all_trips_people_meetings_venues$city_name), strict = FALSE)  %>%
+          hot_col(col = "Country", type = "autocomplete", source = clean_vector(view_all_trips_people_meetings_venues$country_name), strict = FALSE)  %>%
+          hot_col(col = "Trip Group", type = "autocomplete", source = clean_vector(view_all_trips_people_meetings_venues$trip_group), strict = FALSE)  %>%
+          hot_col(col = "Venue", type = "autocomplete", source = clean_vector(view_all_trips_people_meetings_venues$venue_name), strict = FALSE)  %>%
+          hot_col(col = "Meeting", type = "autocomplete", source = clean_vector(view_all_trips_people_meetings_venues$meeting_with), strict = FALSE)  %>%
+          hot_col(col = "Agenda", type = "autocomplete", source = clean_vector(view_all_trips_people_meetings_venues$agenda), strict = FALSE) %>%
+          hot_cols(manualColumnResize=TRUE)
+      }
     }
   })
   
@@ -2186,18 +2210,29 @@ server <- function(input, output, session) {
                     event_title,
                     event_start_date,
                     event_end_date,
-                    display_flag) %>%
+                    display_flag,
+                    venue_id) %>%
+      left_join(venue_types %>% dplyr::select(venue_type_id,
+                                              type_name),
+                by = 'venue_type_id') %>%
+      dplyr::select(- venue_type_id) %>%
       left_join(cities %>% dplyr::select(city_id, city_name), by = c('venue_city_id' = 'city_id')) %>%
       dplyr::select(-venue_city_id)
     if(!is.null(df)){
-      rhandsontable(df, 
-                    stretchH = 'all',
-                    # width = 1000, height = 300,
-                    rowHeaders = NULL) %>%
-        hot_col(col = "venue_type_id", type = "autocomplete", source = clean_vector(venue_events$venue_type_id), strict = FALSE)  %>%
-        hot_col(col = "city_name", type = "autocomplete", source = clean_vector(cities$city_name), strict = FALSE)  %>%
-        hot_col(col = "event_title", type = "autocomplete", source = clean_vector(venue_events$event_title), strict = FALSE)  %>%
-        hot_col(col = "display_flag", type = "checkbox") 
+      if(nrow(df) > 0){
+        hidden_ids$venue_id <- df$venue_id
+        df <- df %>% dplyr::select(-venue_id)
+        rhandsontable(df, 
+                      stretchH = 'all',
+                      # width = 1000, height = 300,
+                      rowHeaders = NULL,
+                      colHeaders = c('Event', 'Start', 'End', 'Display on timeline', 'Type', 'City')) %>%
+          hot_col(col = "Type", type = "autocomplete", source = clean_vector(venue_types$type_name), strict = FALSE)  %>%
+          hot_col(col = "City", type = "autocomplete", source = clean_vector(cities$city_name), strict = FALSE)  %>%
+          hot_col(col = "Event", type = "autocomplete", source = clean_vector(venue_events$event_title), strict = FALSE)  %>%
+          hot_col(col = "Display on timeline", type = "checkbox") %>%
+          hot_cols(manualColumnResize=TRUE)
+      }
     }
   })
   
@@ -2209,6 +2244,10 @@ server <- function(input, output, session) {
     message('Edits to the people hands-on-table were submitted.')
     # Get the data
     df <- hot_to_r(input$hot_people)
+    # Convert the boolean back to 0/1
+    df$is_wbg <- ifelse(df$is_wbg, 1, 0)
+    # Get the person id
+    df$person_id <- hidden_ids$person_id
     # For now, not doing anything with the data
     message('--- Nothing actually being changed in the database. Waiting on function from Soren.')
     upload_edited_people_data(data = df,
@@ -2251,6 +2290,13 @@ server <- function(input, output, session) {
     message('Edits to the venue_events hands-on-table were submitted.')
     # Get the data
     df <- hot_to_r(input$hot_venue_events)
+    # Get the hidden ids
+    df$venue_id <- hidden_ids$venue_id
+    # Convert venue type name to venue type id
+    df <- left_join(x = df,
+                    y = venue_types %>% dplyr::select(-is_temporal_venue),
+                    by = 'type_name') %>%
+      dplyr::select(-type_name)
     # For now, not doing anything with the data
     message('--- Nothing actually being changed in the database. Waiting on function from Soren.')
     upload_edited_venue_events_data(data = df,
@@ -2295,7 +2341,7 @@ server <- function(input, output, session) {
         hot_col(col = 'Venue', type = 'autocomplete', source = clean_vector(venue_events$venue_name), strict = FALSE) %>%
         hot_col(col = 'Meeting', type = 'autocomplete', source = clean_vector(people$short_name), strict = FALSE) %>%
         hot_col(col = 'Agenda', type = 'autocomplete', source = clean_vector(trip_meetings$agenda), strict = FALSE) %>%
-        hot_cols(colWidths = 90)
+        hot_cols(colWidths = 90, manualColumnResize = TRUE)
       
       
       
