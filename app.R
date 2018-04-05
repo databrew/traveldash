@@ -2181,7 +2181,7 @@ server <- function(input, output, session) {
           hot_col(col = "Venue", type = "autocomplete", source = clean_vector(view_all_trips_people_meetings_venues$venue_name), strict = FALSE)  %>%
           hot_col(col = "Meeting", type = "autocomplete", source = clean_vector(view_all_trips_people_meetings_venues$meeting_with), strict = FALSE)  %>%
           hot_col(col = "Agenda", type = "autocomplete", source = clean_vector(view_all_trips_people_meetings_venues$agenda), strict = FALSE) %>%
-          hot_cols(manualColumnResize=TRUE)
+          hot_cols(manualColumnResize=TRUE, colWidths = 70)
       }
     }
   })
