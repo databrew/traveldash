@@ -596,7 +596,8 @@ server <- function(input, output, session) {
                                 'Submit',
                                 icon = icon('gears'))),
           fluidRow(
-            textOutput('submit_text')
+            textOutput('submit_text'),
+            uiOutput('submit_icon')
           )
         )
       }
@@ -696,6 +697,18 @@ server <- function(input, output, session) {
   
   
   submit_text <- reactiveVal(value = '')
+  output$submit_icon <- renderUI({
+    if(input$submit > 0){
+      fluidPage(
+        fluidRow(
+          column(12, align = 'center',
+                 icon('check', 'fa-3x'))
+        )
+      )
+    } else {
+      NULL
+    }
+  })
   observeEvent(input$submit, {
     submit_text('Data uploaded! Now click through other tabs to explore your data.')
   })
