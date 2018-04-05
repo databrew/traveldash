@@ -301,8 +301,8 @@ body <- dashboardBody(
                        p('You can upload your own data, which will be geocoded, formatted, and then integrated into the dashboard. You can manually enter data (left), bulk upload from a spreadsheet (center), or download your data set in the bulk format (right).')),
                 column(4, align = 'center',
                        h3('Manually add data'),
-                       helpText('Create a travel event manually by clicking the below button.'),
-                       actionButton('action_add', 'Add data',
+                       helpText('Create a trip.'),
+                       actionButton('action_add', 'Create trip',
                                     icon = icon('plus'))),
                 column(4, align = 'center',
                        h3('Upload trips'),
@@ -551,7 +551,7 @@ server <- function(input, output, session) {
     if(!is.null(ur)){
       'Your uploaded data "results"'
     } else if(!is.null(x)){
-      'Your data'
+      'Your uploaded data'
     } else {
       NULL
     }
