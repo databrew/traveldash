@@ -1923,9 +1923,10 @@ server <- function(input, output, session) {
             column(12, 
                    align = 'center',
                    actionButton("button_crop", "Crop & Save",
-                                icon = icon('calendar')),
-                   br())
-          )
+                                icon = icon('calendar')))
+          ),
+
+          br()
         )
       }
     })
