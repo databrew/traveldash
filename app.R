@@ -372,12 +372,12 @@ body <- dashboardBody(
                                                               uiOutput('photo_confirmation_ui'))))),
                                      br(),
                                      fluidRow(column(12,
-                                                     rHandsontableOutput("hot_people"),
-                                                     br(),
                                                      column(12, align = 'center',
                                                             actionButton('hot_people_submit',
                                                                          'Submit changes',
-                                                                         icon = icon('check'))))))),
+                                                                         icon = icon('check'))),
+                                                     br(),
+                                                     rHandsontableOutput("hot_people"))))),
                           tabPanel("Trips",
                                    fluidPage(
                                      fluidRow(
@@ -388,14 +388,17 @@ body <- dashboardBody(
                                                      textInput('trips_filter',
                                                                'Filter',
                                                                placeholder = 'filter by name, title, location, etc.'))),
-                                     fluidRow(
-                                       rHandsontableOutput("hot_trips")
-                                     ),
+                                     br(),
                                      fluidRow(
                                        column(12, align = 'center',
                                               actionButton('hot_trips_submit',
                                                            'Submit changes',
                                                            icon = icon('check')))
+                                     ),
+                                     br(),
+                                     
+                                     fluidRow(
+                                       rHandsontableOutput("hot_trips")
                                      )
                                    )),
                           tabPanel("Venues & Events",
@@ -404,14 +407,16 @@ body <- dashboardBody(
                                        column(12, align = 'center',
                                               h1('Venues & Events'))
                                      ),
-                                     fluidRow(
-                                       rHandsontableOutput("hot_venue_events")
-                                     ),
+                                     br(),
                                      fluidRow(
                                        column(12, align = 'center',
                                               actionButton('hot_venue_events_submit',
                                                            'Submit changes',
                                                            icon = icon('check')))
+                                     ),
+                                     br(),
+                                     fluidRow(
+                                       rHandsontableOutput("hot_venue_events")
                                      )
                                    )))
             )
