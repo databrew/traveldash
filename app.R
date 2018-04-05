@@ -103,10 +103,6 @@ sidebar <- dashboardSidebar(
       tabName="upload_data",
       icon=icon("upload")),
     menuItem(
-      text="Download trips",
-      tabName="download_data",
-      icon=icon("download")),
-    menuItem(
       text="Edit trips",
       tabName="edit_data",
       icon=icon("pencil")),
@@ -302,7 +298,7 @@ body <- dashboardBody(
             fluidPage(
               fluidRow(
                 column(12, align = 'center',
-                       p('You can upload your own data, which will be geocoded, formatted, and then integrated into the dashboard. You can manually enter data (left), bulk upload from a spreadsheet (center), or download sample data set in the bulk format (right).')),
+                       p('You can upload your own data, which will be geocoded, formatted, and then integrated into the dashboard. You can manually enter data (left), bulk upload from a spreadsheet (center), or download your data set in the bulk format (right).')),
                 column(4, align = 'center',
                        h3('Manually add data'),
                        helpText('Create a travel event manually by clicking the below button.'),
@@ -317,9 +313,9 @@ body <- dashboardBody(
                                           'text/comma-separated-values,text/plain',
                                           '.csv'))),
                 column(4, align = 'center',
-                       h3('Download sample dataset'),
-                       helpText('Click the "Download" button to get a sample dataset in the correct bulk upload format.'),
-                       downloadButton("download_correct", "Download correct format"))),
+                       h3('Download dataset'),
+                       helpText('Click the "Download" button to get your dataset in the correct bulk upload format.'),
+                       downloadButton("download_correct", "Download your data"))),
               uiOutput('upload_ui'),
               # Results from most recent upload (bulk or manual)
               fluidRow(
@@ -328,17 +324,6 @@ body <- dashboardBody(
                        DT::dataTableOutput('uploaded_table'))
               )
               
-            )),
-    tabItem(tabName = 'download_data',
-            fluidPage(
-              fluidRow(
-                column(12, align = 'center',
-                       h1('Download trips'))
-              ),
-              fluidRow(column(12, align = 'center',
-                              downloadButton('download', 
-                                           'Click here to download',
-                                           icon = icon('download', 'fa-3x'))))
             )),
     tabItem(tabName = 'edit_data',
             fluidPage(
@@ -546,7 +531,7 @@ server <- function(input, output, session) {
       if(all(is.na(names(ur)))){
         prettify(data.frame(x = ur[,ncol(ur)]))
       } else {
-        prettify(ur, download_options = TRUE)
+        prettify(ur, download_options = FALSE)
       }
       
     } else {
@@ -618,10 +603,33 @@ server <- function(input, output, session) {
   
   output$download_correct <- downloadHandler(
     filename = function() {
-      'upload_format.csv'
+      'data_download.csv'
     },
-    content = function(file) {
-      write.csv(upload_format, file, row.names = FALSE)
+    content = function(file){
+      x <- view_all_trips_people_meetings_venues %>%
+        dplyr::select(short_name,
+                      organization,
+                      title,
+                      city_name,
+                      country_name,
+                      trip_start_date,
+                      trip_end_date,
+                      trip_group,
+                      venue_name, 
+                      meeting_with,
+                      agenda) %>%
+        dplyr::rename(Person = short_name,
+                      Organization = organization,
+                      Title = title,
+                      City= city_name,
+                      Country = country_name,
+                      Start = trip_start_date,
+                      End = trip_end_date,
+                      `Trip Group` = trip_group,
+                      Venue = venue_name,
+                      Meeting = meeting_with,
+                      Agenda = agenda)
+      write_csv(x, file)
     }
   )
   
@@ -2317,9 +2325,6 @@ server <- function(input, output, session) {
         hot_col(col = 'Meeting', type = 'autocomplete', source = clean_vector(people$short_name), strict = FALSE) %>%
         hot_col(col = 'Agenda', type = 'autocomplete', source = clean_vector(trip_meetings$agenda), strict = FALSE) %>%
         hot_cols(colWidths = 90, manualColumnResize = TRUE)
-      
-      
-      
     }
   })
   
@@ -2362,40 +2367,6 @@ server <- function(input, output, session) {
     )
     
   })
-  
-  # Download
-  output$download <- downloadHandler(
-    filename = function(){
-      paste0('file.csv')
-    },
-    content = function(file){
-      x <- view_all_trips_people_meetings_venues %>%
-        dplyr::select(short_name,
-                      organization,
-                      title,
-                      city_name,
-                      country_name,
-                      trip_start_date,
-                      trip_end_date,
-                      trip_group,
-                      venue_name, 
-                      meeting_with,
-                      agenda) %>%
-        dplyr::rename(Person = short_name,
-                      Organization = organization,
-                      Title = title,
-                      City= city_name,
-                      Country = country_name,
-                      Start = trip_start_date,
-                      End = trip_end_date,
-                      `Trip Group` = trip_group,
-                      Venue = venue_name,
-                      Meeting = meeting_with,
-                      Agenda = agenda)
-      write_csv(x, file)
-    }
-  )
-  
   
   # On session end, close
   session$onSessionEnded(function() {
