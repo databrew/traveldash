@@ -2250,8 +2250,7 @@ server <- function(input, output, session) {
     df$person_id <- hidden_ids$person_id
     # For now, not doing anything with the data
     message('--- Nothing actually being changed in the database. Waiting on function from Soren.')
-    upload_edited_people_data(data = df,
-                              pool = GLOBAL_DB_POOL)
+    upload_edited_people_data(data = df)
     
     # Update the session
     updated_data <- db_to_memory(return_list = TRUE)
@@ -2299,8 +2298,7 @@ server <- function(input, output, session) {
       dplyr::select(-type_name)
     # For now, not doing anything with the data
     message('--- Nothing actually being changed in the database. Waiting on function from Soren.')
-    upload_edited_venue_events_data(data = df,
-                              pool = GLOBAL_DB_POOL)
+    upload_edited_venue_events_data(data = df)
     
     # Update the session
     updated_data <- db_to_memory(return_list = TRUE)
