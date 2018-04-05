@@ -2253,6 +2253,8 @@ server <- function(input, output, session) {
     message('Edits to the trips hands-on-table were submitted.')
     # Get the data
     last_save$hot_trips <- df <- hot_to_r(input$hot_trips)
+    # Get the trip id (though I don't think we're doing anything with it)
+    df$ID <- hidden_ids$trip_uid
     # For now, not doing anything with the data
     message('--- Uploading new trips data ')
     upload_results <- 
