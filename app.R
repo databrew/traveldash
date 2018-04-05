@@ -99,15 +99,15 @@ sidebar <- dashboardSidebar(
       tabName="timeline",
       icon=icon("calendar")),
     menuItem(
-      text="Upload data",
+      text="Upload trips",
       tabName="upload_data",
       icon=icon("upload")),
     menuItem(
-      text="Download data",
+      text="Download trips",
       tabName="download_data",
       icon=icon("download")),
     menuItem(
-      text="Edit data",
+      text="Edit trips",
       tabName="edit_data",
       icon=icon("pencil")),
     menuItem(
@@ -309,7 +309,7 @@ body <- dashboardBody(
                        actionButton('action_add', 'Add data',
                                     icon = icon('plus'))),
                 column(4, align = 'center',
-                       h3('Upload data'),
+                       h3('Upload trips'),
                        helpText('Upload a dataset from your computer. This should be either a .csv or .xls file.'),
                        fileInput('file1',
                                  '',
@@ -333,7 +333,7 @@ body <- dashboardBody(
             fluidPage(
               fluidRow(
                 column(12, align = 'center',
-                       h1('Download data'))
+                       h1('Download trips'))
               ),
               fluidRow(column(12, align = 'center',
                               downloadButton('download', 
