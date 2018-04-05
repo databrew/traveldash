@@ -2202,7 +2202,8 @@ server <- function(input, output, session) {
                 by = 'venue_type_id') %>%
       dplyr::select(- venue_type_id) %>%
       left_join(cities %>% dplyr::select(city_id, city_name), by = c('venue_city_id' = 'city_id')) %>%
-      dplyr::select(-venue_city_id)
+      dplyr::select(-venue_city_id) %>%
+      arrange(desc(event_start_date))
     if(!is.null(df)){
       if(nrow(df) > 0){
         hidden_ids$venue_id <- df$venue_id
