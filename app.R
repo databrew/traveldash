@@ -2306,7 +2306,7 @@ server <- function(input, output, session) {
     
     
     if(!is.null(df)){
-      rhandsontable(df, rowHeaders = NULL, width = 1000, height = 100) %>%
+      rhandsontable(df, rowHeaders = NULL, width = 1000, height = 200) %>%
         hot_col(col = "Person", type = "autocomplete", source = clean_vector(people$short_name), strict = FALSE) %>%
         hot_col(col = "Organization", type = "autocomplete", source = clean_vector(people$organization), strict = FALSE) %>%
         hot_col(col = 'Title', type = 'autocomplete', source = clean_vector(people$title), strict = FALSE) %>%
@@ -2332,6 +2332,8 @@ server <- function(input, output, session) {
       upload_raw_data(data = df,
                     logged_in_user_id = 1,
                     return_upload_results = TRUE)
+    message('Results from manual data upload:')
+    print(upload_results)
 
   })
   
@@ -2351,7 +2353,7 @@ server <- function(input, output, session) {
           ),
           fluidRow(
             column(12, align = 'center',
-                   actionButton('add_table_submit',
+                   action_modal_button('add_table_submit',
                                 'Submit new data',
                                 icon = icon('check')))
           )
