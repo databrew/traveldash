@@ -2181,7 +2181,8 @@ server <- function(input, output, session) {
                     `Trip Group` = trip_group,
                     Venue = venue_name,
                     Meeting = meeting_with,
-                    Agenda = agenda)
+                    Agenda = agenda) %>%
+      search_df(input$trips_filter) 
     
     if(!is.null(df)){
       if(nrow(df) > 0){
