@@ -343,8 +343,8 @@ body <- dashboardBody(
                                               fluidRow(column(12, align = 'center',
                                                               h3('Current information'),
                                                               actionButton('hot_people_submit',
-                                                                           'Submit changes',
-                                                                           icon = icon('check')))),
+                                                                           'Submit changes'),
+                                                              uiOutput('hot_people_submit_check'))),
                                               br(),
                                               fluidRow(rHandsontableOutput("hot_people"))),
                                        column(6, align = 'center',
@@ -361,7 +361,8 @@ body <- dashboardBody(
                                                                            '',
                                                                            choices = c('Upload from disk',
                                                                                        'Get from web')),
-                                                              uiOutput('upload_url_ui')
+                                                              uiOutput('upload_url_ui'),
+                                                              helpText('Recommended size: 200x200 - 800x800 px')
                                                               ))
                                                               )))),
                           tabPanel("Trips",
@@ -378,8 +379,8 @@ body <- dashboardBody(
                                      fluidRow(
                                        column(12, align = 'center',
                                               actionButton('hot_trips_submit',
-                                                           'Submit changes',
-                                                           icon = icon('check')))
+                                                           'Submit changes'),
+                                              uiOutput('hot_trips_submit_check'))
                                      ),
                                      br(),
                                      
@@ -397,8 +398,8 @@ body <- dashboardBody(
                                      fluidRow(
                                        column(12, align = 'center',
                                               actionButton('hot_venue_events_submit',
-                                                           'Submit changes',
-                                                           icon = icon('check')))
+                                                           'Submit changes'),
+                                              uiOutput('hot_venue_events_submit_check'))
                                      ),
                                      br(),
                                      fluidRow(
@@ -2111,18 +2112,10 @@ server <- function(input, output, session) {
   
   # People edit table
   output$hot_people <- renderRHandsontable({
-    df <- people %>%
-      dplyr::select(person_id,
-                    short_name,
-                    title,
-                    organization,
-                    is_wbg) %>%
-      filter(short_name == input$photo_person)
+    df <- make_hot_people(people = people, person = input$photo_person)
     if(!is.null(df)){
       if(nrow(df) > 0){
         hidden_ids$person_id <- df$person_id
-        df <- df %>% dplyr::select(-person_id) %>%
-          mutate(is_wbg = ifelse(is_wbg == 1, TRUE, FALSE))
         rhandsontable(df, #useTypes = TRUE,
                       stretchH = 'all',
                       # width = 1000, height = 100,
@@ -2137,38 +2130,14 @@ server <- function(input, output, session) {
   # Trips edit table
   output$hot_trips <- renderRHandsontable({
     
-    df <- view_all_trips_people_meetings_venues %>%
-      dplyr::select(short_name,
-                    organization,
-                    title,
-                    city_name,
-                    country_name,
-                    trip_start_date,
-                    trip_end_date,
-                    trip_group,
-                    venue_name, 
-                    meeting_with,
-                    agenda,
-                    trip_uid) %>%
-      arrange(desc(trip_start_date)) %>%
-      dplyr::rename(Person = short_name,
-                    Organization = organization,
-                    Title = title,
-                    City= city_name,
-                    Country = country_name,
-                    Start = trip_start_date,
-                    End = trip_end_date,
-                    `Trip Group` = trip_group,
-                    Venue = venue_name,
-                    Meeting = meeting_with,
-                    Agenda = agenda) %>%
-      search_df(input$trips_filter) 
+    df <- make_hot_trips(data = view_all_trips_people_meetings_venues,
+                         filter = input$trips_filter)
     
     if(!is.null(df)){
       if(nrow(df) > 0){
+        hidden_ids$trip_uid <- df$trip_uid
         
         # Update the hidden ids
-        hidden_ids$trip_uid <- df$trip_uid
         df <- df %>% dplyr::select(-trip_uid)
         rhandsontable(df, 
                       stretchH = 'all',
@@ -2191,21 +2160,7 @@ server <- function(input, output, session) {
   # Events edit table
   output$hot_venue_events <- renderRHandsontable({
     
-    df <- venue_events %>%
-      dplyr::select(venue_type_id,
-                    venue_city_id,
-                    event_title,
-                    event_start_date,
-                    event_end_date,
-                    display_flag,
-                    venue_id) %>%
-      left_join(venue_types %>% dplyr::select(venue_type_id,
-                                              type_name),
-                by = 'venue_type_id') %>%
-      dplyr::select(- venue_type_id) %>%
-      left_join(cities %>% dplyr::select(city_id, city_name), by = c('venue_city_id' = 'city_id')) %>%
-      dplyr::select(-venue_city_id) %>%
-      arrange(desc(event_start_date))
+    df <- make_hot_venue_events(data = venue_events)
     if(!is.null(df)){
       if(nrow(df) > 0){
         hidden_ids$venue_id <- df$venue_id
@@ -2224,14 +2179,33 @@ server <- function(input, output, session) {
     }
   })
   
+  # Define reactive values for checking diff between the last saved hot table and current one
+  last_save <- reactiveValues()
+  last_save$hot_people <- make_hot_people(people = people,
+                                          person = sort(unique(view_all_trips_people_meetings_venues$person_name))[1])
+  last_save$hot_trips <- make_hot_trips(data = view_all_trips_people_meetings_venues,
+                                        filter = NULL) %>% dplyr::select(-trip_uid)
+  last_save$hot_venue_events <- make_hot_venue_events(data = venue_events) %>% dplyr::select(-venue_id)
+  
+  # # Observe the trips filter and update accordingly
+  # observeEvent(input$trips_filter, {
+  #   the_filter <- input$trips_filter
+  #   if(!is.null(the_filter)){
+  #     if(length(the_filter) > 0){
+  #       if(nchar(the_filter) >= 1){
+  #         last_save$hot_trips <- make_hot_trips(data = view_all_trips_people_meetings_venues,
+  #                                               filter = the_filter) %>% dplyr::select(-trip_uid)
+  #       }
+  #     }
+  #   }
+  # })
   
   
   # Observe the submissions of the hands on tables and send info to database
-  # (not finished)
   observeEvent(input$hot_people_submit, {
     message('Edits to the people hands-on-table were submitted.')
     # Get the data
-    df <- hot_to_r(input$hot_people)
+    last_save$hot_people <- df <- hot_to_r(input$hot_people)
     # Convert the boolean back to 0/1
     df$is_wbg <- ifelse(df$is_wbg, 1, 0)
     # Get the person id
@@ -2239,7 +2213,7 @@ server <- function(input, output, session) {
     # For now, not doing anything with the data
     message('--- Nothing actually being changed in the database. Waiting on function from Soren.')
     upload_edited_people_data(data = df)
-    
+
     # Update the session
     updated_data <- db_to_memory(return_list = TRUE)
     vals$events <- updated_data$events
@@ -2250,10 +2224,35 @@ server <- function(input, output, session) {
     vals$view_trip_coincidences <- updated_data$view_trip_coincidences
     
   })
+  
+  output$hot_people_submit_check <- 
+    renderUI({
+      go <- FALSE
+      x <- last_save$hot_people
+      message('last save hot people looks like')
+      print(head(x))
+      if(nrow(x) > 0){
+        y <- input$hot_people
+        if(!is.null(y)){
+          y <- hot_to_r(y)
+          message('y looks like')
+          print(head(y))
+          if(identical(x,y)){
+            go <- TRUE
+          }
+        }
+      }
+      if(go){
+        fluidPage(fluidRow(column(12, align = 'center', icon('check'))))
+      } else {
+        fluidPage(fluidRow(column(12, align = 'center', helpText('Changes detected. Click above to save.'))))
+      }
+    })
+  
   observeEvent(input$hot_trips_submit, {
     message('Edits to the trips hands-on-table were submitted.')
     # Get the data
-    df <- hot_to_r(input$hot_trips)
+    last_save$hot_trips <- df <- hot_to_r(input$hot_trips)
     # For now, not doing anything with the data
     message('--- Uploading new trips data ')
     upload_results <- 
@@ -2271,12 +2270,50 @@ server <- function(input, output, session) {
     vals$view_trip_coincidences <- updated_data$view_trip_coincidences
     # vals$upload_results <- upload_results
     message('--- Done uploading new trips data.')
-    
   })
+  
+  output$hot_trips_submit_check <- 
+    renderUI({
+      go <- FALSE
+      nothing <- FALSE
+      x <- last_save$hot_trips
+      message('last save hot trips looks like')
+      print(head(x))
+      if(nrow(x) > 0){
+        y <- input$hot_trips
+        if(!is.null(y)){
+          y <- hot_to_r(y)
+          message('y looks like')
+          print(head(y))
+          if(identical(x,y)){
+            go <- TRUE
+          } 
+        }
+      }
+      if(!is.null(input$trips_filter)){
+        if(length(input$trips_filter) > 0){
+          if(nchar(input$trips_filter) > 0){
+            nothing <- TRUE
+          }
+        }
+      }
+      if(nothing){
+        fluidPage('')
+      } else {
+        if(go){
+          fluidPage(fluidRow(column(12, align = 'center', icon('check'))))
+        } else {
+          fluidPage(fluidRow(column(12, align = 'center', helpText('Changes detected. Click above to save.'))))
+        }
+      }
+      
+    })
+  
+  
   observeEvent(input$hot_venue_events_submit, {
     message('Edits to the venue_events hands-on-table were submitted.')
     # Get the data
-    df <- hot_to_r(input$hot_venue_events)
+    last_save$hot_venue_events <- df <- hot_to_r(input$hot_venue_events)
     # Get the hidden ids
     df$venue_id <- hidden_ids$venue_id
     message('Venue ids are ')
@@ -2300,6 +2337,31 @@ server <- function(input, output, session) {
     vals$view_trip_coincidences <- updated_data$view_trip_coincidences
     
   })
+  
+  output$hot_venue_events_submit_check <- 
+    renderUI({
+      go <- FALSE
+      x <- last_save$hot_venue_events
+      message('last save hot venue_events looks like')
+      print(head(x))
+      if(nrow(x) > 0){
+        y <- input$hot_venue_events
+        if(!is.null(y)){
+          y <- hot_to_r(y)
+          message('y looks like')
+          print(head(y))
+          if(identical(x,y)){
+            go <- TRUE
+          }
+        }
+      }
+      if(go){
+        fluidPage(fluidRow(column(12, align = 'center', icon('check'))))
+      } else {
+        fluidPage(fluidRow(column(12, align = 'center', helpText('Changes detected. Click above to save.'))))
+      }
+    })
+  
   
   
   # Add data table
