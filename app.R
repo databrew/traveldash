@@ -2165,6 +2165,7 @@ server <- function(input, output, session) {
                     meeting_with,
                     agenda,
                     trip_uid) %>%
+      arrange(desc(trip_start_date)) %>%
       dplyr::rename(Person = short_name,
                     Organization = organization,
                     Title = title,
