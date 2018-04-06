@@ -10,7 +10,7 @@ make_hot_venue_events <- function(data, venues = FALSE){
                   venue_name) %>%
     left_join(venue_types,
               by = 'venue_type_id') %>%
-    filter(is_temporal_venue) %>%
+    # filter(is_temporal_venue) %>%
     dplyr::select(-is_temporal_venue) %>%
     dplyr::select(- venue_type_id) %>%
     left_join(cities %>% dplyr::select(city_id, city_name), by = c('venue_city_id' = 'city_id')) %>%
