@@ -145,24 +145,7 @@ body <- dashboardBody(
   tags$head(tags$script(src = 'https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.16.0/moment.min.js', type = 'text/javascript')),
   tags$head(tags$script(src = 'demo.js')),
   tags$head(tags$script(src = 'src/jquery.daterangepicker.js')),
-  
-  # tags$head(tags$style(HTML("
-  # 
-  #                           #daterange12container
-  #                           {
-  #                           width:60px;
-  #                           margin:0 auto;
-  #                           color:#333;
-  #                           font-family:Tahoma,Verdana,sans-serif;
-  #                           line-height:1.5;
-  #                           font-size:10px;
-  #                           }
-  #                           .demo { margin:0px 0;}
-  #                           .date-picker-wrapper .month-wrapper table .day.lalala { background-color:red; }
-  #                           .options { display:none; border-left:0px solid #8ae; padding:2px; font-size:0px; line-height:1.4; background-color:#eee; border-radius:0px;}
-  # 
-  #                           "))),
-  
+
   tabItems(
     tabItem(tabName = 'main',
             
@@ -408,8 +391,13 @@ body <- dashboardBody(
                                    )))
             )
     )
-    )
-  )
+  ),
+  tags$style(type="text/css", "#add_table th {font-weight:bold;}"),
+  tags$style(type="text/css", "#hot_trips th {font-weight:bold;}"),
+  tags$style(type="text/css", "#hot_trips td {font-size: 10px;}"),
+  tags$style(type="text/css", "#hot_people th {font-weight:bold;}"),
+  tags$style(type="text/css", "#hot_venue_events th {font-weight:bold;}")
+)
 
 
 ui <- dashboardPage(header, sidebar, body)
@@ -2147,7 +2135,7 @@ server <- function(input, output, session) {
                       rowHeaders = NULL,
                       colHeaders = c('Name', 'Title', 'Organization', 'World Bank Group')) %>%
           hot_col(col = "World Bank Group", type = "checkbox") %>%
-          hot_cols(manualColumnResize = TRUE, columnSorting = TRUE)
+          hot_cols(manualColumnResize = TRUE, columnSorting = TRUE, halign = 'htCenter')
       }
     }
   })
@@ -2184,7 +2172,7 @@ server <- function(input, output, session) {
           hot_col(col = "Meeting", type = "autocomplete", source = clean_vector(view_all_trips_people_meetings_venues$meeting_with), strict = FALSE)  %>%
           hot_col(col = "Agenda", type = "autocomplete", source = clean_vector(view_all_trips_people_meetings_venues$agenda), strict = FALSE) %>%
           hot_col(col = 'Delete', type = 'checkbox') %>%
-          hot_cols(manualColumnResize=TRUE, columnSorting = TRUE, colWidths = 70)
+          hot_cols(manualColumnResize=TRUE, columnSorting = TRUE, colWidths = c(rep(50, ncol(df) - 1), 20), halign = 'htCenter')
       }
     }
   })
@@ -2206,7 +2194,7 @@ server <- function(input, output, session) {
           hot_col(col = "City", type = "autocomplete", source = clean_vector(cities$city_name), strict = FALSE)  %>%
           hot_col(col = "Event", type = "autocomplete", source = clean_vector(venue_events$event_title), strict = FALSE)  %>%
           hot_col(col = "Display on timeline", type = "checkbox") %>%
-          hot_cols(manualColumnResize=TRUE, columnSorting = TRUE)
+          hot_cols(manualColumnResize=TRUE, columnSorting = TRUE, halign = 'htCenter')
       }
     }
   })
@@ -2418,7 +2406,7 @@ server <- function(input, output, session) {
         hot_col(col = 'Venue', type = 'autocomplete', source = clean_vector(venue_events$venue_name), strict = FALSE) %>%
         hot_col(col = 'Meeting', type = 'autocomplete', source = clean_vector(people$short_name), strict = FALSE) %>%
         hot_col(col = 'Agenda', type = 'autocomplete', source = clean_vector(trip_meetings$agenda), strict = FALSE) %>%
-        hot_cols(colWidths = 90, manualColumnResize = TRUE, columnSorting = TRUE)
+        hot_cols(colWidths = 90, manualColumnResize = TRUE, columnSorting = TRUE, halign = 'htCenter')
     }
   })
   
