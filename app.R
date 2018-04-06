@@ -2174,7 +2174,7 @@ server <- function(input, output, session) {
           hot_col(col = "Meeting", type = "autocomplete", source = clean_vector(view_all_trips_people_meetings_venues$meeting_with), strict = FALSE)  %>%
           hot_col(col = "Agenda", type = "autocomplete", source = clean_vector(view_all_trips_people_meetings_venues$agenda), strict = FALSE) %>%
           hot_col(col = 'Delete', type = 'checkbox') %>%
-          hot_cols(manualColumnResize=TRUE, columnSorting = TRUE, colWidths = c(rep(50, ncol(df) - 1), 20), halign = 'htCenter')
+          hot_cols(manualColumnResize=TRUE, columnSorting = TRUE, colWidths = c(rep(50, ncol(df) - 1), 35), halign = 'htCenter')
       }
     }
   })
