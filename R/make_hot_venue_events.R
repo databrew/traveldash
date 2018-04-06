@@ -23,7 +23,8 @@ make_hot_venue_events <- function(data, venues = FALSE){
   } else {
       df <- df %>%
         filter(!is.na(event_title),
-               event_title != '')
+               event_title != '') %>%
+        dplyr::select(-venue_name)
     }
   return(df)
 }
