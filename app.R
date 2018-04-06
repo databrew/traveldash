@@ -2147,6 +2147,7 @@ server <- function(input, output, session) {
   hidden_ids$person_id <- NA
   hidden_ids$trip_uid <- NA
   hidden_ids$venue_id <- NA
+  hidden_ids$venue_venue_id <- NA
   
   # People edit table
   output$hot_people <- renderRHandsontable({
@@ -2434,7 +2435,7 @@ server <- function(input, output, session) {
     # Get the data
     last_save$hot_venues <- df <- hot_to_r(input$hot_venues)
     # Get the hidden ids
-    df$venue_id <- hidden_ids$venue_id
+    df$venue_id <- hidden_ids$venue_venue_id
     message('Venue ids are ')
     print(df$venue_id)
     # Convert venue type name to venue type id
