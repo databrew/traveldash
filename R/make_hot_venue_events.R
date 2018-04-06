@@ -1,4 +1,4 @@
-make_hot_venue_events <- function(data){
+make_hot_venue_events <- function(data, venues = FALSE){
   df <- data %>%
     dplyr::select(venue_type_id,
                   venue_city_id,
@@ -6,7 +6,8 @@ make_hot_venue_events <- function(data){
                   event_start_date,
                   event_end_date,
                   display_flag,
-                  venue_id) %>%
+                  venue_id,
+                  venue_name) %>%
     left_join(venue_types %>% dplyr::select(venue_type_id,
                                             type_name),
               by = 'venue_type_id') %>%
@@ -14,5 +15,15 @@ make_hot_venue_events <- function(data){
     left_join(cities %>% dplyr::select(city_id, city_name), by = c('venue_city_id' = 'city_id')) %>%
     dplyr::select(-venue_city_id) %>%
     arrange(desc(event_start_date))
+  if(venues){
+    df <- df %>%
+      mutate(event_title = venue_name) %>%
+      dplyr::select(-venue_name) %>%
+      dplyr::rename(venue_name = event_title)
+  } else {
+      df <- df %>%
+        filter(!is.na(event_title),
+               event_title != '')
+    }
   return(df)
 }
