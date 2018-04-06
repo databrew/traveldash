@@ -363,10 +363,10 @@ body <- dashboardBody(
                                                               h3('New photo'),
                                                               # imageOutput('new_photo_output'),
                                                               uiOutput('new_photo_ui'),
-                                                              radioButtons('url_or_upload',
-                                                                           '',
-                                                                           choices = c('Upload from disk',
-                                                                                       'Get from web')),
+                                                              # radioButtons('url_or_upload',
+                                                              #              '',
+                                                              #              choices = c('Upload from disk',
+                                                              #                          'Get from web')),
                                                               uiOutput('upload_url_ui'),
                                                               helpText('Recommended size: 200x200 - 800x800 px')
                                               ))
@@ -1922,7 +1922,8 @@ server <- function(input, output, session) {
   output$photo_confirmation_ui <-
     renderUI({
       ok <- FALSE
-      upl <- input$url_or_upload
+      # upl <- input$url_or_upload
+      upl <- 'Upload from disk' # temporarily disabling upload from web due to firewall
       x <- uploaded_photo_path()
       if(upl == 'Get from web'){
         ok <- TRUE
@@ -1949,7 +1950,9 @@ server <- function(input, output, session) {
     person <- input$photo_person
     destination_file <- paste0('www/headshots/circles/', person, '.png')
     
-    upl <- input$url_or_upload
+    # upl <- input$url_or_upload
+    upl <- 'Upload from disk' # temporarily disabling upload from web due to firewall
+    
     if(upl == 'Upload from disk'){
       upp <- uploaded_photo_path()
       img_url <- upp
@@ -2004,7 +2007,9 @@ server <- function(input, output, session) {
   #UI for editing new photo
   output$new_photo_ui <- renderUI({
     ok <- FALSE
-    upl <- input$url_or_upload
+    # upl <- input$url_or_upload
+    upl <- 'Upload from disk' # temporarily disabling upload from web due to firewall
+    
     x <- uploaded_photo_path()
     if(upl == 'Get from web'){
       ok <- TRUE
@@ -2049,7 +2054,9 @@ server <- function(input, output, session) {
     scale <- input$scale
     print(paste("Scale: ",scale))
     # upp <- uploaded_photo_path()
-    upl <- input$url_or_upload
+    # upl <- input$url_or_upload
+    upl <- 'Upload from disk' # temporarily disabling upload from web due to firewall
+    
     if(upl == 'Upload from disk'){
       upp <- uploaded_photo_path()
       img_url <- upp
@@ -2107,7 +2114,9 @@ server <- function(input, output, session) {
   
   output$upload_url_ui <- renderUI({
     
-    upl <- input$url_or_upload
+    # upl <- input$url_or_upload
+    upl <- 'Upload from disk' # temporarily disabling upload from web due to firewall
+    
     if(upl == 'Upload from disk'){
       fileInput('photo_upload',
                 'Upload here:',
