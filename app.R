@@ -2218,7 +2218,7 @@ server <- function(input, output, session) {
                       # width = 1000, height = 300,
                       rowHeaders = NULL,
                       colHeaders = c('Event', 'Start', 'End', 'Display on timeline', 'Type', 'City')) %>%
-          hot_col(col = "Type", type = "autocomplete", source = clean_vector(venue_types$type_name), strict = FALSE)  %>%
+          hot_col(col = "Type", type = "autocomplete", source = clean_vector(venue_types$type_name[venue_types$is_temporal_venue]), strict = FALSE)  %>%
           hot_col(col = "City", type = "autocomplete", source = clean_vector(cities$city_name), strict = FALSE)  %>%
           hot_col(col = "Event", type = "autocomplete", source = clean_vector(venue_events$event_title), strict = FALSE)  %>%
           hot_col(col = "Display on timeline", type = "checkbox") %>%
@@ -2231,17 +2231,17 @@ server <- function(input, output, session) {
   # Events edit table
   output$hot_venues <- renderRHandsontable({
     
-    df <- make_hot_venue_events(data = venue_events, venues = TRUE)
+    df <- make_hot_venues(data = venue_events)
     if(!is.null(df)){
       if(nrow(df) > 0){
-        hidden_ids$venue_id <- df$venue_id
+        hidden_ids$venue_venue_id <- df$venue_id
         df <- df %>% dplyr::select(-venue_id)
         rhandsontable(df, 
                       stretchH = 'all',
                       # width = 1000, height = 300,
                       rowHeaders = NULL,
-                      colHeaders = c('Venue', 'Start', 'End', 'Display on timeline', 'Type', 'City')) %>%
-          hot_col(col = "Type", type = "autocomplete", source = clean_vector(venue_types$type_name), strict = FALSE)  %>%
+                      colHeaders = c('Display on timeline', 'Venue',  'Type', 'City')) %>%
+          hot_col(col = "Type", type = "autocomplete", source = clean_vector(venue_types$type_name[!venue_types$is_temporal_venue]), strict = FALSE)  %>%
           hot_col(col = "City", type = "autocomplete", source = clean_vector(cities$city_name), strict = FALSE)  %>%
           hot_col(col = "Venue", type = "autocomplete", source = clean_vector(venue_events$event_title), strict = FALSE)  %>%
           hot_col(col = "Display on timeline", type = "checkbox") %>%
@@ -2258,7 +2258,7 @@ server <- function(input, output, session) {
   last_save$hot_trips <- make_hot_trips(data = view_all_trips_people_meetings_venues,
                                         filter = NULL) %>% dplyr::select(-trip_uid) %>% mutate(Delete = FALSE)
   last_save$hot_venue_events <- make_hot_venue_events(data = venue_events) %>% dplyr::select(-venue_id)
-  last_save$hot_venues <- make_hot_venue_events(data = venue_events, venues = TRUE) %>% dplyr::select(-venue_id)
+  last_save$hot_venues <- make_hot_venues(data = venue_events) %>% dplyr::select(-venue_id)
   
   # # Observe the trips filter and update accordingly
   # observeEvent(input$trips_filter, {
@@ -2445,7 +2445,7 @@ server <- function(input, output, session) {
       dplyr::select(-type_name)
     # For now, not doing anything with the data
     message('--- Nothing actually being changed in the database. Waiting on function from Soren.')
-    upload_edited_venue_events_data(data = df)
+    upload_edited_venues_data(data = df)
     
     # Update the session
     updated_data <- db_to_memory(return_list = TRUE)
