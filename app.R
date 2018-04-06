@@ -345,14 +345,14 @@ body <- dashboardBody(
                                                                  'Person',
                                                                  choices = sort(unique(view_all_trips_people_meetings_venues$person_name))))),
                                      fluidRow(
-                                       column(6, 
+                                       column(6,
                                               fluidRow(column(12, align = 'center',
                                                               h3('Current information'),
                                                               actionButton('hot_people_submit',
                                                                            'Submit changes'),
                                                               uiOutput('hot_people_submit_check'))),
                                               br(),
-                                              fluidRow(rHandsontableOutput("hot_people"))),
+                                              rHandsontableOutput("hot_people")),
                                        column(6, align = 'center',
                                               fluidRow(column(12,
                                                               align = 'center',
@@ -2130,12 +2130,14 @@ server <- function(input, output, session) {
       if(nrow(df) > 0){
         hidden_ids$person_id <- df$person_id
         rhandsontable(df, #useTypes = TRUE,
-                      stretchH = 'all',
-                      # width = 1000, height = 100,
+                      # stretchH = 'all',
+                      width = 350, 
+                      # height = 100,
                       rowHeaders = NULL,
                       colHeaders = c('Name', 'Title', 'Organization', 'World Bank Group')) %>%
           hot_col(col = "World Bank Group", type = "checkbox") %>%
-          hot_cols(manualColumnResize = TRUE, columnSorting = TRUE, halign = 'htCenter')
+          hot_cols(manualColumnResize = TRUE, columnSorting = TRUE, halign = 'htCenter',
+                   colWidths = c(rep(100, ncol(df) - 1), 50))
       }
     }
   })
