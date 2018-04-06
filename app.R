@@ -520,9 +520,7 @@ server <- function(input, output, session) {
                End = format(Sys.Date() + 3, '%m/%d/%Y'),
                `Trip Group` = NA,
                Venue = 'Acme Hotel',
-               Agenda = 'Meeting with stakeholders',
-               CMD = NA,
-               ID = NA)
+               Agenda = 'Meeting with stakeholders')
   })
   
   output$uploaded_table <- DT::renderDataTable({
