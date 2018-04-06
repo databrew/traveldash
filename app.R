@@ -523,7 +523,18 @@ server <- function(input, output, session) {
   
   # Column table
   output$column_table_correct <- renderTable({
-    upload_format %>% sample_n(0)
+    data_frame(Person = 'John Doe',
+               Organization = 'Acme Inc.',
+               Title = 'CEO',
+               City = 'New York',
+               Country = 'USA',
+               Start = format(Sys.Date(), '%m/%d/%Y'),
+               End = format(Sys.Date() + 3, '%m/%d/%Y'),
+               `Trip Group` = NA,
+               Venue = 'Acme Hotel',
+               Agenda = 'Meeting with stakeholders',
+               CMD = NA,
+               ID = NA)
   })
   
   output$uploaded_table <- DT::renderDataTable({
