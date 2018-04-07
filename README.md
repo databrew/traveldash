@@ -100,9 +100,9 @@ psql --host=databrewdb.cfejspjhdciw.us-east-2.rds.amazonaws.com --port=8080 --us
 \i dev.sql
 ```
 
-#####################
+## Privileges
 
-
+One might find that there are permissions/privileges issues on newly created tables and schemas. In this case, consider the below:
 
 - Use the code in `grant_privileges.sql` to grant privileges to the `worldbank` user (password in credentials file).
 
