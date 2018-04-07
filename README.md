@@ -3,13 +3,13 @@ A travel dashboard for the IFC / World Bank
 
 # To-do
 
-# Developer's instructions
-
 - Log-in ability
 - Get rid of global read-in and replace with session-specific reactive values (use the `vals` object, etc.)
 - About page reformatting
 - Blank pre-formatted xlsx template
 
+
+# Developer's instructions
 
 ## Packages
 
