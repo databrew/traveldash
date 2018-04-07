@@ -26,6 +26,9 @@ make_hot_venue_events <- function(data, venues = FALSE){
         filter(!is.na(event_title),
                event_title != '') %>%
         dplyr::select(-venue_name)
+      df <- df %>%
+        dplyr::select(type_name, event_title, city_name, event_start_date, event_end_date, display_flag, venue_id)
+      
     }
   return(df)
 }

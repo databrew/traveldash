@@ -2217,7 +2217,7 @@ server <- function(input, output, session) {
                       stretchH = 'all',
                       # width = 1000, height = 300,
                       rowHeaders = NULL,
-                      colHeaders = c('Event', 'Start', 'End', 'Display on timeline', 'Type', 'City')) %>%
+                      colHeaders = c('Type', 'Event', 'City', 'Start', 'End', 'Display on timeline')) %>%
           hot_col(col = "Type", type = "autocomplete", source = clean_vector(venue_types$type_name[venue_types$is_temporal_venue]), strict = FALSE)  %>%
           hot_col(col = "City", type = "autocomplete", source = clean_vector(cities$city_name), strict = FALSE)  %>%
           hot_col(col = "Event", type = "autocomplete", source = clean_vector(venue_events$event_title), strict = FALSE)  %>%
@@ -2240,7 +2240,7 @@ server <- function(input, output, session) {
                       stretchH = 'all',
                       # width = 1000, height = 300,
                       rowHeaders = NULL,
-                      colHeaders = c('Display on timeline', 'Venue',  'Type', 'City')) %>%
+                      colHeaders = c('Type', 'Venue', 'City', 'Display on timeline')) %>%
           hot_col(col = "Type", type = "autocomplete", source = clean_vector(venue_types$type_name[!venue_types$is_temporal_venue]), strict = FALSE)  %>%
           hot_col(col = "City", type = "autocomplete", source = clean_vector(cities$city_name), strict = FALSE)  %>%
           hot_col(col = "Venue", type = "autocomplete", source = clean_vector(venue_events$event_title), strict = FALSE)  %>%

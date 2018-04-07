@@ -12,6 +12,7 @@ make_hot_venues <- function(data){
     dplyr::select(- venue_type_id) %>%
     left_join(cities %>% dplyr::select(city_id, city_name), by = c('venue_city_id' = 'city_id')) %>%
     dplyr::select(-venue_city_id) %>%
-    arrange(venue_name)
+    arrange(venue_name) %>%
+    dplyr::select(type_name, venue_name, city_name, display_flag, venue_id)
   return(df)
 }
