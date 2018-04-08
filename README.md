@@ -7,6 +7,7 @@ A travel dashboard for the IFC / World Bank
 - Get rid of global read-in and replace with session-specific reactive values (use the `vals` object, etc.)
 - About page reformatting
 - Blank pre-formatted xlsx template
+- Replace the timevis data to use `view_all`, and filter for only large events.
 
 
 # Developer's instructions
