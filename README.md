@@ -3,10 +3,16 @@ A travel dashboard for the IFC / World Bank
 
 # To-do
 
+## Overall status  
+
+This dashboard is in the final stages of development. Everything is functional as is. The main changes pertain to getting the dashboard into a state in which individual users access their own specific accounts (ie, log-in, only access their own data, etc.). 
+
+## Tasks  
+
 - Log-in ability
 - Get rid of global read-in and replace with session-specific reactive values (use the `vals` object, etc.)
-- About page reformatting
-- Blank pre-formatted xlsx template
+- About page reformatting: make the same format as the WB intranet.
+- Blank pre-formatted xlsx template: the user should be able to download an empty xls template, with row 1 being explanations of each column, row 2 being column headers, and the cells being colored appropriately. 
 - Replace the timevis data to use `view_all`, and filter for only large events.
 
 
