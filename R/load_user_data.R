@@ -35,8 +35,7 @@ load_user_data <- function(return_list = TRUE,
     message(paste0('Reading in the ', this_table, ' from the database and assigning to global environment.'))
     x <- get_data(tab = this_table,
                   schema = 'pd_wbgtravel',
-                  connection_object = conn,
-                  use_sqlite = use_sqlite)
+                  connection_object = conn)
     
     # If this is the "view_all", expand it to include some more useful columns
     if(tables[i] == 'view_all_trips_people_meetings_venues'){

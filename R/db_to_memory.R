@@ -33,8 +33,7 @@ db_to_memory <- function(return_list = FALSE){
     message(paste0('Reading in the ', this_table, ' from the database and assigning to global environment.'))
     x <- get_data(tab = this_table,
                   schema = 'pd_wbgtravel',
-                  connection_object = conn,
-                  use_sqlite = use_sqlite)
+                  connection_object = conn)
     # Re-shape events before assigning to global environment
     if(this_table == 'events'){
       message(paste0('Restructuring events table'))

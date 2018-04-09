@@ -38,8 +38,7 @@ fields <- list(up_id="int4",Person="varchar(50)",Organization="varchar(50)",City
 
 # Get credentials
 credentials <- credentials_extract()
-c_ob <- credentials_connect(options_list = credentials,
-                            use_sqlite = FALSE)
+c_ob <- credentials_connect(options_list = credentials)
 
 start_time <- Sys.time()
 
@@ -63,8 +62,7 @@ print(paste0("Database upload time: ", end_time - start_time))
 #   print(upload_results)
 # } 
 
-c_ob <- credentials_connect(options_list = credentials,
-                            use_sqlite = FALSE)
+c_ob <- credentials_connect(options_list = credentials)
 
 get_geo <- function(city_id,q) 
 {

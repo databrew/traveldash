@@ -2,7 +2,6 @@
 #' 
 #' Geocode missing lat /lons in the database
 #' @param pool The connection pool
-#' @param use_sqlite Whether to use_sqlite (alternative is postgres)
 #' @return the cities table in the database gets updated
 #' @export
 #' @import tmaptools

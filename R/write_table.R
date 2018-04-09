@@ -5,18 +5,15 @@
 #' in or somewhere upwards of the working directory.
 #' @param table The name of the table in the database to be written
 #' @param schema The schema of the table in the database to be written
-#' @param use_sqlite Whether to use SQLite; alternative is PostgreSQL
 #' @return A table will be written or overwritten
 #' @import DBI
 #' @import RPostgreSQL
-#' @import RSQLite
 #' @export
 
 write_table <- function(connection_object = NULL,
                         table = 'dev_events',
                         schema = 'pd_wbgtravel',
-                        value,
-                        use_sqlite = FALSE){
+                        value){
   
   # If not connection object, try to find one
   if(is.null(connection_object)){
@@ -30,14 +27,7 @@ write_table <- function(connection_object = NULL,
   }
   
   # Define table name
-  if(use_sqlite){
-    if(!is.null(schema)){
-      schema <- paste0(schema, '.')
-    }
-    table_name <- paste0(schema, table)
-  } else {
     table_name <- c(schema, table)
-  }
   
   # Write
   dbWriteTable(connection_object, 
