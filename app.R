@@ -10,38 +10,38 @@ the_width <- 280
 header <- dashboardHeader(title="Travel dashboard",
                           
                           tags$li(class = 'dropdown',  
-                                  tags$style(type='text/css', "#reset_date_range { width:100%; margin-top: 22px; margin-right: 10px; margin-left: 10px; font-size:80%}"),
-                                  tags$style(type='text/css', "#search { width:70%; margin-right: 10px; margin-left: 10px; font-size:80%}"),
-                                  tags$style(type='text/css', "#wbg_only {margin-right: 10px; margin-left: 10px; font-size:80%}"),
-                                  tags$style(type='text/css', "#date_range_2 { width:80%; margin-top: 5px; margin-left: 10px; margin-right: 10px; font-size:80%}"),
-                                  tags$style(type='text/css', "#log_out { width:100%; margin-top: 22px; margin-right: 10px; margin-left: 10px; font-size:80%}"),
+                                  tags$style(type='text/css', "#reset_date_range {margin-right: 10px; margin-left: 10px; font-size:80%; margin-top: 10px; margin-bottom: -10px;}"),
+                                  tags$style(type='text/css', "#search_ui {margin-right: 10px; margin-left: 10px; font-size:80%; margin-top: -5px; width:70%; margin-bottom: -10px;}"),
+                                  tags$style(type='text/css', "#wbg_only_ui {margin-right: 10px; margin-left: 10px; font-size:80%; margin-top: -5px; margin-bottom: -10px;}"),
+                                  tags$style(type='text/css', "#date_range_2_ui {margin-right: 10px; margin-left: 10px; font-size:80%; margin-top: -5px; margin-bottom: -10px;}"),
+                                  
+                                  tags$style(type='text/css', "#log_out {margin-right: 10px; margin-left: 10px; font-size:80%; margin-top: 10px; margin-bottom: -10px;}"),
                                   
                                   tags$li(class = 'dropdown',
                                           uiOutput('date_range_2_ui')),
                                   tags$li(class = 'dropdown',
                                           uiOutput('reset_date_range_ui')),
                                   tags$li(class = 'dropdown',
-                                          img(src='blue.png', align = "center", width = '20px')),
+                                          img(src='blue.png', align = "center", width = '160px', height = '10px')),
                                   tags$li(class = 'dropdown',
-                                          
-                                          div(uiOutput('wbg_only_ui'), 
-                                              style='text-align: center;')
+                                          uiOutput('wbg_only_ui')
                                   ),
                                   tags$li(class = 'dropdown',
                                           uiOutput('search_ui')),
+                                  # span(uiOutput('log_in_text'), class = "logo"),
                                   tags$li(class = 'dropdown',
                                           uiOutput('log_out_ui')),
                                   tags$li(class = 'dropdown',
-                                          img(src='blue.png', align = "center", width = '20px'))),
+                                          img(src='blue.png', align = "center", width = '160px', height = '10px'))),
                           titleWidth = the_width)
 
 # Sidebar
 sidebar <- dashboardSidebar(
-  tags$style(".left-side, .main-sidebar {padding-top: 70px}"),
-  tags$style(".main-header {max-height: 70px}"),
-  tags$style(".main-header .logo {height: 70px;}"),
-  tags$style(".sidebar-toggle {height: 70px; padding-top: 1px !important;}"),
-  tags$style(".navbar {min-height:70px !important}"),  
+  # tags$style(".left-side, .main-sidebar {padding-top: 70px}"),
+  # tags$style(".main-header {max-height: 70px}"),
+  # tags$style(".main-header .logo {height: 70px;}"),
+  # tags$style(".sidebar-toggle {height: 70px; padding-top: 1px !important;}"),
+  # tags$style(".navbar {min-height:70px !important}"),  
   
   tags$script(type="text/javascript", "function dragend(event) 
               {
@@ -443,6 +443,23 @@ server <- function(input, output, session) {
       }
     }
   })
+  
+  # Log in text
+  output$log_in_text <- renderText({
+    l <- logged_in()
+    if(!l){
+      return(NULL)
+    }
+    u <- user_id()
+    out <- 'Not logged in'
+    if(!is.null(u)){
+      if(u != ''){
+        out <- paste0('Logged in as ', u)
+      }
+    }
+    return(out)
+  })
+  
   
   # Text to warn if no data
   output$any_data_ui <- renderUI({
