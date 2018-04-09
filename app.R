@@ -37,11 +37,11 @@ header <- dashboardHeader(title="Travel dashboard",
 
 # Sidebar
 sidebar <- dashboardSidebar(
-  # tags$style(".left-side, .main-sidebar {padding-top: 70px}"),
-  # tags$style(".main-header {max-height: 70px}"),
-  # tags$style(".main-header .logo {height: 70px;}"),
-  # tags$style(".sidebar-toggle {height: 70px; padding-top: 1px !important;}"),
-  # tags$style(".navbar {min-height:70px !important}"),  
+  tags$style(".left-side, .main-sidebar {padding-top: 70px}"),
+  tags$style(".main-header {max-height: 70px}"),
+  tags$style(".main-header .logo {height: 70px;}"),
+  tags$style(".sidebar-toggle {height: 70px; padding-top: 1px !important;}"),
+  tags$style(".navbar {min-height:70px !important}"),
   
   tags$script(type="text/javascript", "function dragend(event) 
               {
@@ -2221,6 +2221,7 @@ server <- function(input, output, session) {
     df$person_id <- hidden_ids$person_id
     # For now, not doing anything with the data
     message('--- Nothing actually being changed in the database. Waiting on function from Soren.')
+    save(df, file = 'upload_edited_people_data.RData')
     upload_edited_people_data(data = df)
     
     # Update the session
@@ -2336,6 +2337,7 @@ server <- function(input, output, session) {
       dplyr::select(-type_name)
     # For now, not doing anything with the data
     message('--- Nothing actually being changed in the database. Waiting on function from Soren.')
+    save(df, file = 'upload_edited_venue_events_data.RData')
     upload_edited_venue_events_data(data = df)
     
     # Update the session
@@ -2386,6 +2388,7 @@ server <- function(input, output, session) {
       dplyr::select(-type_name)
     # For now, not doing anything with the data
     message('--- Nothing actually being changed in the database. Waiting on function from Soren.')
+    save(df, file = 'upload_edited_venues_data.RData')
     upload_edited_venues_data(data = df)
     
     # Update the session
