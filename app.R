@@ -2585,7 +2585,7 @@ server <- function(input, output, session) {
                 choices = the_choices)
   })
   
-  }
+}
 
 # Run the application 
 shinyApp(ui = ui, server = server)
