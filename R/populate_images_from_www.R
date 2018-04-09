@@ -38,7 +38,7 @@ populate_image_from_www <- function(name)
               where people.person_id = up.person_id;")
   dbSendQuery(conn,"drop table if exists public._temp_headshots_upload;")
   end_time <- Sys.time()
-  print(paste0("Database upload/download time: ", end_time - start_time))
+  message(paste0("Database upload/download time: ", end_time - start_time))
 
   #poolReturn(conn)
   db_release_connection(conn)

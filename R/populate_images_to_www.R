@@ -47,7 +47,7 @@ populate_images_to_www <- function()
     
     end_time <- Sys.time()
     
-    print(paste0("populate_images_to_www(): Database upload/download time: ", end_time - start_time))
+    message(paste0("populate_images_to_www(): Database upload/download time: ", end_time - start_time))
   } else {
     message('No image_data in the people table. Skipping.')
   }

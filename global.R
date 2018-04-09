@@ -80,7 +80,7 @@ users <- get_data(tab = 'users',
 #This should already be happening, see commented note in populate_images_from_www
 #populate_images_from_www(pool = GLOBAL_DB_POOL) # www to db
 populate_images_to_www() # db to www
-images <- get_images()
+# images <- get_images()
 
 # Image manipulation
 resourcepath <- paste0(getwd(),"/www")
