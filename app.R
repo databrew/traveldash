@@ -14,28 +14,25 @@ header <- dashboardHeader(title="Travel dashboard",
                                   tags$style(type='text/css', "#search { width:70%; margin-right: 10px; margin-left: 10px; font-size:80%}"),
                                   tags$style(type='text/css', "#wbg_only {margin-right: 10px; margin-left: 10px; font-size:80%}"),
                                   tags$style(type='text/css', "#date_range_2 { width:80%; margin-top: 5px; margin-left: 10px; margin-right: 10px; font-size:80%}"),
+                                  tags$style(type='text/css', "#log_out { width:100%; margin-top: 22px; margin-right: 10px; margin-left: 10px; font-size:80%}"),
                                   
                                   tags$li(class = 'dropdown',
                                           uiOutput('date_range_2_ui')),
                                   tags$li(class = 'dropdown',
-                                          actionButton('reset_date_range', 'Reset', icon = icon('undo'))),
+                                          uiOutput('reset_date_range_ui')),
                                   tags$li(class = 'dropdown',
                                           img(src='blue.png', align = "center", width = '20px')),
                                   tags$li(class = 'dropdown',
                                           
-                                          div(selectInput('wbg_only',
-                                                          '',
-                                                          choices = 
-                                                            c('All affiliations' = 'Everyone', 
-                                                              'WBG only' = 'WBG only', 
-                                                              'Non-WBG only' = 'Non-WBG only'),
-                                                          width = '150px'), 
+                                          div(uiOutput('wbg_only_ui'), 
                                               style='text-align: center;')
                                   ),
                                   tags$li(class = 'dropdown',
-                                          textInput('search',
-                                                    '',
-                                                    placeholder = 'Search for people, places, events'))),
+                                          uiOutput('search_ui')),
+                                  tags$li(class = 'dropdown',
+                                          uiOutput('log_out_ui')),
+                                  tags$li(class = 'dropdown',
+                                          img(src='blue.png', align = "center", width = '20px'))),
                           titleWidth = the_width)
 
 # Sidebar
@@ -422,6 +419,12 @@ server <- function(input, output, session) {
     }
   })
   
+  # Observe the log out button
+  observeEvent(input$log_out, {
+    logged_in(FALSE)
+    logged_in_user_id(0)
+  })
+  
   # Create a reactive dataframe of photos
   photos_reactive <- reactiveValues()
   photos_reactive$images <- images
@@ -448,6 +451,51 @@ server <- function(input, output, session) {
     # reset
     date_range(c(Sys.Date() - 7,
                  Sys.Date() + 14))
+  })
+  
+  output$reset_date_range_ui <- renderUI({
+    li <- logged_in()
+    if(!li){
+      return(NULL)
+    } else {
+      actionButton('reset_date_range', 'Reset', icon = icon('undo'))
+    }
+  })
+  
+  output$log_out_ui <- renderUI({
+    li <- logged_in()
+    if(li){
+      tags$li(class = 'dropdown',
+              actionButton('log_out', label = 'Log out', icon = icon('times')))
+    } else {
+      NULL
+    }
+  })
+  
+  output$wbg_only_ui <- renderUI({
+    li <- logged_in()
+    if(!li){
+      return(NULL)
+    } else {
+      selectInput('wbg_only',
+                  '',
+                  choices = 
+                    c('All affiliations' = 'Everyone', 
+                      'WBG only' = 'WBG only', 
+                      'Non-WBG only' = 'Non-WBG only'),
+                  width = '150px')
+    }
+  })
+  
+  output$search_ui <- renderUI({
+    li <- logged_in()
+    if(!li){
+      return(NULL)
+    } else {
+      textInput('search',
+                '',
+                placeholder = 'Search for people, places, events')
+    }
   })
   
   output$date_ui <- renderUI({
@@ -1666,6 +1714,10 @@ server <- function(input, output, session) {
   })
   
   output$date_range_2_ui <- renderUI({
+    li <- logged_in()
+    if(!li){
+      return(NULL)
+    }
     dr <- date_range()
     the_tab <- input$tabs
     message('the tab is ', the_tab)
