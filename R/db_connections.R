@@ -25,11 +25,13 @@ db_disconnect <- function()
   }
 }
 
-db_get_pool <- function()
+db_get_pool <- function(msg = TRUE)
 {
   if (!exists("GLOBAL_DB_POOL",envir=globalenv()) || get("GLOBAL_DB_POOL",envir=globalenv())$valid==FALSE)
   {
-    print('Creating Global Pool Object')
+    if(msg){
+      message('Creating Global Pool Object')
+    }
     db_disconnect()
     assign("GLOBAL_DB_POOL",envi=globalenv(),value=create_pool(options_list = credentials_extract()))
   }

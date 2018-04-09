@@ -1,7 +1,3 @@
-# events placeholder
-events <- data.frame(a = 1:3,
-                     b = 2:4)
-
 library(RColorBrewer)
 library(maps)
 library(tidyverse)
@@ -17,7 +13,6 @@ library(tidyverse)
 library(googleVis)
 library(DT)
 library(data.table)
-#library(googlesheets)
 library(DBI)
 library(yaml)
 library(httr)
@@ -31,11 +26,9 @@ library(readxl)
 library(htmlTable)
 library(rhandsontable)
 
-message('############ Done with package loading')
-#setwd("C:/Users/SHeitmann/WBG/Sinja Buri - FIG SSA MEL/MEL Program Operations/Knowledge Products/Dashboards & Viz/WBG Travel/GitHub/traveldash")
 # Source all the functions in the R directory
 functions <- dir('R')
-message('Sourcing functions:')
+message('Sourcing functions from the following files in the R/ directory:')
 for(i in 1:length(functions)){
   message('---', functions[i])
   this_function <- functions[i]
@@ -44,19 +37,8 @@ for(i in 1:length(functions)){
   }
 }
 
-# Create a dataframe for dicting day numbers to dates
-date_dictionary <-
-  data_frame(date = seq(as.Date('2017-01-01'),
-                        as.Date('2018-12-31'),
-                        1))
-date_dictionary <- date_dictionary %>%
-  mutate(day_number = 1:nrow(date_dictionary))
-
 # Read in short and long format examples
-upload_format <- read_csv('upload_format.csv')
-
-# Skin of header
-skin <- 'blue'
+suppressMessages(upload_format <- read_csv('upload_format.csv'))
 
 # Detect which database
 creds <- credentials_extract()
@@ -65,19 +47,20 @@ creds <- paste0(paste0(#unlist(names(creds)),
                        # ' : ', 
                        unlist(creds)), collapse = '\n')
 
-message('Using the following credentials:')
-message(creds)
-
+# Get some tables shared between all users (and which don't ever require in-session refreshing)
+conn <- db_get_connection()
 # Load up venue types (since all sessions use it)
 venue_types <- get_data(tab = 'venue_types',
-                        schema = 'pd_wbgtravel')
+                        schema = 'pd_wbgtravel',
+                        connection_object = conn)
 
 # Users table is also identical for all users
 users <- get_data(tab = 'users',
-                  schema = 'pd_wbgtravel')
+                  schema = 'pd_wbgtravel',
+                  connection_object = conn)
+db_release_connection(conn)  
 
 # Syncronize the www photo storage with the database
-#This should already be happening, see commented note in populate_images_from_www
 #populate_images_from_www(pool = GLOBAL_DB_POOL) # www to db
 populate_images_to_www() # db to www
 # images <- get_images()
@@ -91,8 +74,5 @@ mask <- image_composite(maskc, masks, "out")
 # Get app start time
 app_start_time <- Sys.time()
 app_start_time <- as.numeric(app_start_time)
-
-
-
 
 message('############ Done with global.R')

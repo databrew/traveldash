@@ -1938,9 +1938,7 @@ server <- function(input, output, session) {
         file.remove(paste0('www/', delete_old_ones[i]))
       }
     }
-    
-    this_time <- as.numeric(Sys.time())
-    zz <- -1# *(20000000000 - this_time - app_start_time)
+    zz <- -1
     
     scale <- input$scale
     print(paste("Scale: ",scale))
@@ -1960,7 +1958,7 @@ server <- function(input, output, session) {
     }
     
     
-    print(paste('Rendering image [ ',img_url,' ]'))
+    message(paste('Rendering image [ ',img_url,' ]'))
     go <- FALSE
     if(!is.null(img_url)){
       if(length(img_url) > 0){
@@ -2493,7 +2491,8 @@ server <- function(input, output, session) {
     }
     if(file.exists('www/headshots/circle_img.png')){
       file.remove('www/headshots/circle_img.png')
-    }if(file.exists('www/circle_img.png')){
+    }
+    if(file.exists('www/circle_img.png')){
       file.remove('www/circle_img.png')
     }
   })
