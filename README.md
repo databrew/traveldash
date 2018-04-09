@@ -14,7 +14,9 @@ This dashboard is in the final stages of development. Everything is functional a
 - <s>About page reformatting: make the same format as the WB intranet.</s>
 - <s>Blank pre-formatted xlsx template: the user should be able to download an empty xls template, with row 1 being explanations of each column, row 2 being column headers, and the cells being colored appropriately. <s>
 - <s>Replace the timevis data to use `view_all`, and filter for only large events.</s>
-
+- Fill out `R/upload_edited_people_data.R` so that the function appropriately passes data to the database.
+- Fill out `R/upload_edited_venue_events_data.R` so that the function appropriately passes data to the database.
+- Fill out `R/upload_edited_venues_data.R` so that the function appropriately passes data to the database.
 
 # Developer's instructions
 

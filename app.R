@@ -133,10 +133,6 @@ body <- dashboardBody(
                            style = 'text-align:center;'),
                        checkboxInput('play', 'Day-by-day map',
                                      value = FALSE),
-                       radioButtons('sankey_meeting',
-                                    '',choices = c('Meetings only', 'Trip overlaps'),
-                                    selected = 'Meetings only',
-                                    inline = TRUE),
                        sankeyNetworkOutput('sank',
                                            height = '400px')),
                 column(7,
@@ -1367,14 +1363,8 @@ server <- function(input, output, session) {
       }
     }
     if(show_sankey){
-      if(input$sankey_meeting == 'Meetings only'){
-        meeting <- TRUE
-      } else {
-        meeting <- FALSE
-      }
       
-      make_sank(trip_coincidences = x,
-                meeting = meeting)
+      make_sank(trip_coincidences = x)
     } else {
       return(NULL)
     }
@@ -1684,128 +1674,131 @@ server <- function(input, output, session) {
         df <- df %>% dplyr::filter(is_wbg == 0)
       }
       
-      # Get number of rows of df
-      nrp <- nrow(df)
-      
-      # Get whether wbg or not
-      df$is_wbg <- as.logical(df$is_wbg)
-      
-      # Select down
-      df <- df %>%
-        dplyr::select(is_wbg,
-                      short_name,
-                      city_name,
-                      country_name,
-                      trip_start_date,
-                      trip_end_date,
-                      meeting_with)
-      
-      # Get city id
-      df <- df %>%
-        left_join(vals$cities %>%
-                    dplyr::select(city_name, country_name, city_id),
-                  by = c('city_name', 'country_name'))
-      
-      # Create an id
-      df <- df %>%
-        mutate(id = paste0(short_name, is_wbg, city_id)) %>%
-        mutate(id = as.numeric(factor(id))) %>%
-        arrange(trip_start_date)
-      
-      # Create some more columns
-      
       
       # Join the files to the df data
-      if(nrow(df) > 0){
+      if(!is.null(df)){
+        if(nrow(df) > 0){
+          
+          
+          # Get number of rows of df
+          nrp <- nrow(df)
+          
+          # Get whether wbg or not
+          df$is_wbg <- as.logical(df$is_wbg)
+          
+          # Select down
+          df <- df %>%
+            dplyr::select(is_wbg,
+                          short_name,
+                          city_name,
+                          country_name,
+                          trip_start_date,
+                          trip_end_date,
+                          meeting_with)
+          
+          # Get city id
+          df <- df %>%
+            left_join(vals$cities %>%
+                        dplyr::select(city_name, country_name, city_id),
+                      by = c('city_name', 'country_name'))
+          
+          
+          # Create an id
+          df <- df %>%
+            mutate(id = paste0(short_name, is_wbg, city_id)) %>%
+            mutate(id = as.numeric(factor(id))) %>%
+            arrange(trip_start_date)
+          
+          
+          df <- df %>%
+            mutate(dates = oleksiy_date(trip_start_date, trip_end_date)) %>%
+            mutate(short_name = ifelse(is.na(short_name), '', short_name)) %>%
+            mutate(meeting_with = ifelse(is.na(meeting_with), '', meeting_with)) %>%
+            mutate(event = ifelse(short_name != meeting_with &
+                                    meeting_with != '' &
+                                    short_name != '',
+                                  paste0(short_name, ' with ', meeting_with),
+                                  '')) %>%
+            mutate(event = Hmisc::capitalize(event)) %>%
+            mutate(event = ifelse(trimws(event) == 'With', '', event))
+          
+          
+          # Keep a "full" df with one row per trip
+          full_df <- df
+          
+          # Make only one head per person/place
+          df <- df %>%
+            group_by(id, short_name, is_wbg, city_id) %>%
+            summarise(date = paste0(dates, collapse = ';'),
+                      event = paste0(event, collapse = ';')) %>% ungroup
+          
+          # Join to city names
+          df <- df %>%
+            left_join(vals$cities %>%
+                        dplyr::select(city_name, country_name, city_id,
+                                      latitude, longitude),
+                      by = 'city_id')
+          
+          # Get faces
+          faces_dir <- paste0('www/headshots/circles/')
+          faces <- dir(faces_dir)
+          faces <- data_frame(joiner = gsub('.png', '', faces, fixed = TRUE),
+                              file = paste0(faces_dir, faces))
+          
+          # Create a join column
+          faces$joiner <- ifelse(is.na(faces$joiner) | faces$joiner == 'NA',
+                                 'Unknown',
+                                 faces$joiner)
+          df$joiner <- ifelse(df$short_name %in% faces$joiner,
+                              df$short_name,
+                              'Unknown')
+          
+          df <-
+            left_join(df,
+                      faces,
+                      by = 'joiner')
+          # Define colors
+          cols <- ifelse(is.na(df$is_wbg) |
+                           !df$is_wbg,
+                         'orange',
+                         'blue')
+          zoom_level <- input$leafy_zoom
+          
+          df <- df %>%
+            mutate(longitude = joe_jitter(longitude, zoom = zoom_level),
+                   latitude = joe_jitter(latitude, zoom = zoom_level))
+        } else {
+          df <- df[0,]
+        }
         
-        df <- df %>%
-          mutate(dates = oleksiy_date(trip_start_date, trip_end_date)) %>%
-          mutate(short_name = ifelse(is.na(short_name), '', short_name)) %>%
-          mutate(meeting_with = ifelse(is.na(meeting_with), '', meeting_with)) %>%
-          mutate(event = ifelse(short_name != meeting_with &
-                                  meeting_with != '' &
-                                  short_name != '',
-                                paste0(short_name, ' with ', meeting_with),
-                                '')) %>%
-          mutate(event = Hmisc::capitalize(event)) %>%
-          mutate(event = ifelse(trimws(event) == 'With', '', event))
         
         
-        # Keep a "full" df with one row per trip
-        full_df <- df
         
-        # Make only one head per person/place
-        df <- df %>%
-          group_by(id, short_name, is_wbg, city_id) %>%
-          summarise(date = paste0(dates, collapse = ';'),
-                    event = paste0(event, collapse = ';')) %>% ungroup
+        rr <- tags$div(
+          h2(format(td, '%B %d, %Y'), align = 'center'),
+          style = 'text-align: center; padding-bottom: 20px;'
+        )
         
-        # Join to city names
-        df <- df %>%
-          left_join(vals$cities %>%
-                      dplyr::select(city_name, country_name, city_id,
-                                    latitude, longitude),
-                    by = 'city_id')
+        l <- leafletProxy('leafy_play') %>%
+          clearMarkers() %>%
+          clearControls() %>%
+          addControl(rr, position = "bottomleft")
         
-        # Get faces
-        faces_dir <- paste0('www/headshots/circles/')
-        faces <- dir(faces_dir)
-        faces <- data_frame(joiner = gsub('.png', '', faces, fixed = TRUE),
-                            file = paste0(faces_dir, faces))
+        if(nrow(df) > 0){
+          face_icons <- icons(df$file,
+                              iconWidth = 25, iconHeight = 25)
+          l <- l %>%
+            addCircleMarkers(data = df, lng =~longitude, lat = ~latitude,
+                             # clusterOptions = markerClusterOptions(),
+                             col = cols, radius = 14) %>%
+            addMarkers(data = df, lng =~longitude, lat = ~latitude,
+                       # popup = popups,
+                       # clusterOptions = markerClusterOptions(),
+                       icon = face_icons) 
+        }
+        l
         
-        # Create a join column
-        faces$joiner <- ifelse(is.na(faces$joiner) | faces$joiner == 'NA',
-                               'Unknown',
-                               faces$joiner)
-        df$joiner <- ifelse(df$short_name %in% faces$joiner,
-                            df$short_name,
-                            'Unknown')
-        
-        df <-
-          left_join(df,
-                    faces,
-                    by = 'joiner')
-        # Define colors
-        cols <- ifelse(is.na(df$is_wbg) |
-                         !df$is_wbg,
-                       'orange',
-                       'blue')
-        zoom_level <- input$leafy_zoom
-        
-        df <- df %>%
-          mutate(longitude = joe_jitter(longitude, zoom = zoom_level),
-                 latitude = joe_jitter(latitude, zoom = zoom_level))
-      } else {
-        df <- df[0,]
       }
-      
-      
-      
-      
-      rr <- tags$div(
-        h2(format(td, '%B %d, %Y'), align = 'center'),
-        style = 'text-align: center; padding-bottom: 20px;'
-      )
-      
-      l <- leafletProxy('leafy_play') %>%
-        clearMarkers() %>%
-        clearControls() %>%
-        addControl(rr, position = "bottomleft")
-      
-      if(nrow(df) > 0){
-        face_icons <- icons(df$file,
-                            iconWidth = 25, iconHeight = 25)
-        l <- l %>%
-          addCircleMarkers(data = df, lng =~longitude, lat = ~latitude,
-                           # clusterOptions = markerClusterOptions(),
-                           col = cols, radius = 14) %>%
-          addMarkers(data = df, lng =~longitude, lat = ~latitude,
-                     # popup = popups,
-                     # clusterOptions = markerClusterOptions(),
-                     icon = face_icons) 
-      }
-      l
-      
     }
   })
   
