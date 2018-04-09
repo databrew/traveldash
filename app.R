@@ -107,11 +107,11 @@ body <- dashboardBody(
             fluidPage(
               fluidRow(column(12, align = 'center',
                               textInput(inputId = 'user_name',
-                                        value = 'username',
+                                        value = 'MEL',
                                         label = 'User name')),
                        column(12, align = 'center',
                               passwordInput(inputId = 'password', 
-                                            value = 'abc123',
+                                            value = 'FIGSSAMEL',
                                             label = 'Password'))),
               fluidRow(
                 column(12, align = 'center',
@@ -401,7 +401,8 @@ server <- function(input, output, session) {
     # Check password and username
     log_in_result <- 
       check_user_name_and_password(user_name = input$user_name,
-                                   password = input$password)
+                                   password = input$password,
+                                   users = users)
     if(log_in_result > 0){
       logged_in(TRUE)
       user_id(log_in_result)

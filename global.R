@@ -72,6 +72,10 @@ message(creds)
 venue_types <- get_data(tab = 'venue_types',
                         schema = 'pd_wbgtravel')
 
+# Users table is also identical for all users
+users <- get_data(tab = 'users',
+                  schema = 'pd_wbgtravel')
+
 # Syncronize the www photo storage with the database
 #This should already be happening, see commented note in populate_images_from_www
 #populate_images_from_www(pool = GLOBAL_DB_POOL) # www to db
