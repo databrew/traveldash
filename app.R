@@ -84,48 +84,7 @@ sidebar <- dashboardSidebar(
               }"),
   
   width = the_width,
-  sidebarMenu(
-    id="tabs",
-    menuItem(
-      text="Dashboard",
-      tabName="main",
-      icon=icon("eye")),
-    menuItem(
-      text="Network analysis",
-      tabName="network",
-      icon=icon("eye")),
-    menuItem(
-      text="Timeline",
-      tabName="timeline",
-      icon=icon("calendar")),
-    menuItem(
-      text="Upload trips",
-      tabName="upload_data",
-      icon=icon("upload")),
-    menuItem(
-      text="Edit trips",
-      tabName="edit_data",
-      icon=icon("pencil")),
-    menuItem(
-      text = 'About',
-      tabName = 'about',
-      icon = icon("cog", lib = "glyphicon")),
-    br(), br(), br(),br(), br(), br(),br(), br(), 
-    fluidPage(
-      h4('Details', align = 'center', style = 'text-align: center;'),
-      h5('Built by:'),
-      helpText('FIG Africa Digital Financial Services unit'),
-      h5('With help from:'),
-      helpText('The Partnership for Financial Inclusion'),
-      helpText('The MasterCard Foundation'),
-      br(),
-      fluidRow(div(img(src='partnershiplogo.png', align = "center", width = '100px'), style="text-align: center;"),
-               br()
-      )
-    )
-    
-    
-  )
+  sidebarMenuOutput("menu")
   )
 
 body <- dashboardBody(
@@ -147,6 +106,25 @@ body <- dashboardBody(
   tags$head(tags$script(src = 'src/jquery.daterangepicker.js')),
 
   tabItems(
+    tabItem(tabName = 'log_in',
+            fluidPage(
+              fluidRow(column(12, align = 'center',
+                              textInput(inputId = 'user_name',
+                                        value = 'username',
+                                        label = 'User name')),
+                       column(12, align = 'center',
+                              passwordInput(inputId = 'password', 
+                                            value = 'abc123',
+                                            label = 'Password'))),
+              fluidRow(
+                column(12,
+                       textOutput('failed_log_in_text'))
+              ),
+              fluidRow(
+                column(12, align = 'center',
+                       action_modal_button('log_in_submit', "Submit", icon = icon('check-circle')))
+              )
+            )),
     tabItem(tabName = 'main',
             
             fluidPage(
@@ -427,6 +405,22 @@ ui <- dashboardPage(header, sidebar, body)
 
 # Define server
 server <- function(input, output, session) {
+  
+  # Reactive value for whether logged in or not
+  logged_in <- reactiveVal(value = FALSE)
+  logged_in_user_id <- reactiveVal(value = 0)
+  
+  # Observe the submission and log in
+  observeEvent(input$log_in_submit, {
+    # Check password and username
+    log_in_result <- 
+      check_user_name_and_password(user_name = input$user_name,
+                                 password = input$password)
+    if(log_in_result > 0){
+      logged_in(TRUE)
+      logged_in_user_id(log_in_result)
+    }
+  })
   
   # Create a reactive dataframe of photos
   photos_reactive <- reactiveValues()
@@ -1675,17 +1669,18 @@ server <- function(input, output, session) {
     dr <- date_range()
     the_tab <- input$tabs
     message('the tab is ', the_tab)
-    if(the_tab != 'main'){
-      div(
-        dateRangeInput('date_range_2',
-                       '  ',
-                       start = dr[1],
-                       end = dr[2]),
-        style='text-align: center;')
-    } else {
-      NULL
+    if(!is.null(the_tab)){
+      if(the_tab != 'main'){
+        div(
+          dateRangeInput('date_range_2',
+                         '  ',
+                         start = dr[1],
+                         end = dr[2]),
+          style='text-align: center;')
+      } else {
+        NULL
+      }
     }
-    
   })
   
   timer <- reactiveTimer(4000)
@@ -2598,7 +2593,67 @@ server <- function(input, output, session) {
     }
   })
   
+
   
+  # Reactive sidebar menu
+  output$menu <-
+    renderMenu({
+      
+      # Logged in or not?
+      li <- logged_in()
+      
+      if(!li){
+        sidebarMenu(
+          id = 'tabs',
+          menuItem(
+            text = 'Log-in',
+            tabName = 'log_in',
+            icon = icon('eye')
+          )
+        )
+      } else {
+        sidebarMenu(
+          id="tabs",
+          menuItem(
+            text="Dashboard",
+            tabName="main",
+            icon=icon("eye")),
+          menuItem(
+            text="Network analysis",
+            tabName="network",
+            icon=icon("eye")),
+          menuItem(
+            text="Timeline",
+            tabName="timeline",
+            icon=icon("calendar")),
+          menuItem(
+            text="Upload trips",
+            tabName="upload_data",
+            icon=icon("upload")),
+          menuItem(
+            text="Edit trips",
+            tabName="edit_data",
+            icon=icon("pencil")),
+          menuItem(
+            text = 'About',
+            tabName = 'about',
+            icon = icon("cog", lib = "glyphicon")),
+          br(), br(), br(),br(), br(), br(),br(), br(), 
+          fluidPage(
+            h4('Details', align = 'center', style = 'text-align: center;'),
+            h5('Built by:'),
+            helpText('FIG Africa Digital Financial Services unit'),
+            h5('With help from:'),
+            helpText('The Partnership for Financial Inclusion'),
+            helpText('The MasterCard Foundation'),
+            br(),
+            fluidRow(div(img(src='partnershiplogo.png', align = "center", width = '100px'), style="text-align: center;"),
+                     br()
+            )
+          )
+        )
+      }
+    })
   }
 
 # Run the application 
