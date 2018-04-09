@@ -101,7 +101,7 @@ body <- dashboardBody(
   tags$head(tags$script(src = 'https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.16.0/moment.min.js', type = 'text/javascript')),
   tags$head(tags$script(src = 'demo.js')),
   tags$head(tags$script(src = 'src/jquery.daterangepicker.js')),
-
+  
   tabItems(
     tabItem(tabName = 'log_in',
             fluidPage(
@@ -196,63 +196,51 @@ body <- dashboardBody(
           ),
         br(),
         fluidRow(
+          column(1),
           shinydashboard::box(
             title = 'Soren Heitmann',
             fluidPage(
               fluidRow(
-                div(a(img(src='about/Soren Heitmann.jpg', 
-                          align = "center",
-                          height = '80'),
-                      href="mailto:sheitmann@ifc.org"), 
-                    style="text-align: center;")
-              ),
-              fluidRow(h5('Project Lead'),
-                       h5('Johannesburg, ', 
+                column(4,div(a(img(src='about/Soren Heitmann.jpg', 
+                                   align = "center",
+                                   height = '130'),
+                               href="mailto:sheitmann@ifc.org"), 
+                             style="text-align: center;")),
+                column(8, h5('Project Lead'),
+                       h5('Johannesburg | ', 
                           a(href = 'mailto:sheitmann@ifc.org',
-                            'sheitmann@ifc.org'))),
+                            'sheitmann@ifc.org')))),
               fluidRow(helpText("Soren has a background in database management, software engineering and web technology. He manages the applied research and integrated monitoring, evaluation and learning program for the IFC-MasterCard Foundation Partnership for Financial Inclusion. He works at the nexus of data-driven research and technology to help drive learning and innovation within IFC’s Digital Financial Services projects in Sub-Saharan Africa."))
             ),
             width = 4),
+          column(2),
           shinydashboard::box(
             title = 'Oleksiy Anokhin',
             fluidPage(
               fluidRow(
-                div(a(img(src='about/Oleksiy Anokhin.jpg', 
-                          align = "center",
-                          height = '80'),
-                      href="mailto:oanokhin@ifc.org"), 
-                    style="text-align: center;")
-              ),
-              fluidRow(h5('Project Specialist'),
-                       h5('Washington, DC, ', 
+                column(4,
+                       div(a(img(src='about/Oleksiy Anokhin.jpg', 
+                                 align = "center",
+                                 height = '130'),
+                             href="mailto:oanokhin@ifc.org"), 
+                           style="text-align: center;")),
+                column(8,
+                       h5('Project Specialist'),
+                       h5('Washington, DC | ', 
                           a(href = 'mailto:oanokhin@ifc.org',
-                            'oanokhin@ifc.org'))),
+                            'oanokhin@ifc.org')))
+              ),
               fluidRow(helpText("Oleksiy focuses on data-driven visualization solutions for international development. He is passionate about using programmatic tools (such as interactive dashboards) for better planning and implementation of projects, as well as for effective communication of projects results to various stakeholders."))
             ),
             width = 4),
-          shinydashboard::box(
-            title = 'Joe Brew',
-            fluidPage(
-              fluidRow(
-                div(a(img(src='about/Joe Brew.png', 
-                          align = "center",
-                          height = '80'),
-                      href="mailto:jbrew1@worldbank.org"), 
-                    style="text-align: center;")
-              ),
-              fluidRow(h5('Data Scientist'),
-                       h5('Amsterdam, ', 
-                          a(href = 'mailto:jbrew1@worldbank.org',
-                            'jbrew1@worldbank.org'))),
-              fluidRow(helpText("Joe is a data scientist for", a(href = 'http://databrew.cc/', 'DataBrew.'), "He has a background in epidemiology and development economics. He works in both industry as a consultant as well as academia. His research focuses on the economics of malaria elimination programs in Sub-Saharan Africa."))
-            ),
-            width = 4)
+          column(1)
         ),
         fluidRow(div(helpText(creds),
                      style = 'text-align:right')),
         fluidRow(
-          h3("URL components"),
-          verbatimTextOutput("url_text")
+          column(12,
+                 align = 'right',
+                 helpText(textOutput("url_text")))
         )
           )
         ),
@@ -287,7 +275,7 @@ body <- dashboardBody(
               )
               
             )
-            ),
+    ),
     tabItem(tabName = 'edit_data',
             fluidPage(
               tabsetPanel(type = "tabs",
@@ -386,14 +374,14 @@ body <- dashboardBody(
                                    )))
             )
     )
-  ),
+    ),
   tags$style(type="text/css", "#add_table th {font-weight:bold;}"),
   tags$style(type="text/css", "#hot_trips th {font-weight:bold;}"),
   tags$style(type="text/css", "#hot_trips td {font-size: 10px;}"),
   tags$style(type="text/css", "#hot_people th {font-weight:bold;}"),
   tags$style(type="text/css", "#hot_venues th {font-weight:bold;}"),
   tags$style(type="text/css", "#hot_venue_events th {font-weight:bold;}")
-)
+  )
 
 
 ui <- dashboardPage(header, sidebar, body)
@@ -403,7 +391,7 @@ server <- function(input, output, session) {
   
   # Reactive list of dataframes for user-specific data
   vals <- reactiveValues()
-
+  
   # Reactive value for whether logged in or not
   logged_in <- reactiveVal(value = FALSE)
   user_id <- reactiveVal(value = 0)
@@ -413,7 +401,7 @@ server <- function(input, output, session) {
     # Check password and username
     log_in_result <- 
       check_user_name_and_password(user_name = input$user_name,
-                                 password = input$password)
+                                   password = input$password)
     if(log_in_result > 0){
       logged_in(TRUE)
       user_id(log_in_result)
@@ -495,7 +483,7 @@ server <- function(input, output, session) {
     date_range(c(Sys.Date() - 7,
                  Sys.Date() + 14))
   })
-
+  
   
   output$reset_date_range_ui <- renderUI({
     li <- logged_in()
@@ -777,7 +765,7 @@ server <- function(input, output, session) {
   observeEvent(input$submit, {
     submit_text('Data uploaded! Now click through other tabs to explore your data.')
   })
- 
+  
   
   selected_timevis <- reactiveVal(value = NULL)
   observeEvent(input$timevis_selected,
@@ -869,7 +857,7 @@ server <- function(input, output, session) {
     
     # Get trips and meetings, filtered for date range    
     df <- view_all_trips_people_meetings_venues_filtered()
-
+    
     # Filter for wbg only if relevant
     if(input$wbg_only == 'WBG only'){
       df <- df %>% dplyr::filter(is_wbg == 1)
@@ -880,7 +868,7 @@ server <- function(input, output, session) {
     if(!is.null(df)){
       # Get row selection (if applicable) from datatable
       s <- input$visit_info_table_rows_selected
-
+      
       # Subset df if rows are selected
       if(!is.null(s)){
         if(length(s) > 0){
@@ -1269,7 +1257,7 @@ server <- function(input, output, session) {
                     fd[2] >= trip_start_date)
     x <- search_df(data = x,
                    input$search)
-
+    
     return(x)
     
   })
@@ -1311,7 +1299,7 @@ server <- function(input, output, session) {
       x <- x %>%
         dplyr::select(short_name, organization, city_name, trip_start_date, trip_end_date,
                       meeting_person_name, agenda, venue_name, event_title)
-
+      
       x <- x %>%
         mutate(a = paste0(short_name,
                           ifelse(!is.na(organization),
@@ -1331,7 +1319,7 @@ server <- function(input, output, session) {
                                         NA)))) %>%
         dplyr::select(a, b, c, d)
       names(x) <- c('Person', 'Date', 'Location', 'Event')
-
+      
       DT::datatable(x,
                     # escape=FALSE,
                     rownames = FALSE,
@@ -2083,7 +2071,7 @@ server <- function(input, output, session) {
                    actionButton("button_crop", "Crop & Save",
                                 icon = icon('calendar')))
           ),
-
+          
           br()
         )
       }
@@ -2297,7 +2285,7 @@ server <- function(input, output, session) {
   
   # Trips edit table
   output$hot_trips <- renderRHandsontable({
-
+    
     df <- make_hot_trips(data = vals$view_all_trips_people_meetings_venues,
                          filter = input$trips_filter) 
     
@@ -2417,7 +2405,7 @@ server <- function(input, output, session) {
     # For now, not doing anything with the data
     message('--- Nothing actually being changed in the database. Waiting on function from Soren.')
     upload_edited_people_data(data = df)
-
+    
     # Update the session
     liui <- user_id()
     new_vals <- load_user_data(return_list = TRUE, user_id = liui)
@@ -2641,8 +2629,8 @@ server <- function(input, output, session) {
     df <- hot_to_r(input$add_table)
     upload_results <- 
       upload_raw_data(data = df,
-                    logged_in_user_id = user_id(),
-                    return_upload_results = TRUE)
+                      logged_in_user_id = user_id(),
+                      return_upload_results = TRUE)
     message('Results from manual data upload:')
     print(upload_results)
     # Update the session
@@ -2653,7 +2641,7 @@ server <- function(input, output, session) {
       vals[[tables[i]]] <- new_vals[[tables[i]]]
     }
     vals$upload_results <- upload_results
-
+    
   })
   
   
@@ -2673,8 +2661,8 @@ server <- function(input, output, session) {
           fluidRow(
             column(12, align = 'center',
                    action_modal_button('add_table_submit',
-                                'Submit new data',
-                                icon = icon('check')))
+                                       'Submit new data',
+                                       icon = icon('check')))
           )
         )
       )
@@ -2697,10 +2685,10 @@ server <- function(input, output, session) {
       the_search <- paste0('Add something like /?foo=123&bar=somestring to the end of the url (and then load the modified url) to see how it is captured here.')
     }
     paste(sep = "",
-          "protocol: ", session$clientData$url_protocol, "\n",
-          "hostname: ", session$clientData$url_hostname, "\n",
-          "pathname: ", session$clientData$url_pathname, "\n",
-          "port: ",     session$clientData$url_port,     "\n",
+          # "protocol: ", session$clientData$url_protocol, "\n",
+          # "hostname: ", session$clientData$url_hostname, "\n",
+          # "pathname: ", session$clientData$url_pathname, "\n",
+          # "port: ",     session$clientData$url_port,     "\n",
           "search: ",   the_search,   "\n"
     )
   })
@@ -2723,7 +2711,7 @@ server <- function(input, output, session) {
     }
   })
   
-
+  
   
   # Reactive sidebar menu
   output$menu <-
@@ -2795,7 +2783,7 @@ server <- function(input, output, session) {
                 choices = the_choices)
   })
   
-}
+  }
 
 # Run the application 
 shinyApp(ui = ui, server = server)
