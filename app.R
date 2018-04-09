@@ -752,37 +752,14 @@ server <- function(input, output, session) {
                       return_upload_results = TRUE)
     message('Uploaded raw data')
     # Update the session
-    warning('need to depricate db_to_memory: Line 673 in app.R')
-    updated_data <- db_to_memory(return_list = TRUE)
-    vals$events <- updated_data$events
-    vals$cities <- updated_data$cities
-    vals$people <- updated_data$people
-    # vals$trip_meetings <- updated_data$trip_meetings
-    vals$trips <- updated_data$trips
-    # vals$venue_events <- updated_data$venue_events
-    # vals$venue_types <- updated_data$venue_types
-    vals$view_trips_and_meetings <- updated_data$view_trips_and_meetings
-    vals$view_trip_coincidences <- updated_data$view_trip_coincidences
-    vals$view_all_trips_people_meetings_venues <- updated_data$view_all_trips_people_meetings_venues
+    liui <- user_id()
+    new_vals <- load_user_data(return_list = TRUE, user_id = liui)
+    tables <- get_table_names()
+    for(i in 1:length(tables)){
+      vals[[tables[i]]] <- new_vals[[tables[i]]]
+    }
     vals$upload_results <- upload_results
   })
-  
-  # # After modification is confirmed, update the data stores
-  # observeEvent(input$submit2, {
-  #   # THIS NEEDS CHANGES
-  #   message('Modification confirmed, geocoding and overwriting data.')
-  #   new_data <- vals$events
-  #   # Geocode if applicable
-  #   new_data <- geo_code(new_data)
-  #   # Update the underlying data
-  #   # Update the underlying data
-  #   write_table(connection_object = GLOBAL_DB_POOL,
-  #               table = 'dev_events',
-  #               schema = 'pd_wbgtravel',
-  #               value = new_data)
-  #   message('Ovewrote the database')
-  # })
-  
   
   submit_text <- reactiveVal(value = '')
   output$submit_icon <- renderUI({
@@ -800,9 +777,7 @@ server <- function(input, output, session) {
   observeEvent(input$submit, {
     submit_text('Data uploaded! Now click through other tabs to explore your data.')
   })
-  observeEvent(input$Del_row_head, {
-    vals$events <- vals$events
-  })
+ 
   
   selected_timevis <- reactiveVal(value = NULL)
   observeEvent(input$timevis_selected,
@@ -2375,15 +2350,12 @@ server <- function(input, output, session) {
     upload_edited_people_data(data = df)
 
     # Update the session
-    updated_data <- db_to_memory(return_list = TRUE)
-    vals$events <- updated_data$events
-    vals$cities <- updated_data$cities
-    vals$people <- updated_data$people
-    vals$trips <- updated_data$trips
-    vals$view_trips_and_meetings <- updated_data$view_trips_and_meetings
-    vals$view_trip_coincidences <- updated_data$view_trip_coincidences
-    vals$view_all_trips_people_meetings_venues <- updated_data$view_all_trips_people_meetings_venues
-    
+    liui <- user_id()
+    new_vals <- load_user_data(return_list = TRUE, user_id = liui)
+    tables <- get_table_names()
+    for(i in 1:length(tables)){
+      vals[[tables[i]]] <- new_vals[[tables[i]]]
+    }
   })
   
   output$hot_people_submit_check <- 
@@ -2423,15 +2395,13 @@ server <- function(input, output, session) {
                       return_upload_results = TRUE)
     
     # Update the session
-    updated_data <- db_to_memory(return_list = TRUE)
-    vals$events <- updated_data$events
-    vals$cities <- updated_data$cities
-    vals$people <- updated_data$people
-    vals$trips <- updated_data$trips
-    vals$view_trips_and_meetings <- updated_data$view_trips_and_meetings
-    vals$view_trip_coincidences <- updated_data$view_trip_coincidences
-    # vals$upload_results <- upload_results
-    vals$view_all_trips_people_meetings_venues <- updated_data$view_all_trips_people_meetings_venues
+    liui <- user_id()
+    new_vals <- load_user_data(return_list = TRUE, user_id = liui)
+    tables <- get_table_names()
+    for(i in 1:length(tables)){
+      vals[[tables[i]]] <- new_vals[[tables[i]]]
+    }
+    vals$upload_results <- upload_results
     message('--- Done uploading new trips data.')
   })
   
@@ -2487,14 +2457,12 @@ server <- function(input, output, session) {
     upload_edited_venue_events_data(data = df)
     
     # Update the session
-    updated_data <- db_to_memory(return_list = TRUE)
-    vals$events <- updated_data$events
-    vals$cities <- updated_data$cities
-    vals$people <- updated_data$people
-    vals$trips <- updated_data$trips
-    vals$view_trips_and_meetings <- updated_data$view_trips_and_meetings
-    vals$view_trip_coincidences <- updated_data$view_trip_coincidences
-    vals$view_all_trips_people_meetings_venues <- updated_data$view_all_trips_people_meetings_venues
+    liui <- user_id()
+    new_vals <- load_user_data(return_list = TRUE, user_id = liui)
+    tables <- get_table_names()
+    for(i in 1:length(tables)){
+      vals[[tables[i]]] <- new_vals[[tables[i]]]
+    }
   })
   
   output$hot_venue_events_submit_check <- 
@@ -2535,14 +2503,12 @@ server <- function(input, output, session) {
     upload_edited_venues_data(data = df)
     
     # Update the session
-    updated_data <- db_to_memory(return_list = TRUE)
-    vals$events <- updated_data$events
-    vals$cities <- updated_data$cities
-    vals$people <- updated_data$people
-    vals$trips <- updated_data$trips
-    vals$view_trips_and_meetings <- updated_data$view_trips_and_meetings
-    vals$view_trip_coincidences <- updated_data$view_trip_coincidences
-    vals$view_all_trips_people_meetings_venues <- updated_data$view_all_trips_people_meetings_venues
+    liui <- user_id()
+    new_vals <- load_user_data(return_list = TRUE, user_id = liui)
+    tables <- get_table_names()
+    for(i in 1:length(tables)){
+      vals[[tables[i]]] <- new_vals[[tables[i]]]
+    }
   })
   
   output$hot_venues_submit_check <- 
@@ -2610,6 +2576,14 @@ server <- function(input, output, session) {
                     return_upload_results = TRUE)
     message('Results from manual data upload:')
     print(upload_results)
+    # Update the session
+    liui <- user_id()
+    new_vals <- load_user_data(return_list = TRUE, user_id = liui)
+    tables <- get_table_names()
+    for(i in 1:length(tables)){
+      vals[[tables[i]]] <- new_vals[[tables[i]]]
+    }
+    vals$upload_results <- upload_results
 
   })
   
