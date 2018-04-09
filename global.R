@@ -27,7 +27,6 @@ library(htmlTable)
 library(rhandsontable)
 library(XLConnect)
 
-
 # Source all the functions in the R directory
 functions <- dir('R')
 message('Sourcing functions from the following files in the R/ directory:')
@@ -72,9 +71,5 @@ resourcepath <- paste0(getwd(),"/www")
 maskc <- image_read("www/mask-circle.png")
 masks <- image_read("www/mask-square.png")
 mask <- image_composite(maskc, masks, "out") 
-
-# Get app start time
-app_start_time <- Sys.time()
-app_start_time <- as.numeric(app_start_time)
 
 message('############ Done with global.R')
