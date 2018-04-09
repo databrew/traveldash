@@ -1,4 +1,4 @@
-make_hot_venue_events <- function(data, venues = FALSE){
+make_hot_venue_events <- function(data, venues = FALSE, cities){
   df <- data %>%
     dplyr::select(venue_type_id,
                   venue_city_id,

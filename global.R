@@ -68,6 +68,9 @@ creds <- paste0(paste0(#unlist(names(creds)),
 message('Using the following credentials:')
 message(creds)
 
+# Load up venue types (since all sessions use it)
+venue_types <- get_data(tab = 'venue_types',
+                        schema = 'pd_wbgtravel')
 
 # Syncronize the www photo storage with the database
 #This should already be happening, see commented note in populate_images_from_www

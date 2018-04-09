@@ -2321,7 +2321,7 @@ server <- function(input, output, session) {
   # Events edit table
   output$hot_venue_events <- renderRHandsontable({
     
-    df <- make_hot_venue_events(data = vals$venue_events)
+    df <- make_hot_venue_events(data = vals$venue_events, cities = vals$cities)
     if(!is.null(df)){
       if(nrow(df) > 0){
         hidden_ids$venue_id <- df$venue_id
@@ -2344,7 +2344,7 @@ server <- function(input, output, session) {
   # Events edit table
   output$hot_venues <- renderRHandsontable({
     
-    df <- make_hot_venues(data = vals$venue_events)
+    df <- make_hot_venues(data = vals$venue_events, cities = vals$cities)
     if(!is.null(df)){
       if(nrow(df) > 0){
         hidden_ids$venue_venue_id <- df$venue_id
@@ -2373,8 +2373,8 @@ server <- function(input, output, session) {
                                               person = sort(unique(vals$view_all_trips_people_meetings_venues$person_name))[1])
       last_save$hot_trips <- make_hot_trips(data = vals$view_all_trips_people_meetings_venues,
                                             filter = NULL) %>% dplyr::select(-trip_uid) %>% mutate(Delete = FALSE)
-      last_save$hot_venue_events <- make_hot_venue_events(data = vals$venue_events) %>% dplyr::select(-venue_id)
-      last_save$hot_venues <- make_hot_venues(data = vals$venue_events) %>% dplyr::select(-venue_id)
+      last_save$hot_venue_events <- make_hot_venue_events(data = vals$venue_events, cities = vals$cities) %>% dplyr::select(-venue_id)
+      last_save$hot_venues <- make_hot_venues(data = vals$venue_events, cities = vals$cities) %>% dplyr::select(-venue_id)
       
     }
   })
