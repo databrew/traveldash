@@ -771,13 +771,22 @@ server <- function(input, output, session) {
   selected_timevis <- reactiveVal(value = NULL)
   observeEvent(input$timevis_selected,
                selected_timevis(input$timevis_selected))
-  observeEvent(input$timevis_clear,
-               selected_timevis(NULL))
+  observeEvent(input$timevis_clear,{
+    selected_timevis(NULL)
+    updateCheckboxInput(session = session,
+                        inputId = 'show_meetings',
+                        value = FALSE)
+  })
   
   filtered_expanded_trips <- reactive({
     sm<- input$show_meetings
     fd <- date_range()
     search_string <- input$search
+    expanded_trips <- 
+      expand_trips(view_all_trips_people_meetings_venues = vals$view_all_trips_people_meetings_venues,
+                   venue_types = venue_types, 
+                   venue_events = vals$venue_events, 
+                   cities = vals$cities)
     out <- expanded_trips %>%
       filter(end >= fd[1],
              start <= fd[2])
@@ -822,6 +831,10 @@ server <- function(input, output, session) {
             # Keep everything with same event id
             out <- out %>%
               filter(event_id %in% srei)
+            
+            updateCheckboxInput(session = session,
+                                inputId = 'show_meetings',
+                                value = TRUE)
           }
         }
       } else {
