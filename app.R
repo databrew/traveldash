@@ -268,7 +268,7 @@ body <- dashboardBody(
                        h3('Download dataset'),
                        helpText('Click the "Download" button to get your dataset in the correct bulk upload format.'),
                        downloadButton("download_correct", "Download your data as an unformatted .csv"),
-                       br(), 
+                       br(), br(),
                        downloadButton("download_correct_xl", "Download your data as a formatted .xlsx"))),
               uiOutput('upload_ui'),
               # Results from most recent upload (bulk or manual)
