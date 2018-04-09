@@ -321,9 +321,7 @@ body <- dashboardBody(
                                               h1('People'))
                                      ),
                                      fluidRow(column(12, align = 'center',
-                                                     selectInput('photo_person',
-                                                                 'Person',
-                                                                 choices = sort(unique(view_all_trips_people_meetings_venues$person_name))))),
+                                                     uiOutput('photo_person_ui'))),
                                      fluidRow(
                                        column(6,
                                               fluidRow(column(12, align = 'center',
@@ -403,18 +401,9 @@ ui <- dashboardPage(header, sidebar, body)
 # Define server
 server <- function(input, output, session) {
   
-  # Reactive list of dataframes for use in app
+  # Reactive list of dataframes for user-specific data
   vals <- reactiveValues()
-  vals$events <- events
-  vals$cities <- cities
-  vals$people <- people
-  vals$trips <- trips
-  vals$view_trip_coincidences <- view_trip_coincidences
-  vals$view_trips_and_meetings <- view_trips_and_meetings
-  vals$upload_results <- NULL
-  vals$view_all_trips_people_meetings_venues <- view_all_trips_people_meetings_venues
-  
-  
+
   # Reactive value for whether logged in or not
   logged_in <- reactiveVal(value = FALSE)
   user_id <- reactiveVal(value = 0)
@@ -447,15 +436,7 @@ server <- function(input, output, session) {
   observeEvent(user_id(), {
     liui <- user_id()
     new_vals <- load_user_data(return_list = TRUE, user_id = liui)
-    tables <- c('cities', 
-                'people',
-                'trip_meetings',
-                'trips',
-                'user_action_log',
-                'venue_events',
-                'venue_types',
-                'view_all_trips_people_meetings_venues',
-                'users')
+    tables <- get_table_names()
     for(i in 1:length(tables)){
       vals[[tables[i]]] <- new_vals[[tables[i]]]
     }
@@ -2760,7 +2741,18 @@ server <- function(input, output, session) {
         )
       }
     })
-  }
+  
+  # Reactive choices for people (ie, only those to whom the user has access)
+  output$photo_person_ui <- renderUI({
+    # Choices for photo
+    vv <- vals$view_all_trips_people_meetings_venues
+    the_choices <- sort(unique(vv$person_name))
+    selectInput('photo_person',
+                'Person',
+                choices = the_choices)
+  })
+  
+}
 
 # Run the application 
 shinyApp(ui = ui, server = server)
