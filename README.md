@@ -9,11 +9,11 @@ This dashboard is in the final stages of development. Everything is functional a
 
 ## Tasks  
 
-- Log-in ability
-- Get rid of global read-in and replace with session-specific reactive values (use the `vals` object, etc.)
-- About page reformatting: make the same format as the WB intranet.
+- <s>Log-in ability</s> 
+- <s>Get rid of global read-in and replace with session-specific reactive values (use the `vals` object, etc.)</s>
+- <s>About page reformatting: make the same format as the WB intranet.</s>
 - Blank pre-formatted xlsx template: the user should be able to download an empty xls template, with row 1 being explanations of each column, row 2 being column headers, and the cells being colored appropriately. 
-- Replace the timevis data to use `view_all`, and filter for only large events.
+- <s>Replace the timevis data to use `view_all`, and filter for only large events.</s>
 
 
 # Developer's instructions

@@ -9,3 +9,4 @@ droptoken.rds
 *.Rproj
 *.Rhistory*
 .Rproj.user
+www/headshots/circles/*.png

@@ -14,28 +14,25 @@ header <- dashboardHeader(title="Travel dashboard",
                                   tags$style(type='text/css', "#search { width:70%; margin-right: 10px; margin-left: 10px; font-size:80%}"),
                                   tags$style(type='text/css', "#wbg_only {margin-right: 10px; margin-left: 10px; font-size:80%}"),
                                   tags$style(type='text/css', "#date_range_2 { width:80%; margin-top: 5px; margin-left: 10px; margin-right: 10px; font-size:80%}"),
+                                  tags$style(type='text/css', "#log_out { width:100%; margin-top: 22px; margin-right: 10px; margin-left: 10px; font-size:80%}"),
                                   
                                   tags$li(class = 'dropdown',
                                           uiOutput('date_range_2_ui')),
                                   tags$li(class = 'dropdown',
-                                          actionButton('reset_date_range', 'Reset', icon = icon('undo'))),
+                                          uiOutput('reset_date_range_ui')),
                                   tags$li(class = 'dropdown',
                                           img(src='blue.png', align = "center", width = '20px')),
                                   tags$li(class = 'dropdown',
                                           
-                                          div(selectInput('wbg_only',
-                                                          '',
-                                                          choices = 
-                                                            c('All affiliations' = 'Everyone', 
-                                                              'WBG only' = 'WBG only', 
-                                                              'Non-WBG only' = 'Non-WBG only'),
-                                                          width = '150px'), 
+                                          div(uiOutput('wbg_only_ui'), 
                                               style='text-align: center;')
                                   ),
                                   tags$li(class = 'dropdown',
-                                          textInput('search',
-                                                    '',
-                                                    placeholder = 'Search for people, places, events'))),
+                                          uiOutput('search_ui')),
+                                  tags$li(class = 'dropdown',
+                                          uiOutput('log_out_ui')),
+                                  tags$li(class = 'dropdown',
+                                          img(src='blue.png', align = "center", width = '20px'))),
                           titleWidth = the_width)
 
 # Sidebar
@@ -84,48 +81,7 @@ sidebar <- dashboardSidebar(
               }"),
   
   width = the_width,
-  sidebarMenu(
-    id="tabs",
-    menuItem(
-      text="Dashboard",
-      tabName="main",
-      icon=icon("eye")),
-    menuItem(
-      text="Network analysis",
-      tabName="network",
-      icon=icon("eye")),
-    menuItem(
-      text="Timeline",
-      tabName="timeline",
-      icon=icon("calendar")),
-    menuItem(
-      text="Upload trips",
-      tabName="upload_data",
-      icon=icon("upload")),
-    menuItem(
-      text="Edit trips",
-      tabName="edit_data",
-      icon=icon("pencil")),
-    menuItem(
-      text = 'About',
-      tabName = 'about',
-      icon = icon("cog", lib = "glyphicon")),
-    br(), br(), br(),br(), br(), br(),br(), br(), 
-    fluidPage(
-      h4('Details', align = 'center', style = 'text-align: center;'),
-      h5('Built by:'),
-      helpText('FIG Africa Digital Financial Services unit'),
-      h5('With help from:'),
-      helpText('The Partnership for Financial Inclusion'),
-      helpText('The MasterCard Foundation'),
-      br(),
-      fluidRow(div(img(src='partnershiplogo.png', align = "center", width = '100px'), style="text-align: center;"),
-               br()
-      )
-    )
-    
-    
-  )
+  sidebarMenuOutput("menu")
   )
 
 body <- dashboardBody(
@@ -145,8 +101,28 @@ body <- dashboardBody(
   tags$head(tags$script(src = 'https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.16.0/moment.min.js', type = 'text/javascript')),
   tags$head(tags$script(src = 'demo.js')),
   tags$head(tags$script(src = 'src/jquery.daterangepicker.js')),
-
+  
+  uiOutput('any_data_ui'),
   tabItems(
+    tabItem(tabName = 'log_in',
+            fluidPage(
+              fluidRow(column(12, align = 'center',
+                              textInput(inputId = 'user_name',
+                                        value = 'MEL',
+                                        label = 'User name')),
+                       column(12, align = 'center',
+                              passwordInput(inputId = 'password', 
+                                            value = 'FIGSSAMEL',
+                                            label = 'Password'))),
+              fluidRow(
+                column(12, align = 'center',
+                       h3(textOutput('failed_log_in_text')))
+              ),
+              fluidRow(
+                column(12, align = 'center',
+                       action_modal_button('log_in_submit', "Submit", icon = icon('check-circle')))
+              )
+            )),
     tabItem(tabName = 'main',
             
             fluidPage(
@@ -221,60 +197,52 @@ body <- dashboardBody(
           ),
         br(),
         fluidRow(
+          column(1),
           shinydashboard::box(
             title = 'Soren Heitmann',
             fluidPage(
               fluidRow(
-                div(a(img(src='about/Soren Heitmann.jpg', 
-                          align = "center",
-                          height = '80'),
-                      href="mailto:sheitmann@ifc.org"), 
-                    style="text-align: center;")
-              ),
-              fluidRow(h5('Project Lead'),
-                       h5('Johannesburg, ', 
+                column(4,div(a(img(src='about/Soren Heitmann.jpg', 
+                                   align = "center",
+                                   height = '130'),
+                               href="mailto:sheitmann@ifc.org"), 
+                             style="text-align: center;")),
+                column(8, h5('Project Lead'),
+                       h5('Johannesburg | ', 
                           a(href = 'mailto:sheitmann@ifc.org',
-                            'sheitmann@ifc.org'))),
+                            'sheitmann@ifc.org')))),
               fluidRow(helpText("Soren has a background in database management, software engineering and web technology. He manages the applied research and integrated monitoring, evaluation and learning program for the IFC-MasterCard Foundation Partnership for Financial Inclusion. He works at the nexus of data-driven research and technology to help drive learning and innovation within IFC’s Digital Financial Services projects in Sub-Saharan Africa."))
             ),
             width = 4),
+          column(2),
           shinydashboard::box(
             title = 'Oleksiy Anokhin',
             fluidPage(
               fluidRow(
-                div(a(img(src='about/Oleksiy Anokhin.jpg', 
-                          align = "center",
-                          height = '80'),
-                      href="mailto:oanokhin@ifc.org"), 
-                    style="text-align: center;")
-              ),
-              fluidRow(h5('Project Specialist'),
-                       h5('Washington, DC, ', 
+                column(4,
+                       div(a(img(src='about/Oleksiy Anokhin.jpg', 
+                                 align = "center",
+                                 height = '130'),
+                             href="mailto:oanokhin@ifc.org"), 
+                           style="text-align: center;")),
+                column(8,
+                       h5('Project Specialist'),
+                       h5('Washington, DC | ', 
                           a(href = 'mailto:oanokhin@ifc.org',
-                            'oanokhin@ifc.org'))),
+                            'oanokhin@ifc.org')))
+              ),
               fluidRow(helpText("Oleksiy focuses on data-driven visualization solutions for international development. He is passionate about using programmatic tools (such as interactive dashboards) for better planning and implementation of projects, as well as for effective communication of projects results to various stakeholders."))
             ),
             width = 4),
-          shinydashboard::box(
-            title = 'Joe Brew',
-            fluidPage(
-              fluidRow(
-                div(a(img(src='about/Joe Brew.png', 
-                          align = "center",
-                          height = '80'),
-                      href="mailto:jbrew1@worldbank.org"), 
-                    style="text-align: center;")
-              ),
-              fluidRow(h5('Data Scientist'),
-                       h5('Amsterdam, ', 
-                          a(href = 'mailto:jbrew1@worldbank.org',
-                            'jbrew1@worldbank.org'))),
-              fluidRow(helpText("Joe is a data scientist for", a(href = 'http://databrew.cc/', 'DataBrew.'), "He has a background in epidemiology and development economics. He works in both industry as a consultant as well as academia. His research focuses on the economics of malaria elimination programs in Sub-Saharan Africa."))
-            ),
-            width = 4)
+          column(1)
         ),
         fluidRow(div(helpText(creds),
-                     style = 'text-align:right'))
+                     style = 'text-align:right')),
+        fluidRow(
+          column(12,
+                 align = 'right',
+                 helpText(textOutput("url_text")))
+        )
           )
         ),
     tabItem(tabName = 'upload_data',
@@ -307,7 +275,8 @@ body <- dashboardBody(
                        DT::dataTableOutput('uploaded_table'))
               )
               
-            )),
+            )
+    ),
     tabItem(tabName = 'edit_data',
             fluidPage(
               tabsetPanel(type = "tabs",
@@ -341,9 +310,7 @@ body <- dashboardBody(
                                               h1('People'))
                                      ),
                                      fluidRow(column(12, align = 'center',
-                                                     selectInput('photo_person',
-                                                                 'Person',
-                                                                 choices = sort(unique(view_all_trips_people_meetings_venues$person_name))))),
+                                                     uiOutput('photo_person_ui'))),
                                      fluidRow(
                                        column(6,
                                               fluidRow(column(12, align = 'center',
@@ -408,20 +375,115 @@ body <- dashboardBody(
                                    )))
             )
     )
-  ),
+    ),
   tags$style(type="text/css", "#add_table th {font-weight:bold;}"),
   tags$style(type="text/css", "#hot_trips th {font-weight:bold;}"),
   tags$style(type="text/css", "#hot_trips td {font-size: 10px;}"),
   tags$style(type="text/css", "#hot_people th {font-weight:bold;}"),
   tags$style(type="text/css", "#hot_venues th {font-weight:bold;}"),
   tags$style(type="text/css", "#hot_venue_events th {font-weight:bold;}")
-)
+  )
 
 
 ui <- dashboardPage(header, sidebar, body)
 
 # Define server
 server <- function(input, output, session) {
+  
+  # Reactive list of dataframes for user-specific data
+  vals <- reactiveValues()
+  
+  # Whether the user has any data at all
+  any_data <- reactiveVal(value = FALSE)
+  
+  # Reactive value for whether logged in or not
+  logged_in <- reactiveVal(value = FALSE)
+  user_id <- reactiveVal(value = 0)
+  
+  # Observe the submission and log in
+  observeEvent(input$log_in_submit, {
+    # Check password and username
+    log_in_result <- 
+      check_user_name_and_password(user_name = input$user_name,
+                                   password = input$password,
+                                   users = users)
+    if(log_in_result > 0){
+      logged_in(TRUE)
+      user_id(log_in_result)
+      # Update the "last_login" field
+      update_last_login_field(user_id = log_in_result)
+    } else {
+      # Failed log in
+      fli <- failed_log_in()
+      failed_log_in(fli + 1)
+    }
+  })
+  
+  # Observe the log out button
+  observeEvent(input$log_out, {
+    logged_in(FALSE)
+    user_id(0)
+    failed_log_in_text('')
+    failed_log_in(0)
+    any_data(FALSE)
+  })
+  
+  # Observe changes to the user id and update the vals
+  observeEvent(user_id(), {
+    liui <- user_id()
+    new_vals <- load_user_data(return_list = TRUE, user_id = liui)
+    tables <- get_table_names()
+    for(i in 1:length(tables)){
+      vals[[tables[i]]] <- new_vals[[tables[i]]]
+    }
+    x <- vals$view_all_trips_people_meetings_venues
+    if(!is.null(x)){
+      if(nrow(x) > 0){
+        any_data(TRUE)
+      }
+    }
+  })
+  
+  # Text to warn if no data
+  output$any_data_ui <- renderUI({
+    li <- logged_in()
+    if(!li){
+      return(NULL)
+    }
+    ad <- any_data()
+    if(ad){
+      return(NULL)
+    } else {
+      fluidPage(fluidRow(column(12, align = 'center',
+                                h3(paste0('No data on record. Go to "Upload trips" to add data.')))))
+    }
+  })
+  
+  # Failed log in text
+  failed_log_in <- reactiveVal(value = 0)
+  failed_log_in_text <- reactiveVal(value = '')
+  observeEvent(c(failed_log_in()), {
+    fli <- failed_log_in()
+    if(fli > 0){
+      message('Failed log in attempt. Re-prompting the log-in.')
+      failed_log_in_text('Incorrect user name / password combination.')
+    }
+  })
+  output$failed_log_in_text <-
+    renderText({
+      ok <- FALSE
+      x <- failed_log_in_text()
+      if(!is.null(x)){
+        if(length(x) > 0){
+          if(x != ''){
+            ok <- TRUE
+          }
+        }
+      }
+      if(ok){
+        return(x)
+      }
+    })
   
   # Create a reactive dataframe of photos
   photos_reactive <- reactiveValues()
@@ -449,6 +511,52 @@ server <- function(input, output, session) {
     # reset
     date_range(c(Sys.Date() - 7,
                  Sys.Date() + 14))
+  })
+  
+  
+  output$reset_date_range_ui <- renderUI({
+    li <- logged_in()
+    if(!li){
+      return(NULL)
+    } else {
+      actionButton('reset_date_range', 'Reset', icon = icon('undo'))
+    }
+  })
+  
+  output$log_out_ui <- renderUI({
+    li <- logged_in()
+    if(li){
+      tags$li(class = 'dropdown',
+              actionButton('log_out', label = 'Log out', icon = icon('times')))
+    } else {
+      NULL
+    }
+  })
+  
+  output$wbg_only_ui <- renderUI({
+    li <- logged_in()
+    if(!li){
+      return(NULL)
+    } else {
+      selectInput('wbg_only',
+                  '',
+                  choices = 
+                    c('All affiliations' = 'Everyone', 
+                      'WBG only' = 'WBG only', 
+                      'Non-WBG only' = 'Non-WBG only'),
+                  width = '150px')
+    }
+  })
+  
+  output$search_ui <- renderUI({
+    li <- logged_in()
+    if(!li){
+      return(NULL)
+    } else {
+      textInput('search',
+                '',
+                placeholder = 'Search for people, places, events')
+    }
   })
   
   output$date_ui <- renderUI({
@@ -623,7 +731,7 @@ server <- function(input, output, session) {
       'data_download.csv'
     },
     content = function(file){
-      x <- view_all_trips_people_meetings_venues %>%
+      x <- vals$view_all_trips_people_meetings_venues %>%
         dplyr::select(short_name,
                       organization,
                       title,
@@ -650,23 +758,6 @@ server <- function(input, output, session) {
     }
   )
   
-  # Reactive dataframe for the filtered table
-  vals <- reactiveValues()
-  # vals$events<-filter_events(events = events,
-  #                            visit_start = min(date_dictionary$date),
-  #                            visit_end = max(date_dictionary$date))
-  vals$events <- events
-  vals$cities <- cities
-  vals$people <- people
-  # vals$trip_meetings <- trip_meetings
-  vals$trips <- trips
-  vals$view_trip_coincidences <- view_trip_coincidences
-  # vals$venue_events <- venue_events
-  # vals$venue_types <- venue_types
-  vals$view_trips_and_meetings <- view_trips_and_meetings
-  vals$upload_results <- NULL
-  vals$view_all_trips_people_meetings_venues <- view_all_trips_people_meetings_venues
-  
   # Replace data with uploaded data
   observeEvent(input$submit, {
     new_data <- uploaded()
@@ -674,42 +765,18 @@ server <- function(input, output, session) {
     # Upload the new data to the database
     upload_results <-
       upload_raw_data(data = new_data,
-                      logged_in_user_id = 1,
+                      logged_in_user_id = user_id(),
                       return_upload_results = TRUE)
     message('Uploaded raw data')
     # Update the session
-    warning('need to depricate db_to_memory: Line 673 in app.R')
-    updated_data <- db_to_memory(return_list = TRUE)
-    vals$events <- updated_data$events
-    vals$cities <- updated_data$cities
-    vals$people <- updated_data$people
-    # vals$trip_meetings <- updated_data$trip_meetings
-    vals$trips <- updated_data$trips
-    # vals$venue_events <- updated_data$venue_events
-    # vals$venue_types <- updated_data$venue_types
-    vals$view_trips_and_meetings <- updated_data$view_trips_and_meetings
-    vals$view_trip_coincidences <- updated_data$view_trip_coincidences
-    vals$view_all_trips_people_meetings_venues <- updated_data$view_all_trips_people_meetings_venues
+    liui <- user_id()
+    new_vals <- load_user_data(return_list = TRUE, user_id = liui)
+    tables <- get_table_names()
+    for(i in 1:length(tables)){
+      vals[[tables[i]]] <- new_vals[[tables[i]]]
+    }
     vals$upload_results <- upload_results
   })
-  
-  # # After modification is confirmed, update the data stores
-  # observeEvent(input$submit2, {
-  #   # THIS NEEDS CHANGES
-  #   message('Modification confirmed, geocoding and overwriting data.')
-  #   new_data <- vals$events
-  #   # Geocode if applicable
-  #   new_data <- geo_code(new_data)
-  #   # Update the underlying data
-  #   # Update the underlying data
-  #   write_table(connection_object = GLOBAL_DB_POOL,
-  #               table = 'dev_events',
-  #               schema = 'pd_wbgtravel',
-  #               value = new_data,
-  #               use_sqlite = use_sqlite)
-  #   message('Ovewrote the database')
-  # })
-  
   
   submit_text <- reactiveVal(value = '')
   output$submit_icon <- renderUI({
@@ -727,74 +794,90 @@ server <- function(input, output, session) {
   observeEvent(input$submit, {
     submit_text('Data uploaded! Now click through other tabs to explore your data.')
   })
-  observeEvent(input$Del_row_head, {
-    vals$events <- vals$events
-  })
+  
   
   selected_timevis <- reactiveVal(value = NULL)
   observeEvent(input$timevis_selected,
                selected_timevis(input$timevis_selected))
-  observeEvent(input$timevis_clear,
-               selected_timevis(NULL))
+  observeEvent(input$timevis_clear,{
+    selected_timevis(NULL)
+    updateCheckboxInput(session = session,
+                        inputId = 'show_meetings',
+                        value = FALSE)
+  })
   
   filtered_expanded_trips <- reactive({
     sm<- input$show_meetings
     fd <- date_range()
     search_string <- input$search
-    out <- expanded_trips %>%
-      filter(end >= fd[1],
-             start <= fd[2])
-    keeps <- c()
-    search_string <- trimws(unlist(strsplit(search_string, ',')), 'both')
-    search_string <- tolower(search_string)
-    if(!is.null(search_string)){
-      if(length(search_string) > 0){
-        for(i in 1:length(search_string)){
-          search <- search_string[i]
-          keep_this <- which(grepl(search, tolower(out$city_name)) |
-                               grepl(search, tolower(out$title)) |
-                               grepl(search, tolower(out$content)))
-          keeps <- c(keeps, keep_this)
-        }
-        keeps <- sort(unique(keeps))
-        out <- out[keeps,]
-      }
-    }
-    
-    if(nrow(out) > 0){
-      # events only
-      if(!sm){
-        out <- out %>% filter(group == 1)
-      }
-      if(nrow(out) > 0){
-        # Capture the selection if it exists
-        selected <- selected_timevis()
-        selected <- as.numeric(selected)
-        if(!is.null(selected)){
-          if(length(selected) > 0){
-            # Get whether a meeting or event has been selected
-            selected_row <- out %>% filter(id == selected)
-            # Deal with bug in which a selected meeting gets disappeared
-            if(nrow(selected_row) != 1){
-              srei <- unique(expanded_trips$id)
-            } else {
-              # Get the selected row event id
-              srei <- selected_row$event_id
-            }
-            
-            # Keep everything with same event id
-            out <- out %>%
-              filter(event_id %in% srei)
+
+    out <- NULL
+    if(nrow(vals$view_all_trips_people_meetings_venues) > 0){
+      expanded_trips <- 
+        expand_trips(view_all_trips_people_meetings_venues = vals$view_all_trips_people_meetings_venues,
+                     venue_types = venue_types, 
+                     venue_events = vals$venue_events, 
+                     cities = vals$cities)
+      out <- expanded_trips %>%
+        filter(end >= fd[1],
+               start <= fd[2])
+      keeps <- c()
+      search_string <- trimws(unlist(strsplit(search_string, ',')), 'both')
+      search_string <- tolower(search_string)
+      if(!is.null(search_string)){
+        if(length(search_string) > 0){
+          for(i in 1:length(search_string)){
+            search <- search_string[i]
+            keep_this <- which(grepl(search, tolower(out$city_name)) |
+                                 grepl(search, tolower(out$title)) |
+                                 grepl(search, tolower(out$content)))
+            keeps <- c(keeps, keep_this)
           }
+          keeps <- sort(unique(keeps))
+          out <- out[keeps,]
         }
+      }
+      
+      if(nrow(out) > 0){
+        # events only
+        if(!sm){
+          out <- out %>% filter(group == 1)
+        }
+        if(nrow(out) > 0){
+          # Capture the selection if it exists
+          selected <- selected_timevis()
+          selected <- as.numeric(selected)
+          if(!is.null(selected)){
+            if(length(selected) > 0){
+              # Get whether a meeting or event has been selected
+              selected_row <- out %>% filter(id == selected)
+              # Deal with bug in which a selected meeting gets disappeared
+              if(nrow(selected_row) != 1){
+                srei <- unique(expanded_trips$id)
+              } else {
+                # Get the selected row event id
+                srei <- selected_row$event_id
+              }
+              
+              # Keep everything with same event id
+              out <- out %>%
+                filter(event_id %in% srei)
+              
+              updateCheckboxInput(session = session,
+                                  inputId = 'show_meetings',
+                                  value = TRUE)
+            }
+          }
+        } else {
+          out <- NULL
+        }
+        
+        
       } else {
         out <- NULL
       }
-      
-      
-    } else {
-      out <- NULL
     }
+    
     
     
     return(out)
@@ -802,24 +885,25 @@ server <- function(input, output, session) {
   
   
   
-  # Create a filtered view_trip_coincidences
+  # Create a filtered view_all_trips_people_meetings_venues_filtered
   view_all_trips_people_meetings_venues_filtered <- reactive({
     fd <- date_range()
     vd <- vals$view_all_trips_people_meetings_venues
-    x <- vd %>%
-      dplyr::filter(fd[1] <= trip_end_date,
-                    fd[2] >= trip_start_date)
-    
-    x <- search_df(data = x,
-                   input$search)
-    return(x)
+    if(!is.null(vd)){
+      x <- vd %>%
+        dplyr::filter(fd[1] <= trip_end_date,
+                      fd[2] >= trip_start_date)
+      
+      x <- search_df(data = x,
+                     input$search)
+      return(x)
+    }
   })
   
   output$leafy <- renderLeaflet({
     
     # Get trips and meetings, filtered for date range    
     df <- view_all_trips_people_meetings_venues_filtered()
-    
     
     # Filter for wbg only if relevant
     if(input$wbg_only == 'WBG only'){
@@ -828,177 +912,182 @@ server <- function(input, output, session) {
       df <- df %>% dplyr::filter(is_wbg == 0)
     }
     
-    # Get row selection (if applicable) from datatable
-    s <- input$visit_info_table_rows_selected
-    
-    # Subset df if rows are selected
-    if(!is.null(s)){
-      if(length(s) > 0){
-        df <- df[s,]
-      }
-    }
-    
-    # Get number of rows of df
-    nrp <- nrow(df)
-    
-    # Get whether wbg or not
-    df$is_wbg <- as.logical(df$is_wbg)
-    
-    
-    # Select down
-    df <- df %>%
-      dplyr::select(is_wbg,
-                    short_name,
-                    title,
-                    city_name,
-                    country_name,
-                    trip_start_date,
-                    trip_end_date,
-                    meeting_with,
-                    venue_name,
-                    agenda)
-    
-    # Get city id
-    df <- df %>%
-      left_join(cities %>%
-                  dplyr::select(city_name, country_name, city_id),
-                by = c('city_name', 'country_name'))
-    
-    # Create an id
-    df <- df %>%
-      mutate(id = paste0(short_name, is_wbg, city_id)) %>%
-      mutate(id = as.numeric(factor(id))) %>%
-      arrange(trip_start_date)
-    
-    # Create some more columns
-    df <- df %>%
-      mutate(dates = oleksiy_date(trip_start_date, trip_end_date)) %>%
-      mutate(event = paste0(ifelse(!is.na(meeting_with) & short_name != meeting_with, ' With ', ''),
-                            ifelse(!is.na(meeting_with) & short_name != meeting_with, meeting_with, ''))) %>%
-      mutate(event = Hmisc::capitalize(event)) 
-    
-    
-    # Keep a "full" df with one row per trip
-    full_df <- df
-    
-    # Make only one head per person/place
-    df <- df %>%
-      group_by(id, short_name, title, is_wbg, city_id, venue_name) %>%
-      summarise(date = paste0(dates, collapse = ';'),
-                event = paste0(event, collapse = ';')) %>% ungroup
-    
-    # Join to city names
-    df <- df %>%
-      left_join(cities %>%
-                  dplyr::select(city_name, country_name, city_id,
-                                latitude, longitude),
-                by = 'city_id') 
-    
-    
-    popups = lapply(rownames(df), function(row){
-      this_id <- unlist(df[row,'id'])
-      # Get the original rows from full df for each of the ids
-      x <- full_df %>%
-        filter(id == this_id)
-      x$short_name <- oleksiy_name(x$short_name)
-      if(!is.na(x$title[1])){
-        caption <- paste0(x$short_name[1], '<br>(', x$title[1], ') in ', x$city_name[1])
-      } else {
-        caption <- paste0(x$short_name[1], '<br>in ', x$city_name[1])
-      }
-      # vn <- paste0(unique(x$venue_name[!is.na(x$venue_name)]), collapse = ', ')
-      # if(!is.na(vn)){
-      #   if(nchar(vn) > 0){
-      #     caption <- paste0(caption, ' at ', vn)
-      #   }
-      # }
-      # ag <- paste0(unique(x$agenda[!is.na(x$agenda)]), collapse = ', ')
-      # if(!is.na(ag)){
-      #   if(nchar(ag) > 0){
-      #     caption <- paste0(caption, ' for ', ag)
-      #   }
-      # }
+    if(!is.null(df)){
+      # Get row selection (if applicable) from datatable
+      s <- input$visit_info_table_rows_selected
       
-      x <- x %>%
-        mutate(event = ifelse(!is.na(venue_name) & venue_name != '' & !is.na(event) & event != '', paste0(event, ' at ', venue_name),
-                              event)) %>%
-        dplyr::select(dates, event, agenda)
-      names(x) <- Hmisc::capitalize(names(x))
-      knitr::kable(x,
-                   rnames = FALSE,
-                   caption = caption,
-                   align = paste(rep("l", ncol(x)), collapse = ''),
-                   format = 'html') %>%
-        kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"), full_width = FALSE,
-                      font_size = 9) %>%
-        scroll_box(height = '200px', width = '300px')
-    })
-    
-    
-    # Get faces
-    faces_dir <- paste0('www/headshots/circles/')
-    faces <- dir(faces_dir)
-    faces <- data_frame(joiner = gsub('.png', '', faces, fixed = TRUE),
-                        file = paste0(faces_dir, faces))
-    
-    # Create a join column
-    faces$joiner <- ifelse(is.na(faces$joiner) | faces$joiner == 'NA',
-                           'Unknown',
-                           faces$joiner)
-    df$joiner <- ifelse(df$short_name %in% faces$joiner,
-                        df$short_name,
-                        'Unknown')
-    
-    # Join the files to the df data
-    if(nrow(df) > 0){
-      df <-
-        left_join(df,
-                  faces,
-                  by = 'joiner')
-      # Define colors
-      cols <- ifelse(is.na(df$is_wbg) |
-                       !df$is_wbg,
-                     'orange',
-                     'blue')
+      # Subset df if rows are selected
+      if(!is.null(s)){
+        if(length(s) > 0){
+          df <- df[s,]
+        }
+      }
+      
+      # Get number of rows of df
+      nrp <- nrow(df)
+      
+      # Get whether wbg or not
+      df$is_wbg <- as.logical(df$is_wbg)
+      
+      
+      # Select down
+      df <- df %>%
+        dplyr::select(is_wbg,
+                      short_name,
+                      title,
+                      city_name,
+                      country_name,
+                      trip_start_date,
+                      trip_end_date,
+                      meeting_with,
+                      venue_name,
+                      agenda)
+      
+      # Get city id
+      df <- df %>%
+        left_join(vals$cities %>%
+                    dplyr::select(city_name, country_name, city_id),
+                  by = c('city_name', 'country_name'))
+      
+      # Create an id
+      df <- df %>%
+        mutate(id = paste0(short_name, is_wbg, city_id)) %>%
+        mutate(id = as.numeric(factor(id))) %>%
+        arrange(trip_start_date)
+      
+      # Create some more columns
+      df <- df %>%
+        mutate(dates = oleksiy_date(trip_start_date, trip_end_date)) %>%
+        mutate(event = paste0(ifelse(!is.na(meeting_with) & short_name != meeting_with, ' With ', ''),
+                              ifelse(!is.na(meeting_with) & short_name != meeting_with, meeting_with, ''))) %>%
+        mutate(event = Hmisc::capitalize(event)) 
+      
+      
+      # Keep a "full" df with one row per trip
+      full_df <- df
+      
+      # Make only one head per person/place
+      df <- df %>%
+        group_by(id, short_name, title, is_wbg, city_id, venue_name) %>%
+        summarise(date = paste0(dates, collapse = ';'),
+                  event = paste0(event, collapse = ';')) %>% ungroup
+      
+      # Join to city names
+      df <- df %>%
+        left_join(vals$cities %>%
+                    dplyr::select(city_name, country_name, city_id,
+                                  latitude, longitude),
+                  by = 'city_id') 
+      
+      
+      popups = lapply(rownames(df), function(row){
+        this_id <- unlist(df[row,'id'])
+        # Get the original rows from full df for each of the ids
+        x <- full_df %>%
+          filter(id == this_id)
+        x$short_name <- oleksiy_name(x$short_name)
+        if(!is.na(x$title[1])){
+          caption <- paste0(x$short_name[1], '<br>(', x$title[1], ') in ', x$city_name[1])
+        } else {
+          caption <- paste0(x$short_name[1], '<br>in ', x$city_name[1])
+        }
+        # vn <- paste0(unique(x$venue_name[!is.na(x$venue_name)]), collapse = ', ')
+        # if(!is.na(vn)){
+        #   if(nchar(vn) > 0){
+        #     caption <- paste0(caption, ' at ', vn)
+        #   }
+        # }
+        # ag <- paste0(unique(x$agenda[!is.na(x$agenda)]), collapse = ', ')
+        # if(!is.na(ag)){
+        #   if(nchar(ag) > 0){
+        #     caption <- paste0(caption, ' for ', ag)
+        #   }
+        # }
+        
+        x <- x %>%
+          mutate(event = ifelse(!is.na(venue_name) & venue_name != '' & !is.na(event) & event != '', paste0(event, ' at ', venue_name),
+                                event)) %>%
+          dplyr::select(dates, event, agenda)
+        names(x) <- Hmisc::capitalize(names(x))
+        knitr::kable(x,
+                     rnames = FALSE,
+                     caption = caption,
+                     align = paste(rep("l", ncol(x)), collapse = ''),
+                     format = 'html') %>%
+          kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"), full_width = FALSE,
+                        font_size = 9) %>%
+          scroll_box(height = '200px', width = '300px')
+      })
+      
+      
+      # Get faces
+      faces_dir <- paste0('www/headshots/circles/')
+      faces <- dir(faces_dir)
+      faces <- data_frame(joiner = gsub('.png', '', faces, fixed = TRUE),
+                          file = paste0(faces_dir, faces))
+      
+      # Create a join column
+      faces$joiner <- ifelse(is.na(faces$joiner) | faces$joiner == 'NA',
+                             'Unknown',
+                             faces$joiner)
+      df$joiner <- ifelse(df$short_name %in% faces$joiner,
+                          df$short_name,
+                          'Unknown')
+      
+      # Join the files to the df data
+      if(nrow(df) > 0){
+        df <-
+          left_join(df,
+                    faces,
+                    by = 'joiner')
+        # Define colors
+        cols <- ifelse(is.na(df$is_wbg) |
+                         !df$is_wbg,
+                       'orange',
+                       'blue')
+      } else {
+        df <- df[0,]
+      }
+      face_icons <- icons(df$file,
+                          iconWidth = 25, iconHeight = 25)
+      
+      
+      zoom_level <- 2
+      
+      df <- df %>%
+        mutate(longitude = joe_jitter(longitude, zoom = zoom_level),
+               latitude = joe_jitter(latitude, zoom = zoom_level))
+      
+      l <- leaflet(#options = leafletOptions(zoomControl = FALSE)
+      ) %>%
+        addProviderTiles("Esri.WorldStreetMap") %>%
+        leaflet.extras::addFullscreenControl(position = 'topright') %>%
+        addLegend(position = 'bottomright', colors = c('orange', 'blue'), labels = c('Non-WBG', 'WBG')) %>%
+        addCircleMarkers(data = df, lng =~longitude, lat = ~latitude,
+                         # clusterOptions = markerClusterOptions(),
+                         col = cols, radius = 14) %>%
+        addMarkers(data = df, lng =~longitude, lat = ~latitude,
+                   popup = popups,
+                   # clusterOptions = markerClusterOptions(),
+                   icon = face_icons)
+      
+      # Zoom out a bit if only 1 city or person
+      if(nrp == 1 | length(unique(df$city_id)) == 1){
+        l <- l %>%
+          setView(lng = mean(df$longitude, na.rm = TRUE),
+                  lat = mean(df$latitude, na.rm = TRUE),
+                  zoom = 7)
+      }
+      
+      shinyjs::enable("action_forward")
+      shinyjs::hide("text1")
+      shinyjs::enable("action_back")
+      shinyjs::hide("text2")
+      l
     } else {
-      df <- df[0,]
-    }
-    face_icons <- icons(df$file,
-                        iconWidth = 25, iconHeight = 25)
-    
-    
-    zoom_level <- 2
-    
-    df <- df %>%
-      mutate(longitude = joe_jitter(longitude, zoom = zoom_level),
-             latitude = joe_jitter(latitude, zoom = zoom_level))
-    
-    l <- leaflet(#options = leafletOptions(zoomControl = FALSE)
-    ) %>%
-      addProviderTiles("Esri.WorldStreetMap") %>%
-      leaflet.extras::addFullscreenControl(position = 'topright') %>%
-      addLegend(position = 'bottomright', colors = c('orange', 'blue'), labels = c('Non-WBG', 'WBG')) %>%
-      addCircleMarkers(data = df, lng =~longitude, lat = ~latitude,
-                       # clusterOptions = markerClusterOptions(),
-                       col = cols, radius = 14) %>%
-      addMarkers(data = df, lng =~longitude, lat = ~latitude,
-                 popup = popups,
-                 # clusterOptions = markerClusterOptions(),
-                 icon = face_icons)
-    
-    # Zoom out a bit if only 1 city or person
-    if(nrp == 1 | length(unique(df$city_id)) == 1){
-      l <- l %>%
-        setView(lng = mean(df$longitude, na.rm = TRUE),
-                lat = mean(df$latitude, na.rm = TRUE),
-                zoom = 7)
+      return(leaflet())
     }
     
-    shinyjs::enable("action_forward")
-    shinyjs::hide("text1")
-    shinyjs::enable("action_back")
-    shinyjs::hide("text2")
-    l
   })
   
   # Obseve changes to zoom
@@ -1010,171 +1099,176 @@ server <- function(input, output, session) {
     # Get trips and meetings, filtered for date range    
     df <- view_all_trips_people_meetings_venues_filtered()
     
-    
-    # Filter for wbg only if relevant
-    if(input$wbg_only == 'WBG only'){
-      df <- df %>% dplyr::filter(is_wbg == 1)
-    } else if(input$wbg_only == 'Non-WBG only'){
-      df <- df %>% dplyr::filter(is_wbg == 0)
-    }
-    
-    # Get row selection (if applicable) from datatable
-    s <- input$visit_info_table_rows_selected
-    
-    # Subset df if rows are selected
-    if(!is.null(s)){
-      if(length(s) > 0){
-        df <- df[s,]
-      }
-    }
-    
-    # Get number of rows of df
-    nrp <- nrow(df)
-    
-    # Get whether wbg or not
-    df$is_wbg <- as.logical(df$is_wbg)
-    
-    
-    # Select down
-    df <- df %>%
-      dplyr::select(is_wbg,
-                    short_name,
-                    title,
-                    city_name,
-                    country_name,
-                    trip_start_date,
-                    trip_end_date,
-                    meeting_with,
-                    venue_name,
-                    agenda)
-    
-    # Get city id
-    df <- df %>%
-      left_join(cities %>%
-                  dplyr::select(city_name, country_name, city_id),
-                by = c('city_name', 'country_name'))
-    
-    # Create an id
-    df <- df %>%
-      mutate(id = paste0(short_name, is_wbg, city_id)) %>%
-      mutate(id = as.numeric(factor(id))) %>%
-      arrange(trip_start_date)
-    
-    # Create some more columns
-    df <- df %>%
-      mutate(dates = oleksiy_date(trip_start_date, trip_end_date)) %>%
-      mutate(short_name = ifelse(is.na(short_name), '', short_name)) %>%
-      mutate(meeting_with = ifelse(is.na(meeting_with), '', meeting_with)) %>%
-      mutate(event = ifelse(short_name != meeting_with &
-                              meeting_with != '' &
-                              short_name != '',
-                            paste0(short_name, ' with ', meeting_with),
-                            '')) %>%
-      mutate(event = Hmisc::capitalize(event)) %>%
-      mutate(event = ifelse(trimws(event) == 'With', '', event))
-    
-    
-    # Keep a "full" df with one row per trip
-    full_df <- df
-    
-    
-    # Make only one head per person/place
-    df <- df %>%
-      group_by(id, short_name, title, is_wbg, city_id, venue_name) %>%
-      summarise(date = paste0(dates, collapse = ';'),
-                event = paste0(event, collapse = ';')) %>% ungroup
-    
-    # Join to city names
-    df <- df %>%
-      left_join(cities %>%
-                  dplyr::select(city_name, country_name, city_id,
-                                latitude, longitude),
-                by = 'city_id') 
-    
-    popups = lapply(rownames(df), function(row){
-      this_id <- unlist(df[row,'id'])
-      # Get the original rows from full df for each of the ids
-      x <- full_df %>%
-        filter(id == this_id)
-      x$short_name <- oleksiy_name(x$short_name)
-      if(!is.na(x$title[1])){
-        caption <- paste0(x$short_name[1], '<br>(', x$title[1], ') in ', x$city_name[1])
-      } else {
-        caption <- paste0(x$short_name[1], '<br>in ', x$city_name[1])
+    if(!is.null(df)){
+      # Filter for wbg only if relevant
+      if(input$wbg_only == 'WBG only'){
+        df <- df %>% dplyr::filter(is_wbg == 1)
+      } else if(input$wbg_only == 'Non-WBG only'){
+        df <- df %>% dplyr::filter(is_wbg == 0)
       }
       
-      x <- x %>%
-        mutate(event = ifelse(!is.na(venue_name) & venue_name != '' & !is.na(event) & event != '', paste0(event, ' at ', venue_name),
-                              event)) %>%
-        dplyr::select(dates, event, agenda)
-      names(x) <- Hmisc::capitalize(names(x))
-      knitr::kable(x,
-                   rnames = FALSE,
-                   caption = caption,
-                   align = paste(rep("l", ncol(x)), collapse = ''),
-                   format = 'html') %>%
-        kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"), full_width = FALSE,
-                      font_size = 9) %>%
-        scroll_box(height = '200px', width = '300px')
-    })
-    
-    
-    
-    
-    # Get faces
-    faces_dir <- paste0('www/headshots/circles/')
-    faces <- dir(faces_dir)
-    faces <- data_frame(joiner = gsub('.png', '', faces, fixed = TRUE),
-                        file = paste0(faces_dir, faces))
-    
-    # Create a join column
-    faces$joiner <- ifelse(is.na(faces$joiner) | faces$joiner == 'NA',
-                           'Unknown',
-                           faces$joiner)
-    df$joiner <- ifelse(df$short_name %in% faces$joiner,
-                        df$short_name,
-                        'Unknown')
-    
-    # Join the files to the df data
-    if(nrow(df) > 0){
-      df <-
-        left_join(df,
-                  faces,
-                  by = 'joiner')
-      # Define colors
-      cols <- ifelse(is.na(df$is_wbg) |
-                       !df$is_wbg,
-                     'orange',
-                     'blue')
-    } else {
-      df <- df[0,]
-    }
-    face_icons <- icons(df$file,
-                        iconWidth = 25, iconHeight = 25)
-    
-    
-    zoom_level <- input$leafy_zoom
-    if(is.null(zoom_level)){
-      zoom_level <- 2
-    }
-    message('zoom is ', zoom_level)
-    
-    df <- df %>%
-      mutate(longitude = joe_jitter(longitude, zoom = zoom_level),
-             latitude = joe_jitter(latitude, zoom = zoom_level))
-    
-    
-    l <- leafletProxy('leafy') %>%
-      clearMarkers() %>%
-      # clearControls() %>%
-      addCircleMarkers(data = df, lng =~longitude, lat = ~latitude,
-                       # clusterOptions = markerClusterOptions(),
-                       col = cols, radius = 14) %>%
-      addMarkers(data = df, lng =~longitude, lat = ~latitude,
-                 popup = popups,
-                 # clusterOptions = markerClusterOptions(),
-                 icon = face_icons)
-    l
+      # Get row selection (if applicable) from datatable
+      s <- input$visit_info_table_rows_selected
+      
+      # Subset df if rows are selected
+      if(!is.null(s)){
+        if(length(s) > 0){
+          df <- df[s,]
+        }
+      }
+      
+      # Get number of rows of df
+      nrp <- nrow(df)
+      if(nrp > 0){
+        
+        # Get whether wbg or not
+        df$is_wbg <- as.logical(df$is_wbg)
+        
+        
+        # Select down
+        df <- df %>%
+          dplyr::select(is_wbg,
+                        short_name,
+                        title,
+                        city_name,
+                        country_name,
+                        trip_start_date,
+                        trip_end_date,
+                        meeting_with,
+                        venue_name,
+                        agenda)
+        
+        # Get city id
+        df <- df %>%
+          left_join(vals$cities %>%
+                      dplyr::select(city_name, country_name, city_id),
+                    by = c('city_name', 'country_name'))
+        
+        # Create an id
+        df <- df %>%
+          mutate(id = paste0(short_name, is_wbg, city_id)) %>%
+          mutate(id = as.numeric(factor(id))) %>%
+          arrange(trip_start_date)
+        
+        # Create some more columns
+        df <- df %>%
+          mutate(dates = oleksiy_date(trip_start_date, trip_end_date)) %>%
+          mutate(short_name = ifelse(is.na(short_name), '', short_name)) %>%
+          mutate(meeting_with = ifelse(is.na(meeting_with), '', meeting_with)) %>%
+          mutate(event = ifelse(short_name != meeting_with &
+                                  meeting_with != '' &
+                                  short_name != '',
+                                paste0(short_name, ' with ', meeting_with),
+                                '')) %>%
+          mutate(event = Hmisc::capitalize(event)) %>%
+          mutate(event = ifelse(trimws(event) == 'With', '', event))
+        
+        
+        # Keep a "full" df with one row per trip
+        full_df <- df
+        
+        
+        # Make only one head per person/place
+        df <- df %>%
+          group_by(id, short_name, title, is_wbg, city_id, venue_name) %>%
+          summarise(date = paste0(dates, collapse = ';'),
+                    event = paste0(event, collapse = ';')) %>% ungroup
+        
+        # Join to city names
+        df <- df %>%
+          left_join(vals$cities %>%
+                      dplyr::select(city_name, country_name, city_id,
+                                    latitude, longitude),
+                    by = 'city_id') 
+        
+        popups = lapply(rownames(df), function(row){
+          this_id <- unlist(df[row,'id'])
+          # Get the original rows from full df for each of the ids
+          x <- full_df %>%
+            filter(id == this_id)
+          x$short_name <- oleksiy_name(x$short_name)
+          if(!is.na(x$title[1])){
+            caption <- paste0(x$short_name[1], '<br>(', x$title[1], ') in ', x$city_name[1])
+          } else {
+            caption <- paste0(x$short_name[1], '<br>in ', x$city_name[1])
+          }
+          
+          x <- x %>%
+            mutate(event = ifelse(!is.na(venue_name) & venue_name != '' & !is.na(event) & event != '', paste0(event, ' at ', venue_name),
+                                  event)) %>%
+            dplyr::select(dates, event, agenda)
+          names(x) <- Hmisc::capitalize(names(x))
+          knitr::kable(x,
+                       rnames = FALSE,
+                       caption = caption,
+                       align = paste(rep("l", ncol(x)), collapse = ''),
+                       format = 'html') %>%
+            kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"), full_width = FALSE,
+                          font_size = 9) %>%
+            scroll_box(height = '200px', width = '300px')
+        })
+        
+        
+        
+        
+        # Get faces
+        faces_dir <- paste0('www/headshots/circles/')
+        faces <- dir(faces_dir)
+        faces <- data_frame(joiner = gsub('.png', '', faces, fixed = TRUE),
+                            file = paste0(faces_dir, faces))
+        
+        # Create a join column
+        faces$joiner <- ifelse(is.na(faces$joiner) | faces$joiner == 'NA',
+                               'Unknown',
+                               faces$joiner)
+        df$joiner <- ifelse(df$short_name %in% faces$joiner,
+                            df$short_name,
+                            'Unknown')
+        
+        # Join the files to the df data
+        if(nrow(df) > 0){
+          df <-
+            left_join(df,
+                      faces,
+                      by = 'joiner')
+          # Define colors
+          cols <- ifelse(is.na(df$is_wbg) |
+                           !df$is_wbg,
+                         'orange',
+                         'blue')
+        } else {
+          df <- df[0,]
+        }
+        face_icons <- icons(df$file,
+                            iconWidth = 25, iconHeight = 25)
+        
+        
+        zoom_level <- input$leafy_zoom
+        if(is.null(zoom_level)){
+          zoom_level <- 2
+        }
+        message('zoom is ', zoom_level)
+        
+        df <- df %>%
+          mutate(longitude = joe_jitter(longitude, zoom = zoom_level),
+                 latitude = joe_jitter(latitude, zoom = zoom_level))
+        
+        
+        l <- leafletProxy('leafy') %>%
+          clearMarkers() %>%
+          # clearControls() %>%
+          addCircleMarkers(data = df, lng =~longitude, lat = ~latitude,
+                           # clusterOptions = markerClusterOptions(),
+                           col = cols, radius = 14) %>%
+          addMarkers(data = df, lng =~longitude, lat = ~latitude,
+                     popup = popups,
+                     # clusterOptions = markerClusterOptions(),
+                     icon = face_icons)
+        l  
+      }
+      }
+      
+      
     
   })
   
@@ -1214,7 +1308,7 @@ server <- function(input, output, session) {
                     fd[2] >= trip_start_date)
     x <- search_df(data = x,
                    input$search)
-
+    
     return(x)
     
   })
@@ -1244,41 +1338,108 @@ server <- function(input, output, session) {
   output$visit_info_table <- DT::renderDataTable({
     
     x <- view_all_trips_people_meetings_venues_filtered()
-    # Filter for wbg only if relevant
-    if(input$wbg_only == 'WBG only'){
-      x <- x %>% dplyr::filter(is_wbg == 1)
-    } else if(input$wbg_only == 'Non-WBG only'){
-      x <- x %>% dplyr::filter(is_wbg == 0)
-    }
-    x <- x %>%
-      mutate(location = city_name) %>%
-      mutate(name = short_name) %>%
-      arrange(trip_start_date) %>%
-      mutate(date = oleksiy_date(trip_start_date, trip_end_date)) %>%
-      mutate(event = paste0(ifelse(!is.na(meeting_with) & short_name != meeting_with, ' With ', ''),
-                            ifelse(!is.na(meeting_with) & short_name != meeting_with, meeting_with, ''))) %>%
-      mutate(event = Hmisc::capitalize(event)) %>%
-      mutate(event = ifelse(!is.na(venue_name),
-                            paste0(event, ' At ', venue_name),
-                            event)) %>%
-      dplyr::select(name, date, location, event) %>%
+    if(!is.null(x)){
+      # Filter for wbg only if relevant
+      if(input$wbg_only == 'WBG only'){
+        x <- x %>% dplyr::filter(is_wbg == 1)
+      } else if(input$wbg_only == 'Non-WBG only'){
+        x <- x %>% dplyr::filter(is_wbg == 0)
+      }
       
-      mutate(event = ifelse(trimws(event) == 'With', '', event))
-    names(x) <- Hmisc::capitalize(names(x))
-    x$Date <- factor(x$Date, levels = sort(unique(x$Date)))
-    
-    # prettify(x,
-    #          download_options = FALSE) #%>%
-    DT::datatable(x,
-                  # escape=FALSE,
-                  rownames = FALSE,
-                  autoHideNavigation = TRUE,
-                  options=list(#dom='t',
-                    filter = FALSE,
-                    ordering=F,
-                    lengthMenu = c(5, 20, 50),
-                    pageLength = 10#nrow(x)
-                  ))
+      # Clean up
+      x <- x %>%
+        dplyr::select(short_name, organization, city_name, trip_start_date, trip_end_date,
+                      meeting_person_name, agenda, venue_name, event_title)
+      
+      x <- x %>%
+        mutate(a = paste0(short_name,
+                          ifelse(!is.na(organization),
+                                 paste0(' (', organization),
+                                 ''),
+                          ifelse(!is.na(organization),
+                                 ')',
+                                 '')),
+               b = oleksiy_date(trip_start_date, trip_end_date),
+               c = city_name,
+               d = ifelse(!is.na(agenda) & agenda != '',
+                          agenda,
+                          ifelse(!is.na(meeting_person_name) & meeting_person_name != '',
+                                 paste0('Meeting with ', meeting_person_name),
+                                 ifelse(!is.na(event_title) & event_title != '',
+                                        event_title,
+                                        NA)))) %>%
+        dplyr::select(a, b, c, d)
+      names(x) <- c('Person', 'Date', 'Location', 'Event')
+      
+      DT::datatable(x,
+                    # escape=FALSE,
+                    rownames = FALSE,
+                    autoHideNavigation = TRUE,
+                    options=list(#dom='t',
+                      filter = FALSE,
+                      ordering=F,
+                      lengthMenu = c(5, 20, 50),
+                      pageLength = 10#nrow(x)
+                    ))
+      
+      # # Create an id
+      # df <- df %>%
+      #   mutate(id = paste0(short_name, is_wbg, city_id)) %>%
+      #   mutate(id = as.numeric(factor(id))) %>%
+      #   arrange(trip_start_date)
+      # 
+      # # Create some more columns
+      # df <- df %>%
+      #   mutate(dates = oleksiy_date(trip_start_date, trip_end_date)) %>%
+      #   mutate(event = paste0(ifelse(!is.na(meeting_with) & short_name != meeting_with, ' With ', ''),
+      #                         ifelse(!is.na(meeting_with) & short_name != meeting_with, meeting_with, ''))) %>%
+      #   mutate(event = Hmisc::capitalize(event)) 
+      # 
+      # # Make only one head per person/place
+      # df <- df %>%
+      #   group_by(id, short_name, title, is_wbg, city_id, venue_name) %>%
+      #   summarise(date = paste0(dates, collapse = ';'),
+      #             event = paste0(event, collapse = ';')) %>% ungroup
+      # 
+      # # Join to city names
+      # df <- df %>%
+      #   left_join(vals$cities %>%
+      #               dplyr::select(city_name, country_name, city_id,
+      #                             latitude, longitude),
+      #             by = 'city_id') 
+      # 
+      # ###########################
+      # 
+      # x <- df %>%
+      #   mutate(location = city_name) %>%
+      #   mutate(name = short_name) %>%
+      #   arrange(trip_start_date) %>%
+      #   mutate(date = oleksiy_date(trip_start_date, trip_end_date)) %>%
+      #   mutate(event = paste0(ifelse(!is.na(meeting_with) & short_name != meeting_with, ' With ', ''),
+      #                         ifelse(!is.na(meeting_with) & short_name != meeting_with, meeting_with, ''))) %>%
+      #   mutate(event = Hmisc::capitalize(event)) %>%
+      #   mutate(event = ifelse(!is.na(venue_name),
+      #                         paste0(event, ' At ', venue_name),
+      #                         event)) %>%
+      #   dplyr::select(name, date, location, event) %>%
+      #   
+      #   mutate(event = ifelse(trimws(event) == 'With', '', event))
+      # names(x) <- Hmisc::capitalize(names(x))
+      # x$Date <- factor(x$Date, levels = sort(unique(x$Date)))
+      # 
+      # # prettify(x,
+      # #          download_options = FALSE) #%>%
+      # DT::datatable(x,
+      #               # escape=FALSE,
+      #               rownames = FALSE,
+      #               autoHideNavigation = TRUE,
+      #               options=list(#dom='t',
+      #                 filter = FALSE,
+      #                 ordering=F,
+      #                 lengthMenu = c(5, 20, 50),
+      #                 pageLength = 10#nrow(x)
+      #               )) 
+    }
   })
   
   output$timevis <-  renderTimevis({
@@ -1621,7 +1782,7 @@ server <- function(input, output, session) {
         
         # Get the title of the counterpart
         tc <- tc %>%
-          left_join(people %>%
+          left_join(vals$people %>%
                       dplyr::select(short_name, title) %>%
                       dplyr::rename(Counterpart = short_name,
                                     Counterpart_title = title),
@@ -1667,20 +1828,25 @@ server <- function(input, output, session) {
   })
   
   output$date_range_2_ui <- renderUI({
+    li <- logged_in()
+    if(!li){
+      return(NULL)
+    }
     dr <- date_range()
     the_tab <- input$tabs
     message('the tab is ', the_tab)
-    if(the_tab != 'main'){
-      div(
-        dateRangeInput('date_range_2',
-                       '  ',
-                       start = dr[1],
-                       end = dr[2]),
-        style='text-align: center;')
-    } else {
-      NULL
+    if(!is.null(the_tab)){
+      if(the_tab != 'main'){
+        div(
+          dateRangeInput('date_range_2',
+                         '  ',
+                         start = dr[1],
+                         end = dr[2]),
+          style='text-align: center;')
+      } else {
+        NULL
+      }
     }
-    
   })
   
   timer <- reactiveTimer(4000)
@@ -1763,7 +1929,7 @@ server <- function(input, output, session) {
       
       # Get city id
       df <- df %>%
-        left_join(cities %>%
+        left_join(vals$cities %>%
                     dplyr::select(city_name, country_name, city_id),
                   by = c('city_name', 'country_name'))
       
@@ -1803,7 +1969,7 @@ server <- function(input, output, session) {
         
         # Join to city names
         df <- df %>%
-          left_join(cities %>%
+          left_join(vals$cities %>%
                       dplyr::select(city_name, country_name, city_id,
                                     latitude, longitude),
                     by = 'city_id')
@@ -1956,7 +2122,7 @@ server <- function(input, output, session) {
                    actionButton("button_crop", "Crop & Save",
                                 icon = icon('calendar')))
           ),
-
+          
           br()
         )
       }
@@ -2151,7 +2317,7 @@ server <- function(input, output, session) {
   
   # People edit table
   output$hot_people <- renderRHandsontable({
-    df <- make_hot_people(people = people, person = input$photo_person) 
+    df <- make_hot_people(people = vals$people, person = input$photo_person) 
     if(!is.null(df)){
       if(nrow(df) > 0){
         hidden_ids$person_id <- df$person_id
@@ -2171,8 +2337,6 @@ server <- function(input, output, session) {
   # Trips edit table
   output$hot_trips <- renderRHandsontable({
     
-    print('view_all IS ..............................')
-    print(head(vals$view_all_trips_people_meetings_venues))
     df <- make_hot_trips(data = vals$view_all_trips_people_meetings_venues,
                          filter = input$trips_filter) 
     
@@ -2190,15 +2354,15 @@ server <- function(input, output, session) {
                       stretchH = 'all',
                       # width = 1000, height = 300,
                       rowHeaders = NULL) %>%
-          hot_col(col = "Person", type = "autocomplete", source = clean_vector(view_all_trips_people_meetings_venues$short_name), strict = FALSE)  %>%
-          hot_col(col = "Organization", type = "autocomplete", source = clean_vector(view_all_trips_people_meetings_venues$organization), strict = FALSE)  %>%
-          hot_col(col = "Title", type = "autocomplete", source = clean_vector(view_all_trips_people_meetings_venues$title), strict = FALSE)  %>%
-          hot_col(col = "City", type = "autocomplete", source = clean_vector(view_all_trips_people_meetings_venues$city_name), strict = FALSE)  %>%
-          hot_col(col = "Country", type = "autocomplete", source = clean_vector(view_all_trips_people_meetings_venues$country_name), strict = FALSE)  %>%
-          hot_col(col = "Trip Group", type = "autocomplete", source = clean_vector(view_all_trips_people_meetings_venues$trip_group), strict = FALSE)  %>%
-          hot_col(col = "Venue", type = "autocomplete", source = clean_vector(view_all_trips_people_meetings_venues$venue_name), strict = FALSE)  %>%
-          hot_col(col = "Meeting", type = "autocomplete", source = clean_vector(view_all_trips_people_meetings_venues$meeting_with), strict = FALSE)  %>%
-          hot_col(col = "Agenda", type = "autocomplete", source = clean_vector(view_all_trips_people_meetings_venues$agenda), strict = FALSE) %>%
+          hot_col(col = "Person", type = "autocomplete", source = clean_vector(vals$view_all_trips_people_meetings_venues$short_name), strict = FALSE)  %>%
+          hot_col(col = "Organization", type = "autocomplete", source = clean_vector(vals$view_all_trips_people_meetings_venues$organization), strict = FALSE)  %>%
+          hot_col(col = "Title", type = "autocomplete", source = clean_vector(vals$view_all_trips_people_meetings_venues$title), strict = FALSE)  %>%
+          hot_col(col = "City", type = "autocomplete", source = clean_vector(vals$view_all_trips_people_meetings_venues$city_name), strict = FALSE)  %>%
+          hot_col(col = "Country", type = "autocomplete", source = clean_vector(vals$view_all_trips_people_meetings_venues$country_name), strict = FALSE)  %>%
+          hot_col(col = "Trip Group", type = "autocomplete", source = clean_vector(vals$view_all_trips_people_meetings_venues$trip_group), strict = FALSE)  %>%
+          hot_col(col = "Venue", type = "autocomplete", source = clean_vector(vals$view_all_trips_people_meetings_venues$venue_name), strict = FALSE)  %>%
+          hot_col(col = "Meeting", type = "autocomplete", source = clean_vector(vals$view_all_trips_people_meetings_venues$meeting_with), strict = FALSE)  %>%
+          hot_col(col = "Agenda", type = "autocomplete", source = clean_vector(vals$view_all_trips_people_meetings_venues$agenda), strict = FALSE) %>%
           hot_col(col = 'Delete', type = 'checkbox') %>%
           hot_cols(manualColumnResize=TRUE, columnSorting = TRUE, colWidths = c(rep(50, ncol(df) - 1), 35), halign = 'htCenter')
       }
@@ -2208,7 +2372,7 @@ server <- function(input, output, session) {
   # Events edit table
   output$hot_venue_events <- renderRHandsontable({
     
-    df <- make_hot_venue_events(data = venue_events)
+    df <- make_hot_venue_events(data = vals$venue_events, cities = vals$cities)
     if(!is.null(df)){
       if(nrow(df) > 0){
         hidden_ids$venue_id <- df$venue_id
@@ -2219,8 +2383,8 @@ server <- function(input, output, session) {
                       rowHeaders = NULL,
                       colHeaders = c('Type', 'Event', 'City', 'Start', 'End', 'Display on timeline')) %>%
           hot_col(col = "Type", type = "autocomplete", source = clean_vector(venue_types$type_name[venue_types$is_temporal_venue]), strict = FALSE)  %>%
-          hot_col(col = "City", type = "autocomplete", source = clean_vector(cities$city_name), strict = FALSE)  %>%
-          hot_col(col = "Event", type = "autocomplete", source = clean_vector(venue_events$event_title), strict = FALSE)  %>%
+          hot_col(col = "City", type = "autocomplete", source = clean_vector(vals$cities$city_name), strict = FALSE)  %>%
+          hot_col(col = "Event", type = "autocomplete", source = clean_vector(vals$venue_events$event_title), strict = FALSE)  %>%
           hot_col(col = "Display on timeline", type = "checkbox") %>%
           hot_cols(manualColumnResize=TRUE, columnSorting = TRUE, halign = 'htCenter')
       }
@@ -2231,7 +2395,7 @@ server <- function(input, output, session) {
   # Events edit table
   output$hot_venues <- renderRHandsontable({
     
-    df <- make_hot_venues(data = venue_events)
+    df <- make_hot_venues(data = vals$venue_events, cities = vals$cities)
     if(!is.null(df)){
       if(nrow(df) > 0){
         hidden_ids$venue_venue_id <- df$venue_id
@@ -2242,8 +2406,8 @@ server <- function(input, output, session) {
                       rowHeaders = NULL,
                       colHeaders = c('Type', 'Venue', 'City', 'Display on timeline')) %>%
           hot_col(col = "Type", type = "autocomplete", source = clean_vector(venue_types$type_name[!venue_types$is_temporal_venue]), strict = FALSE)  %>%
-          hot_col(col = "City", type = "autocomplete", source = clean_vector(cities$city_name), strict = FALSE)  %>%
-          hot_col(col = "Venue", type = "autocomplete", source = clean_vector(venue_events$event_title), strict = FALSE)  %>%
+          hot_col(col = "City", type = "autocomplete", source = clean_vector(vals$cities$city_name), strict = FALSE)  %>%
+          hot_col(col = "Venue", type = "autocomplete", source = clean_vector(vals$venue_events$event_title), strict = FALSE)  %>%
           hot_col(col = "Display on timeline", type = "checkbox") %>%
           hot_cols(manualColumnResize=TRUE, columnSorting = TRUE, halign = 'htCenter')
       }
@@ -2253,12 +2417,18 @@ server <- function(input, output, session) {
   
   # Define reactive values for checking diff between the last saved hot table and current one
   last_save <- reactiveValues()
-  last_save$hot_people <- make_hot_people(people = people,
-                                          person = sort(unique(view_all_trips_people_meetings_venues$person_name))[1])
-  last_save$hot_trips <- make_hot_trips(data = view_all_trips_people_meetings_venues,
-                                        filter = NULL) %>% dplyr::select(-trip_uid) %>% mutate(Delete = FALSE)
-  last_save$hot_venue_events <- make_hot_venue_events(data = venue_events) %>% dplyr::select(-venue_id)
-  last_save$hot_venues <- make_hot_venues(data = venue_events) %>% dplyr::select(-venue_id)
+  observeEvent(input$tabs, {
+    it <- input$tabs
+    if(it == 'edit_data'){
+      last_save$hot_people <- make_hot_people(people = vals$people,
+                                              person = sort(unique(vals$view_all_trips_people_meetings_venues$person_name))[1])
+      last_save$hot_trips <- make_hot_trips(data = vals$view_all_trips_people_meetings_venues,
+                                            filter = NULL) %>% dplyr::select(-trip_uid) %>% mutate(Delete = FALSE)
+      last_save$hot_venue_events <- make_hot_venue_events(data = vals$venue_events, cities = vals$cities) %>% dplyr::select(-venue_id)
+      last_save$hot_venues <- make_hot_venues(data = vals$venue_events, cities = vals$cities) %>% dplyr::select(-venue_id)
+      
+    }
+  })
   
   # # Observe the trips filter and update accordingly
   # observeEvent(input$trips_filter, {
@@ -2286,32 +2456,32 @@ server <- function(input, output, session) {
     # For now, not doing anything with the data
     message('--- Nothing actually being changed in the database. Waiting on function from Soren.')
     upload_edited_people_data(data = df)
-
-    # Update the session
-    updated_data <- db_to_memory(return_list = TRUE)
-    vals$events <- updated_data$events
-    vals$cities <- updated_data$cities
-    vals$people <- updated_data$people
-    vals$trips <- updated_data$trips
-    vals$view_trips_and_meetings <- updated_data$view_trips_and_meetings
-    vals$view_trip_coincidences <- updated_data$view_trip_coincidences
-    vals$view_all_trips_people_meetings_venues <- updated_data$view_all_trips_people_meetings_venues
     
+    # Update the session
+    liui <- user_id()
+    new_vals <- load_user_data(return_list = TRUE, user_id = liui)
+    tables <- get_table_names()
+    for(i in 1:length(tables)){
+      vals[[tables[i]]] <- new_vals[[tables[i]]]
+    }
   })
   
   output$hot_people_submit_check <- 
     renderUI({
       go <- FALSE
       x <- last_save$hot_people
-      if(nrow(x) > 0){
-        y <- input$hot_people
-        if(!is.null(y)){
-          y <- hot_to_r(y)
-          if(identical(x,y)){
-            go <- TRUE
+      if(!is.null(x)){
+        if(nrow(x) > 0){
+          y <- input$hot_people
+          if(!is.null(y)){
+            y <- hot_to_r(y)
+            if(identical(x,y)){
+              go <- TRUE
+            }
           }
         }
       }
+      
       if(go){
         fluidPage(fluidRow(column(12, align = 'center', icon('check'))))
       } else {
@@ -2332,19 +2502,17 @@ server <- function(input, output, session) {
     message('--- Uploading new trips data ')
     upload_results <- 
       upload_raw_data(data = df,
-                      logged_in_user_id = 1,
+                      logged_in_user_id = user_id(),
                       return_upload_results = TRUE)
     
     # Update the session
-    updated_data <- db_to_memory(return_list = TRUE)
-    vals$events <- updated_data$events
-    vals$cities <- updated_data$cities
-    vals$people <- updated_data$people
-    vals$trips <- updated_data$trips
-    vals$view_trips_and_meetings <- updated_data$view_trips_and_meetings
-    vals$view_trip_coincidences <- updated_data$view_trip_coincidences
-    # vals$upload_results <- upload_results
-    vals$view_all_trips_people_meetings_venues <- updated_data$view_all_trips_people_meetings_venues
+    liui <- user_id()
+    new_vals <- load_user_data(return_list = TRUE, user_id = liui)
+    tables <- get_table_names()
+    for(i in 1:length(tables)){
+      vals[[tables[i]]] <- new_vals[[tables[i]]]
+    }
+    vals$upload_results <- upload_results
     message('--- Done uploading new trips data.')
   })
   
@@ -2353,15 +2521,18 @@ server <- function(input, output, session) {
       go <- FALSE
       nothing <- FALSE
       x <- last_save$hot_trips
-      if(nrow(x) > 0){
-        y <- input$hot_trips
-        if(!is.null(y)){
-          y <- hot_to_r(y)
-          if(identical(x,y)){
-            go <- TRUE
-          } 
+      if(!is.null(x)){
+        if(nrow(x) > 0){
+          y <- input$hot_trips
+          if(!is.null(y)){
+            y <- hot_to_r(y)
+            if(identical(x,y)){
+              go <- TRUE
+            } 
+          }
         }
       }
+      
       if(!is.null(input$trips_filter)){
         if(length(input$trips_filter) > 0){
           if(nchar(input$trips_filter) > 0){
@@ -2400,29 +2571,30 @@ server <- function(input, output, session) {
     upload_edited_venue_events_data(data = df)
     
     # Update the session
-    updated_data <- db_to_memory(return_list = TRUE)
-    vals$events <- updated_data$events
-    vals$cities <- updated_data$cities
-    vals$people <- updated_data$people
-    vals$trips <- updated_data$trips
-    vals$view_trips_and_meetings <- updated_data$view_trips_and_meetings
-    vals$view_trip_coincidences <- updated_data$view_trip_coincidences
-    vals$view_all_trips_people_meetings_venues <- updated_data$view_all_trips_people_meetings_venues
+    liui <- user_id()
+    new_vals <- load_user_data(return_list = TRUE, user_id = liui)
+    tables <- get_table_names()
+    for(i in 1:length(tables)){
+      vals[[tables[i]]] <- new_vals[[tables[i]]]
+    }
   })
   
   output$hot_venue_events_submit_check <- 
     renderUI({
       go <- FALSE
       x <- last_save$hot_venue_events
-      if(nrow(x) > 0){
-        y <- input$hot_venue_events
-        if(!is.null(y)){
-          y <- hot_to_r(y)
-          if(identical(x,y)){
-            go <- TRUE
+      if(!is.null(x)){
+        if(nrow(x) > 0){
+          y <- input$hot_venue_events
+          if(!is.null(y)){
+            y <- hot_to_r(y)
+            if(identical(x,y)){
+              go <- TRUE
+            }
           }
         }
       }
+      
       if(go){
         fluidPage(fluidRow(column(12, align = 'center', icon('check'))))
       } else {
@@ -2448,29 +2620,30 @@ server <- function(input, output, session) {
     upload_edited_venues_data(data = df)
     
     # Update the session
-    updated_data <- db_to_memory(return_list = TRUE)
-    vals$events <- updated_data$events
-    vals$cities <- updated_data$cities
-    vals$people <- updated_data$people
-    vals$trips <- updated_data$trips
-    vals$view_trips_and_meetings <- updated_data$view_trips_and_meetings
-    vals$view_trip_coincidences <- updated_data$view_trip_coincidences
-    vals$view_all_trips_people_meetings_venues <- updated_data$view_all_trips_people_meetings_venues
+    liui <- user_id()
+    new_vals <- load_user_data(return_list = TRUE, user_id = liui)
+    tables <- get_table_names()
+    for(i in 1:length(tables)){
+      vals[[tables[i]]] <- new_vals[[tables[i]]]
+    }
   })
   
   output$hot_venues_submit_check <- 
     renderUI({
       go <- FALSE
       x <- last_save$hot_venues
-      if(nrow(x) > 0){
-        y <- input$hot_venues
-        if(!is.null(y)){
-          y <- hot_to_r(y)
-          if(identical(x,y)){
-            go <- TRUE
+      if(!is.null(x)){
+        if(nrow(x) > 0){
+          y <- input$hot_venues
+          if(!is.null(y)){
+            y <- hot_to_r(y)
+            if(identical(x,y)){
+              go <- TRUE
+            }
           }
         }
       }
+      
       if(go){
         fluidPage(fluidRow(column(12, align = 'center', icon('check'))))
       } else {
@@ -2499,15 +2672,15 @@ server <- function(input, output, session) {
     
     if(!is.null(df)){
       rhandsontable(df, rowHeaders = NULL, width = 1000, height = 200) %>%
-        hot_col(col = "Person", type = "autocomplete", source = clean_vector(people$short_name), strict = FALSE) %>%
-        hot_col(col = "Organization", type = "autocomplete", source = clean_vector(people$organization), strict = FALSE) %>%
-        hot_col(col = 'Title', type = 'autocomplete', source = clean_vector(people$title), strict = FALSE) %>%
-        hot_col(col = 'City', type = 'autocomplete', source = clean_vector(cities$city_name), strict = FALSE) %>%
-        hot_col(col = 'Country', type = 'autocomplete', source = clean_vector(cities$country_name), strict = FALSE) %>%
-        hot_col(col = 'Trip Group', type = 'autocomplete', source = clean_vector(trips$trip_group), strict = FALSE) %>%
-        hot_col(col = 'Venue', type = 'autocomplete', source = clean_vector(venue_events$venue_name), strict = FALSE) %>%
-        hot_col(col = 'Meeting', type = 'autocomplete', source = clean_vector(people$short_name), strict = FALSE) %>%
-        hot_col(col = 'Agenda', type = 'autocomplete', source = clean_vector(trip_meetings$agenda), strict = FALSE) %>%
+        hot_col(col = "Person", type = "autocomplete", source = clean_vector(vals$people$short_name), strict = FALSE) %>%
+        hot_col(col = "Organization", type = "autocomplete", source = clean_vector(vals$people$organization), strict = FALSE) %>%
+        hot_col(col = 'Title', type = 'autocomplete', source = clean_vector(vals$people$title), strict = FALSE) %>%
+        hot_col(col = 'City', type = 'autocomplete', source = clean_vector(vals$cities$city_name), strict = FALSE) %>%
+        hot_col(col = 'Country', type = 'autocomplete', source = clean_vector(vals$cities$country_name), strict = FALSE) %>%
+        hot_col(col = 'Trip Group', type = 'autocomplete', source = clean_vector(vals$trips$trip_group), strict = FALSE) %>%
+        hot_col(col = 'Venue', type = 'autocomplete', source = clean_vector(vals$venue_events$venue_name), strict = FALSE) %>%
+        hot_col(col = 'Meeting', type = 'autocomplete', source = clean_vector(vals$people$short_name), strict = FALSE) %>%
+        hot_col(col = 'Agenda', type = 'autocomplete', source = clean_vector(vals$view_all_trips_people_meetings_venues$agenda), strict = FALSE) %>%
         hot_cols(colWidths = 90, manualColumnResize = TRUE, columnSorting = TRUE, halign = 'htCenter')
     }
   })
@@ -2519,11 +2692,19 @@ server <- function(input, output, session) {
     df <- hot_to_r(input$add_table)
     upload_results <- 
       upload_raw_data(data = df,
-                    logged_in_user_id = 1,
-                    return_upload_results = TRUE)
+                      logged_in_user_id = user_id(),
+                      return_upload_results = TRUE)
     message('Results from manual data upload:')
     print(upload_results)
-
+    # Update the session
+    liui <- user_id()
+    new_vals <- load_user_data(return_list = TRUE, user_id = liui)
+    tables <- get_table_names()
+    for(i in 1:length(tables)){
+      vals[[tables[i]]] <- new_vals[[tables[i]]]
+    }
+    vals$upload_results <- upload_results
+    
   })
   
   
@@ -2543,13 +2724,44 @@ server <- function(input, output, session) {
           fluidRow(
             column(12, align = 'center',
                    action_modal_button('add_table_submit',
-                                'Submit new data',
-                                icon = icon('check')))
+                                       'Submit new data',
+                                       icon = icon('check')))
           )
         )
       )
     )
     
+  })
+  
+  # Return the components of the URL in a string:
+  output$url_text <- renderText({
+    the_search <- session$clientData$url_search
+    search_ok <- FALSE
+    if(!is.null(the_search)){
+      if(length(the_search) > 0){
+        if(the_search != ''){
+          search_ok <- TRUE
+        }
+      }
+    }
+    if(!search_ok){
+      the_search <- paste0('Add something like /?foo=123&bar=somestring to the end of the url (and then load the modified url) to see how it is captured here.')
+    }
+    paste(sep = "",
+          # "protocol: ", session$clientData$url_protocol, "\n",
+          # "hostname: ", session$clientData$url_hostname, "\n",
+          # "pathname: ", session$clientData$url_pathname, "\n",
+          # "port: ",     session$clientData$url_port,     "\n",
+          "search: ",   the_search,   "\n"
+    )
+  })
+  
+  # Parse the GET query string
+  output$queryText <- renderText({
+    query <- parseQueryString(session$clientData$url_search)
+    
+    # Return a string with key-value pairs
+    paste(names(query), query, sep = "=", collapse=", ")
   })
   
   # On session end, close
@@ -2562,6 +2774,77 @@ server <- function(input, output, session) {
     }
   })
   
+  
+  
+  # Reactive sidebar menu
+  output$menu <-
+    renderMenu({
+      
+      # Logged in or not?
+      li <- logged_in()
+      
+      if(!li){
+        sidebarMenu(
+          id = 'tabs',
+          menuItem(
+            text = 'Log-in',
+            tabName = 'log_in',
+            icon = icon('eye')
+          )
+        )
+      } else {
+        sidebarMenu(
+          id="tabs",
+          menuItem(
+            text="Dashboard",
+            tabName="main",
+            icon=icon("eye")),
+          menuItem(
+            text="Network analysis",
+            tabName="network",
+            icon=icon("eye")),
+          menuItem(
+            text="Timeline",
+            tabName="timeline",
+            icon=icon("calendar")),
+          menuItem(
+            text="Upload trips",
+            tabName="upload_data",
+            icon=icon("upload")),
+          menuItem(
+            text="Edit data",
+            tabName="edit_data",
+            icon=icon("pencil")),
+          menuItem(
+            text = 'About',
+            tabName = 'about',
+            icon = icon("cog", lib = "glyphicon")),
+          br(), br(), br(),br(), br(), br(),br(), br(), 
+          fluidPage(
+            h4('Details', align = 'center', style = 'text-align: center;'),
+            h5('Built by:'),
+            helpText('FIG Africa Digital Financial Services unit'),
+            h5('With help from:'),
+            helpText('The Partnership for Financial Inclusion'),
+            helpText('The MasterCard Foundation'),
+            br(),
+            fluidRow(div(img(src='partnershiplogo.png', align = "center", width = '100px'), style="text-align: center;"),
+                     br()
+            )
+          )
+        )
+      }
+    })
+  
+  # Reactive choices for people (ie, only those to whom the user has access)
+  output$photo_person_ui <- renderUI({
+    # Choices for photo
+    vv <- vals$view_all_trips_people_meetings_venues
+    the_choices <- sort(unique(vv$person_name))
+    selectInput('photo_person',
+                'Person',
+                choices = the_choices)
+  })
   
   }
 
