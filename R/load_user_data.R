@@ -26,15 +26,7 @@ load_user_data <- function(return_list = TRUE,
     
     # Read in all tables
     # tables <- unique(dbListTables(pool))
-    tables <- c('cities', 
-                'people',
-                'trip_meetings',
-                'trips',
-                'user_action_log',
-                'venue_events',
-                'venue_types',
-                'view_all_trips_people_meetings_venues',
-                'users')
+    tables <- get_table_names()
     
     for (i in 1:length(tables)){
       this_table <- tables[i]
@@ -54,8 +46,11 @@ load_user_data <- function(return_list = TRUE,
                              people = the_people)
         # Overwrite "unsepcified venue"
         x$venue_name[x$venue_name == 'Unspecified Venue'] <- NA
+        # Keep only those values for the relevant user id
+        uid <- user_id
+        x <- x %>% filter(user_id == uid)
       }
-      
+
       if(return_list){
         out_list[[i]] <- x
         names(out_list)[i] <- this_table
