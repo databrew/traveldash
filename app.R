@@ -910,7 +910,7 @@ server <- function(input, output, session) {
       
       # Get city id
       df <- df %>%
-        left_join(cities %>%
+        left_join(vals$cities %>%
                     dplyr::select(city_name, country_name, city_id),
                   by = c('city_name', 'country_name'))
       
@@ -939,7 +939,7 @@ server <- function(input, output, session) {
       
       # Join to city names
       df <- df %>%
-        left_join(cities %>%
+        left_join(vals$cities %>%
                     dplyr::select(city_name, country_name, city_id,
                                   latitude, longitude),
                   by = 'city_id') 
@@ -1104,7 +1104,7 @@ server <- function(input, output, session) {
       
       # Get city id
       df <- df %>%
-        left_join(cities %>%
+        left_join(vals$cities %>%
                     dplyr::select(city_name, country_name, city_id),
                   by = c('city_name', 'country_name'))
       
@@ -1140,7 +1140,7 @@ server <- function(input, output, session) {
       
       # Join to city names
       df <- df %>%
-        left_join(cities %>%
+        left_join(vals$cities %>%
                     dplyr::select(city_name, country_name, city_id,
                                   latitude, longitude),
                   by = 'city_id') 
@@ -1678,7 +1678,7 @@ server <- function(input, output, session) {
         
         # Get the title of the counterpart
         tc <- tc %>%
-          left_join(people %>%
+          left_join(vals$people %>%
                       dplyr::select(short_name, title) %>%
                       dplyr::rename(Counterpart = short_name,
                                     Counterpart_title = title),
@@ -1825,7 +1825,7 @@ server <- function(input, output, session) {
       
       # Get city id
       df <- df %>%
-        left_join(cities %>%
+        left_join(vals$cities %>%
                     dplyr::select(city_name, country_name, city_id),
                   by = c('city_name', 'country_name'))
       
@@ -1865,7 +1865,7 @@ server <- function(input, output, session) {
         
         # Join to city names
         df <- df %>%
-          left_join(cities %>%
+          left_join(vals$cities %>%
                       dplyr::select(city_name, country_name, city_id,
                                     latitude, longitude),
                     by = 'city_id')
@@ -2213,7 +2213,7 @@ server <- function(input, output, session) {
   
   # People edit table
   output$hot_people <- renderRHandsontable({
-    df <- make_hot_people(people = people, person = input$photo_person) 
+    df <- make_hot_people(people = vals$people, person = input$photo_person) 
     if(!is.null(df)){
       if(nrow(df) > 0){
         hidden_ids$person_id <- df$person_id
@@ -2268,7 +2268,7 @@ server <- function(input, output, session) {
   # Events edit table
   output$hot_venue_events <- renderRHandsontable({
     
-    df <- make_hot_venue_events(data = venue_events)
+    df <- make_hot_venue_events(data = vals$venue_events)
     if(!is.null(df)){
       if(nrow(df) > 0){
         hidden_ids$venue_id <- df$venue_id
@@ -2291,7 +2291,7 @@ server <- function(input, output, session) {
   # Events edit table
   output$hot_venues <- renderRHandsontable({
     
-    df <- make_hot_venues(data = venue_events)
+    df <- make_hot_venues(data = vals$venue_events)
     if(!is.null(df)){
       if(nrow(df) > 0){
         hidden_ids$venue_venue_id <- df$venue_id
@@ -2313,12 +2313,18 @@ server <- function(input, output, session) {
   
   # Define reactive values for checking diff between the last saved hot table and current one
   last_save <- reactiveValues()
-  last_save$hot_people <- make_hot_people(people = people,
-                                          person = sort(unique(view_all_trips_people_meetings_venues$person_name))[1])
-  last_save$hot_trips <- make_hot_trips(data = view_all_trips_people_meetings_venues,
-                                        filter = NULL) %>% dplyr::select(-trip_uid) %>% mutate(Delete = FALSE)
-  last_save$hot_venue_events <- make_hot_venue_events(data = venue_events) %>% dplyr::select(-venue_id)
-  last_save$hot_venues <- make_hot_venues(data = venue_events) %>% dplyr::select(-venue_id)
+  observeEvent(input$tabs, {
+    it <- input$tabs
+    if(it == 'edit_data'){
+      last_save$hot_people <- make_hot_people(people = vals$people,
+                                              person = sort(unique(vals$view_all_trips_people_meetings_venues$person_name))[1])
+      last_save$hot_trips <- make_hot_trips(data = vals$view_all_trips_people_meetings_venues,
+                                            filter = NULL) %>% dplyr::select(-trip_uid) %>% mutate(Delete = FALSE)
+      last_save$hot_venue_events <- make_hot_venue_events(data = vals$venue_events) %>% dplyr::select(-venue_id)
+      last_save$hot_venues <- make_hot_venues(data = vals$venue_events) %>% dplyr::select(-venue_id)
+      
+    }
+  })
   
   # # Observe the trips filter and update accordingly
   # observeEvent(input$trips_filter, {
@@ -2690,7 +2696,7 @@ server <- function(input, output, session) {
             tabName="upload_data",
             icon=icon("upload")),
           menuItem(
-            text="Edit trips",
+            text="Edit data",
             tabName="edit_data",
             icon=icon("pencil")),
           menuItem(
