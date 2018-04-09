@@ -1,14 +1,22 @@
 #' Load user data
 #' 
 #' Load data for a specific user into a list
-#' @param return_list Return the objects as a list, rather than assignation to global environment
+#' @param return_list Boolean; return the objects as a list, rather than assignation to global environment
+#' @param user_id Numeric; The id of the logged in user. If 0, this means that nobody is logged in, and no data will be returned
+#' @param conn; A connection object. If NULL (the default) the function will create a connection to the database.
 #' @return Objects assigned to global environment
 #' @export
 
+# This currently loads all data! It should instead load data only for the logged in user.
 
 load_user_data <- function(return_list = TRUE, 
                            user_id = 0,
                            conn = NULL){
+  if(user_id == 0){
+    message('USER NOT LOGGED IN. Not loading data')
+  } else {
+    message('USER ID ', user_id, ' LOGGED IN. Loading data:')
+  }
   
   if(is.null(conn)){
     conn <- db_get_connection()
@@ -30,7 +38,7 @@ load_user_data <- function(return_list = TRUE,
 
   for (i in 1:length(tables)){
     this_table <- tables[i]
-    message(paste0('Reading in the ', this_table, ' from the database and assigning to global environment.'))
+    message(paste0('--- ', i, '. loading', this_table))
     x <- get_data(tab = this_table,
                   schema = 'pd_wbgtravel',
                   connection_object = conn)
