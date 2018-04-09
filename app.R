@@ -1769,9 +1769,10 @@ server <- function(input, output, session) {
       message('No photo file on disk for ', person, '. Using the NA placeholder photo.')
       file_name <- 'www/headshots/circles/NA.png'
     }
+    height = 200
     list(src = file_name,
          # width = width,
-         # height = height,
+         height = height,
          alt = person)
     
   },
@@ -2492,6 +2493,8 @@ server <- function(input, output, session) {
     }
     if(file.exists('www/headshots/circle_img.png')){
       file.remove('www/headshots/circle_img.png')
+    }if(file.exists('www/circle_img.png')){
+      file.remove('www/circle_img.png')
     }
   })
   

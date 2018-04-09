@@ -15,7 +15,7 @@
 upload_raw_data <- function(data,
                             logged_in_user_id,
                             return_upload_results = TRUE){
-  print('Debug Start: in upload_raw_data()')
+  message('Debug Start: in upload_raw_data()')
   
   names(data) <- gsub("\\."," ",names(data)) #read.xlsx replaces " " with "." eg, "Trip Group" to "Trip.Group"
   
@@ -128,7 +128,7 @@ upload_raw_data <- function(data,
     upload_results <- rbind(upload_results,date_results)
   }
   # Spit back upload_results
-  print('Debug End: exit in upload_raw_data()')
+  message('Debug End: exit in upload_raw_data()')
   
   if(return_upload_results)
   {
