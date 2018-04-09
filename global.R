@@ -25,6 +25,8 @@ library(lubridate)
 library(readxl)
 library(htmlTable)
 library(rhandsontable)
+library(XLConnect)
+
 
 # Source all the functions in the R directory
 functions <- dir('R')

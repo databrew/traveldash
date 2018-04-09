@@ -10,10 +10,10 @@ the_width <- 280
 header <- dashboardHeader(title="Travel dashboard",
                           
                           tags$li(class = 'dropdown',  
-                                  tags$style(type='text/css', "#reset_date_range {margin-right: 10px; margin-left: 10px; font-size:80%; margin-top: 10px; margin-bottom: -10px;}"),
-                                  tags$style(type='text/css', "#search_ui {margin-right: 10px; margin-left: 10px; font-size:80%; margin-top: -5px; width:70%; margin-bottom: -10px;}"),
-                                  tags$style(type='text/css', "#wbg_only_ui {margin-right: 10px; margin-left: 10px; font-size:80%; margin-top: -5px; margin-bottom: -10px;}"),
-                                  tags$style(type='text/css', "#date_range_2_ui {margin-right: 10px; margin-left: 10px; font-size:80%; margin-top: -5px; margin-bottom: -10px;}"),
+                                  tags$style(type='text/css', "#reset_date_range {margin-right: 10px; margin-left: 10px; font-size:80%; margin-top: 10px; margin-bottom: -12px;}"),
+                                  tags$style(type='text/css', "#search_ui {margin-right: 10px; margin-left: 10px; font-size:80%; margin-top: -5px; width:70%; margin-bottom: -12px;}"),
+                                  tags$style(type='text/css', "#wbg_only_ui {margin-right: 10px; margin-left: 10px; font-size:80%; margin-top: -5px; margin-bottom: -12px;}"),
+                                  tags$style(type='text/css', "#date_range_2_ui {margin-right: 10px; margin-left: 10px; font-size:80%; margin-top: -5px; margin-bottom: -12px;}"),
                                   
                                   tags$style(type='text/css', "#log_out {margin-right: 10px; margin-left: 10px; font-size:80%; margin-top: 10px; margin-bottom: -10px;}"),
                                   
@@ -262,11 +262,18 @@ body <- dashboardBody(
                                  '',
                                  accept=c('text/csv',
                                           'text/comma-separated-values,text/plain',
-                                          '.csv'))),
+                                          '.csv')),
+                       br(), br(),
+                       helpText('If you do not know what the correct format is, click below and then fill out the spreadsheet.'),
+                       
+                       downloadButton("download_format", "Download an empty, formatted .xls"),
+                       br(), br()),
                 column(4, align = 'center',
                        h3('Download dataset'),
                        helpText('Click the "Download" button to get your dataset in the correct bulk upload format.'),
-                       downloadButton("download_correct", "Download your data"))),
+                       downloadButton("download_correct", "Download your data as an unformatted .csv"),
+                       br(), 
+                       downloadButton("download_correct_xl", "Download your data as a formatted .xlsx"))),
               uiOutput('upload_ui'),
               # Results from most recent upload (bulk or manual)
               fluidRow(
@@ -761,6 +768,8 @@ server <- function(input, output, session) {
                       venue_name, 
                       meeting_with,
                       agenda) %>%
+        mutate(trip_start_date = as.Date(trip_start_date),
+               trip_end_date = as.Date(trip_end_date)) %>%
         dplyr::rename(Person = short_name,
                       Organization = organization,
                       Title = title,
@@ -773,6 +782,59 @@ server <- function(input, output, session) {
                       Meeting = meeting_with,
                       Agenda = agenda)
       write_csv(x, file)
+    }
+  )
+  
+  output$download_correct_xl <- downloadHandler(
+    filename = function() {
+      'data_download.XLSX'
+    },
+    content = function(file){
+      x <- vals$view_all_trips_people_meetings_venues %>%
+        dplyr::select(short_name,
+                      organization,
+                      title,
+                      city_name,
+                      country_name,
+                      trip_start_date,
+                      trip_end_date,
+                      trip_group,
+                      venue_name, 
+                      meeting_with,
+                      agenda) %>%
+        mutate(trip_start_date = as.Date(trip_start_date),
+               trip_end_date = as.Date(trip_end_date)) %>%
+        dplyr::rename(Person = short_name,
+                      Organization = organization,
+                      Title = title,
+                      City= city_name,
+                      Country = country_name,
+                      Start = trip_start_date,
+                      End = trip_end_date,
+                      `Trip Group` = trip_group,
+                      Venue = venue_name,
+                      Meeting = meeting_with,
+                      Agenda = agenda)
+      # Write
+      file.copy('upload_format.XLSX', 'tmp.XLSX')
+      wb <- loadWorkbook('tmp.XLSX')
+      writeWorksheet(object = wb,
+                     data = x,
+                     sheet = 'Travel Event Dashboard DATA',
+                     startRow = 3,
+                     header = FALSE)
+      saveWorkbook(wb, 'tmp.XLSX')
+      file.copy('tmp.XLSX', file)
+      file.remove('tmp.XLSX')
+    }
+  )
+  
+  output$download_format <- downloadHandler(
+    filename = function() {
+      'upload_format.XLSX'
+    },
+    content = function(file){
+      file.copy('upload_format.XLSX', file)
     }
   )
   
