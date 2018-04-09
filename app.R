@@ -114,8 +114,8 @@ body <- dashboardBody(
                                             value = 'abc123',
                                             label = 'Password'))),
               fluidRow(
-                column(12,
-                       textOutput('failed_log_in_text'))
+                column(12, align = 'center',
+                       h3(textOutput('failed_log_in_text')))
               ),
               fluidRow(
                 column(12, align = 'center',
@@ -416,6 +416,10 @@ server <- function(input, output, session) {
     if(log_in_result > 0){
       logged_in(TRUE)
       logged_in_user_id(log_in_result)
+    } else {
+      # Failed log in
+      fli <- failed_log_in()
+      failed_log_in(fli + 1)
     }
   })
   
@@ -423,7 +427,35 @@ server <- function(input, output, session) {
   observeEvent(input$log_out, {
     logged_in(FALSE)
     logged_in_user_id(0)
+    failed_log_in_text('')
+    failed_log_in(0)
   })
+  
+  # Failed log in text
+  failed_log_in <- reactiveVal(value = 0)
+  failed_log_in_text <- reactiveVal(value = '')
+  observeEvent(c(failed_log_in()), {
+    fli <- failed_log_in()
+    if(fli > 0){
+      message('Failed log in attempt. Re-prompting the log-in.')
+      failed_log_in_text('Incorrect user name / password combination.')
+    }
+  })
+  output$failed_log_in_text <-
+    renderText({
+      ok <- FALSE
+      x <- failed_log_in_text()
+      if(!is.null(x)){
+        if(length(x) > 0){
+          if(x != ''){
+            ok <- TRUE
+          }
+        }
+      }
+      if(ok){
+        return(x)
+      }
+    })
   
   # Create a reactive dataframe of photos
   photos_reactive <- reactiveValues()
@@ -721,7 +753,7 @@ server <- function(input, output, session) {
     # Upload the new data to the database
     upload_results <-
       upload_raw_data(data = new_data,
-                      logged_in_user_id = 1,
+                      logged_in_user_id = logged_in_user_id(),
                       return_upload_results = TRUE)
     message('Uploaded raw data')
     # Update the session
@@ -2384,7 +2416,7 @@ server <- function(input, output, session) {
     message('--- Uploading new trips data ')
     upload_results <- 
       upload_raw_data(data = df,
-                      logged_in_user_id = 1,
+                      logged_in_user_id = logged_in_user_id(),
                       return_upload_results = TRUE)
     
     # Update the session
@@ -2571,7 +2603,7 @@ server <- function(input, output, session) {
     df <- hot_to_r(input$add_table)
     upload_results <- 
       upload_raw_data(data = df,
-                    logged_in_user_id = 1,
+                    logged_in_user_id = logged_in_user_id(),
                     return_upload_results = TRUE)
     message('Results from manual data upload:')
     print(upload_results)
