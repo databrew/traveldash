@@ -714,7 +714,7 @@ server <- function(input, output, session) {
       'data_download.csv'
     },
     content = function(file){
-      x <- view_all_trips_people_meetings_venues %>%
+      x <- vals$view_all_trips_people_meetings_venues %>%
         dplyr::select(short_name,
                       organization,
                       title,
