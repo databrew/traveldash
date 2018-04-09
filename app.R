@@ -406,6 +406,8 @@ server <- function(input, output, session) {
     if(log_in_result > 0){
       logged_in(TRUE)
       user_id(log_in_result)
+      # Update the "last_login" field
+      update_last_login_field(user_id = log_in_result)
     } else {
       # Failed log in
       fli <- failed_log_in()
