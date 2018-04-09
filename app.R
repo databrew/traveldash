@@ -274,7 +274,11 @@ body <- dashboardBody(
             width = 4)
         ),
         fluidRow(div(helpText(creds),
-                     style = 'text-align:right'))
+                     style = 'text-align:right')),
+        fluidRow(
+          h3("URL components"),
+          verbatimTextOutput("url_text")
+        )
           )
         ),
     tabItem(tabName = 'upload_data',
@@ -307,7 +311,8 @@ body <- dashboardBody(
                        DT::dataTableOutput('uploaded_table'))
               )
               
-            )),
+            )
+            ),
     tabItem(tabName = 'edit_data',
             fluidPage(
               tabsetPanel(type = "tabs",
@@ -2550,6 +2555,25 @@ server <- function(input, output, session) {
       )
     )
     
+  })
+  
+  # Return the components of the URL in a string:
+  output$url_text <- renderText({
+    paste(sep = "",
+          "protocol: ", session$clientData$url_protocol, "\n",
+          "hostname: ", session$clientData$url_hostname, "\n",
+          "pathname: ", session$clientData$url_pathname, "\n",
+          "port: ",     session$clientData$url_port,     "\n",
+          "search: ",   session$clientData$url_search,   "\n"
+    )
+  })
+  
+  # Parse the GET query string
+  output$queryText <- renderText({
+    query <- parseQueryString(session$clientData$url_search)
+    
+    # Return a string with key-value pairs
+    paste(names(query), query, sep = "=", collapse=", ")
   })
   
   # On session end, close
