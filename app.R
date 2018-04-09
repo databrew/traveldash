@@ -457,6 +457,18 @@ server <- function(input, output, session) {
       }
     })
   
+  # Reactive dataframe for the filtered table
+  vals <- reactiveValues()
+  vals$events <- events
+  vals$cities <- cities
+  vals$people <- people
+  vals$trips <- trips
+  vals$view_trip_coincidences <- view_trip_coincidences
+  vals$view_trips_and_meetings <- view_trips_and_meetings
+  vals$upload_results <- NULL
+  vals$view_all_trips_people_meetings_venues <- view_all_trips_people_meetings_venues
+  
+  
   # Create a reactive dataframe of photos
   photos_reactive <- reactiveValues()
   photos_reactive$images <- images
@@ -728,23 +740,6 @@ server <- function(input, output, session) {
       write_csv(x, file)
     }
   )
-  
-  # Reactive dataframe for the filtered table
-  vals <- reactiveValues()
-  # vals$events<-filter_events(events = events,
-  #                            visit_start = min(date_dictionary$date),
-  #                            visit_end = max(date_dictionary$date))
-  vals$events <- events
-  vals$cities <- cities
-  vals$people <- people
-  # vals$trip_meetings <- trip_meetings
-  vals$trips <- trips
-  vals$view_trip_coincidences <- view_trip_coincidences
-  # vals$venue_events <- venue_events
-  # vals$venue_types <- venue_types
-  vals$view_trips_and_meetings <- view_trips_and_meetings
-  vals$upload_results <- NULL
-  vals$view_all_trips_people_meetings_venues <- view_all_trips_people_meetings_venues
   
   # Replace data with uploaded data
   observeEvent(input$submit, {

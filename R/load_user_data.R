@@ -1,11 +1,13 @@
-#' DB to memory
+#' Load user data
 #' 
-#' Assign the data from the database to the global environment
+#' Load data for a specific user into a list
 #' @param return_list Return the objects as a list, rather than assignation to global environment
 #' @return Objects assigned to global environment
 #' @export
 
-db_to_memory <- function(return_list = FALSE){
+
+load_user_data <- function(return_list = TRUE, 
+                           user_id = 0){
   
   out_list <- list()
   
@@ -20,9 +22,9 @@ db_to_memory <- function(return_list = FALSE){
               'venue_types',
               'view_all_trips_people_meetings_venues',
               'users')#,
-              # 'venue_events',
-              # 'venue_types'
-              # )
+  # 'venue_events',
+  # 'venue_types'
+  # )
   # Add the views to the tables
   conn <- db_get_connection()
   tables <- c(tables, 'view_trip_coincidences',  
@@ -35,26 +37,12 @@ db_to_memory <- function(return_list = FALSE){
                   schema = 'pd_wbgtravel',
                   connection_object = conn,
                   use_sqlite = use_sqlite)
-    # Re-shape events before assigning to global environment
-    if(this_table == 'events'){
-      message(paste0('Restructuring events table'))
-      x <- x %>%
-        # Restructure like the events table
-        dplyr::rename(Person = short_name,
-                      Organization = organization,
-                      `City of visit` = city_name,
-                      `Country of visit` = country_name,
-                      Counterpart = trip_reason,
-                      `Visit start` = trip_start_date,
-                      `Visit end` = trip_end_date,
-                      Lat = latitude,
-                      Long = longitude,
-                      Event = meeting_topic) %>%
-        dplyr::select(Person, Organization, `City of visit`, `Country of visit`,
-                      Counterpart, `Visit start`, `Visit end`, Lat, Long, Event) %>%
-        distinct(Person, Organization, `City of visit`, `Country of visit`,
-                 Counterpart, `Visit start`, `Visit end`,Event, .keep_all = TRUE)
+    
+    # If this is the "view_all", expand it to include some more useful columns
+    if(tables[i] == 'view_all_trips_people_meetings_venues'){
+      x <- expand_view_all(view_all_trips_people_meetings_venues = x)
     }
+
     if(return_list){
       out_list[[i]] <- x
       names(out_list)[i] <- this_table

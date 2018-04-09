@@ -45,40 +45,12 @@ for(i in 1:length(functions)){
   }
 }
 
-# Define whether using postgresql or sqlite
-use_sqlite <- FALSE
-
-# Create a connection pool
-#This creates a static pool instance and won't have any effect if the pool is closed for some other reason.
-#GLOBAL_DB_POOL <- db_get_pool()
-
-# Geocode the cities in the db if necessary 
-# //SAH 2-22-2018: Called after upload or changes, should be unnecessary on app start-up and generate unnecessary db query each time
-#geo_code_in_db(pool = pool,
-#               use_sqlite = use_sqlite)
-
-
 # Get the data from the db into memory
 #SAH: Let's please depricate this.  Pulls in a lot of unncessary data and is time consuming to do it.
 db_to_memory()
 
-# Bring the is_wbg field from people into view_all_trips_people_meetings_venues
-view_all_trips_people_meetings_venues <- 
-  view_all_trips_people_meetings_venues %>%
-  # Create a "meeting with" column
-  mutate(meeting_with = meeting_person_short_names,
-         meeting_person_name = meeting_person_short_names,
-         coincidence_person_name = meeting_person_short_names) %>%
-  # Create a "person_name" column
-  mutate(person_name = short_name) %>%
-  # get whether the coincidence person is wbg too
-  left_join(people %>%
-              dplyr::select(person_id, is_wbg) %>%
-              dplyr::rename(meeting_person_ids = person_id,
-                            coincidence_is_wbg = is_wbg) %>%
-              mutate(meeting_person_ids = as.character(meeting_person_ids)),
-            by = 'meeting_person_ids')
-  
+# Bring the fields from people into view_all_trips_people_meetings_venues
+view_all_trips_people_meetings_venues <- expand_view_all(view_all_trips_people_meetings_venues = view_all_trips_people_meetings_venues)
 
 # Create a dataframe for dicting day numbers to dates
 date_dictionary <-
@@ -92,7 +64,7 @@ date_dictionary <- date_dictionary %>%
 upload_format <- read_csv('upload_format.csv')
 
 # Conditionally color the skin based on mode
-skin <- ifelse(use_sqlite, 'red', 'blue')
+skin <- 'blue'
 
 # Timevis data prep
 if(nrow(cities) == 0){
