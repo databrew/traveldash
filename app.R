@@ -850,7 +850,7 @@ server <- function(input, output, session) {
   
   
   
-  # Create a filtered view_trip_coincidences
+  # Create a filtered view_all_trips_people_meetings_venues_filtered
   view_all_trips_people_meetings_venues_filtered <- reactive({
     fd <- date_range()
     vd <- vals$view_all_trips_people_meetings_venues

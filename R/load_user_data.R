@@ -7,7 +7,12 @@
 
 
 load_user_data <- function(return_list = TRUE, 
-                           user_id = 0){
+                           user_id = 0,
+                           conn = NULL){
+  
+  if(is.null(conn)){
+    conn <- db_get_connection()
+  }
   
   out_list <- list()
   
@@ -21,15 +26,8 @@ load_user_data <- function(return_list = TRUE,
               'venue_events',
               'venue_types',
               'view_all_trips_people_meetings_venues',
-              'users')#,
-  # 'venue_events',
-  # 'venue_types'
-  # )
-  # Add the views to the tables
-  conn <- db_get_connection()
-  tables <- c(tables, 'view_trip_coincidences',  
-              # 'events',
-              'view_trips_and_meetings')
+              'users')
+
   for (i in 1:length(tables)){
     this_table <- tables[i]
     message(paste0('Reading in the ', this_table, ' from the database and assigning to global environment.'))
@@ -39,7 +37,15 @@ load_user_data <- function(return_list = TRUE,
     
     # If this is the "view_all", expand it to include some more useful columns
     if(tables[i] == 'view_all_trips_people_meetings_venues'){
-      x <- expand_view_all(view_all_trips_people_meetings_venues = x)
+      if(return_list){
+        the_people <- out_list[['people']]
+      } else {
+        the_people <- get('people', envir = .GlobalEnv)
+      }
+      x <- expand_view_all(view_all_trips_people_meetings_venues = x,
+                           people = the_people)
+      # Overwrite "unsepcified venue"
+      x$venue_name[x$venue_name == 'Unspecified Venue'] <- NA
     }
 
     if(return_list){

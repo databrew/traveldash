@@ -1,4 +1,4 @@
-expand_view_all <- function(view_all_trips_people_meetings_venues){
+expand_view_all <- function(view_all_trips_people_meetings_venues, people){
   view_all_trips_people_meetings_venues <- 
     view_all_trips_people_meetings_venues %>%
     # Create a "meeting with" column
