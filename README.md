@@ -9,7 +9,7 @@ This dashboard is in the final stages of development. Everything is functional a
 
 ## Tasks  
 
-- Log-in ability 
+- <s>Log-in ability</s> 
 - Get rid of global read-in and replace with session-specific reactive values (use the `vals` object, etc.)
 - About page reformatting: make the same format as the WB intranet.
 - Blank pre-formatted xlsx template: the user should be able to download an empty xls template, with row 1 being explanations of each column, row 2 being column headers, and the cells being colored appropriately. 
