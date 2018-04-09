@@ -233,12 +233,7 @@ body <- dashboardBody(
           column(1)
         ),
         fluidRow(div(helpText(creds),
-                     style = 'text-align:right')),
-        fluidRow(
-          column(12,
-                 align = 'right',
-                 helpText(textOutput("url_text")))
-        )
+                     style = 'text-align:right'))
           )
         ),
     tabItem(tabName = 'upload_data',
@@ -2507,37 +2502,7 @@ server <- function(input, output, session) {
     
   })
   
-  # Return the components of the URL in a string:
-  output$url_text <- renderText({
-    
-    the_search <- session$clientData$url_search
-    search_ok <- FALSE
-    if(!is.null(the_search)){
-      if(length(the_search) > 0){
-        if(the_search != ''){
-          search_ok <- TRUE
-        }
-      }
-    }
-    if(!search_ok){
-      the_search <- paste0('Add something like /?foo=123&bar=somestring to the end of the url (and then load the modified url) to see how it is captured here.')
-    }
-    paste(sep = "",
-          # "protocol: ", session$clientData$url_protocol, "\n",
-          # "hostname: ", session$clientData$url_hostname, "\n",
-          # "pathname: ", session$clientData$url_pathname, "\n",
-          # "port: ",     session$clientData$url_port,     "\n",
-          "search: ",   the_search,   "\n"
-    )
-  })
   
-  # Parse the GET query string
-  output$queryText <- renderText({
-    query <- parseQueryString(session$clientData$url_search)
-    
-    # Return a string with key-value pairs
-    paste(names(query), query, sep = "=", collapse=", ")
-  })
   
   # On session end, close
   session$onSessionEnded(function() {
