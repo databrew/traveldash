@@ -869,7 +869,7 @@ server <- function(input, output, session) {
     
     # Get trips and meetings, filtered for date range    
     df <- view_all_trips_people_meetings_venues_filtered()
-    
+
     # Filter for wbg only if relevant
     if(input$wbg_only == 'WBG only'){
       df <- df %>% dplyr::filter(is_wbg == 1)
@@ -880,7 +880,7 @@ server <- function(input, output, session) {
     if(!is.null(df)){
       # Get row selection (if applicable) from datatable
       s <- input$visit_info_table_rows_selected
-      
+
       # Subset df if rows are selected
       if(!is.null(s)){
         if(length(s) > 0){
@@ -1306,25 +1306,32 @@ server <- function(input, output, session) {
       } else if(input$wbg_only == 'Non-WBG only'){
         x <- x %>% dplyr::filter(is_wbg == 0)
       }
-      x <- x %>%
-        mutate(location = city_name) %>%
-        mutate(name = short_name) %>%
-        arrange(trip_start_date) %>%
-        mutate(date = oleksiy_date(trip_start_date, trip_end_date)) %>%
-        mutate(event = paste0(ifelse(!is.na(meeting_with) & short_name != meeting_with, ' With ', ''),
-                              ifelse(!is.na(meeting_with) & short_name != meeting_with, meeting_with, ''))) %>%
-        mutate(event = Hmisc::capitalize(event)) %>%
-        mutate(event = ifelse(!is.na(venue_name),
-                              paste0(event, ' At ', venue_name),
-                              event)) %>%
-        dplyr::select(name, date, location, event) %>%
-        
-        mutate(event = ifelse(trimws(event) == 'With', '', event))
-      names(x) <- Hmisc::capitalize(names(x))
-      x$Date <- factor(x$Date, levels = sort(unique(x$Date)))
       
-      # prettify(x,
-      #          download_options = FALSE) #%>%
+      # Clean up
+      x <- x %>%
+        dplyr::select(short_name, organization, city_name, trip_start_date, trip_end_date,
+                      meeting_person_name, agenda, venue_name, event_title)
+
+      x <- x %>%
+        mutate(a = paste0(short_name,
+                          ifelse(!is.na(organization),
+                                 paste0(' (', organization),
+                                 ''),
+                          ifelse(!is.na(organization),
+                                 ')',
+                                 '')),
+               b = oleksiy_date(trip_start_date, trip_end_date),
+               c = city_name,
+               d = ifelse(!is.na(agenda) & agenda != '',
+                          agenda,
+                          ifelse(!is.na(meeting_person_name) & meeting_person_name != '',
+                                 paste0('Meeting with ', meeting_person_name),
+                                 ifelse(!is.na(event_title) & event_title != '',
+                                        event_title,
+                                        NA)))) %>%
+        dplyr::select(a, b, c, d)
+      names(x) <- c('Person', 'Date', 'Location', 'Event')
+
       DT::datatable(x,
                     # escape=FALSE,
                     rownames = FALSE,
@@ -1334,7 +1341,65 @@ server <- function(input, output, session) {
                       ordering=F,
                       lengthMenu = c(5, 20, 50),
                       pageLength = 10#nrow(x)
-                    )) 
+                    ))
+      
+      # # Create an id
+      # df <- df %>%
+      #   mutate(id = paste0(short_name, is_wbg, city_id)) %>%
+      #   mutate(id = as.numeric(factor(id))) %>%
+      #   arrange(trip_start_date)
+      # 
+      # # Create some more columns
+      # df <- df %>%
+      #   mutate(dates = oleksiy_date(trip_start_date, trip_end_date)) %>%
+      #   mutate(event = paste0(ifelse(!is.na(meeting_with) & short_name != meeting_with, ' With ', ''),
+      #                         ifelse(!is.na(meeting_with) & short_name != meeting_with, meeting_with, ''))) %>%
+      #   mutate(event = Hmisc::capitalize(event)) 
+      # 
+      # # Make only one head per person/place
+      # df <- df %>%
+      #   group_by(id, short_name, title, is_wbg, city_id, venue_name) %>%
+      #   summarise(date = paste0(dates, collapse = ';'),
+      #             event = paste0(event, collapse = ';')) %>% ungroup
+      # 
+      # # Join to city names
+      # df <- df %>%
+      #   left_join(vals$cities %>%
+      #               dplyr::select(city_name, country_name, city_id,
+      #                             latitude, longitude),
+      #             by = 'city_id') 
+      # 
+      # ###########################
+      # 
+      # x <- df %>%
+      #   mutate(location = city_name) %>%
+      #   mutate(name = short_name) %>%
+      #   arrange(trip_start_date) %>%
+      #   mutate(date = oleksiy_date(trip_start_date, trip_end_date)) %>%
+      #   mutate(event = paste0(ifelse(!is.na(meeting_with) & short_name != meeting_with, ' With ', ''),
+      #                         ifelse(!is.na(meeting_with) & short_name != meeting_with, meeting_with, ''))) %>%
+      #   mutate(event = Hmisc::capitalize(event)) %>%
+      #   mutate(event = ifelse(!is.na(venue_name),
+      #                         paste0(event, ' At ', venue_name),
+      #                         event)) %>%
+      #   dplyr::select(name, date, location, event) %>%
+      #   
+      #   mutate(event = ifelse(trimws(event) == 'With', '', event))
+      # names(x) <- Hmisc::capitalize(names(x))
+      # x$Date <- factor(x$Date, levels = sort(unique(x$Date)))
+      # 
+      # # prettify(x,
+      # #          download_options = FALSE) #%>%
+      # DT::datatable(x,
+      #               # escape=FALSE,
+      #               rownames = FALSE,
+      #               autoHideNavigation = TRUE,
+      #               options=list(#dom='t',
+      #                 filter = FALSE,
+      #                 ordering=F,
+      #                 lengthMenu = c(5, 20, 50),
+      #                 pageLength = 10#nrow(x)
+      #               )) 
     }
   })
   
