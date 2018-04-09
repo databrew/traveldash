@@ -812,14 +812,14 @@ server <- function(input, output, session) {
                       Meeting = meeting_with,
                       Agenda = agenda)
       # Write
-      file.copy('upload_format.XLSX', 'tmp.XLSX')
-      wb <- loadWorkbook('tmp.XLSX')
-      writeWorksheet(object = wb,
+      file.copy('upload_format.XLSX', 'tmp.XLSX', overwrite = TRUE)
+      wb <- XLConnect::loadWorkbook('tmp.XLSX')
+      XLConnect::writeWorksheet(object = wb,
                      data = x,
                      sheet = 'Travel Event Dashboard DATA',
                      startRow = 3,
                      header = FALSE)
-      saveWorkbook(wb, 'tmp.XLSX')
+      XLConnect::saveWorkbook(wb, 'tmp.XLSX')
       file.copy('tmp.XLSX', file)
       file.remove('tmp.XLSX')
     }
@@ -1657,7 +1657,8 @@ server <- function(input, output, session) {
   })
   
   observeEvent(this_date(),{
-    if(input$play){
+    li <- logged_in()
+    if(input$play & li){
       td <- this_date()
       
       # Get trips and meetings, filtered for date range
