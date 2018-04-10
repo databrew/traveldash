@@ -88,12 +88,15 @@ expand_trips <- function(view_all_trips_people_meetings_venues, venue_types, ven
     df <- bind_rows(just_events, just_meetings)
     df$id <- 1:nrow(df)
     cols <- colorRampPalette(brewer.pal(8, 'Dark2'))(length(unique(df$subgroup)))
-    df$style <- paste0('color: ', cols[df$subgroup], ';')
+    cols_light <- adjustcolor(cols, alpha.f = 0.6)
+    df$style <- ifelse(df$group == 2,
+                       paste0('color: ', cols[df$subgroup], ';'),
+                       paste0('background-color:', cols_light[df$subgroup], ';'))
     df <- df %>% arrange(start, city_name, content)
     # Make 23 hour event for those which are events
     df$start <- as.POSIXct(df$start)
     df$end <- as.POSIXct(df$end)
-    df$end[df$group == 1] <- df$end[df$group == 1] + hours(23)
+    df$end[df$group == 1] <- df$end[df$group == 1] + hours(22)
     df$event_id <- df$subgroup
     return(df)
   } else {
