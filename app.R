@@ -2118,7 +2118,6 @@ server <- function(input, output, session) {
 
     df <- make_hot_trips(data = vals$view_all_trips_people_meetings_venues,
                          filter = input$trips_filter) 
-    
     if(!is.null(df)){
       if(nrow(df) > 0){
         
@@ -2126,6 +2125,17 @@ server <- function(input, output, session) {
           mutate(Delete = FALSE)
         
         hidden_ids$trip_uid <- df$trip_uid
+        
+        # Get the indices of the suspected duplicate columns
+        which_dups <- which(df$dup)
+        # message('WHICH DUPS IS ')
+        # print(which_dups)
+        # Substract 1 to use javascript indexing
+        which_dups_js <- which_dups - 1
+        # Create js code for highlighting the dups
+        js_code <- paste0("row==", which_dups_js, collapse = ' || ')
+        # Remove the dup column
+        df$dup <- NULL
         
         # Update the hidden ids
         df <- df %>% dplyr::select(-trip_uid)
@@ -2143,7 +2153,14 @@ server <- function(input, output, session) {
           hot_col(col = "Meeting", type = "autocomplete", source = clean_vector(vals$view_all_trips_people_meetings_venues$meeting_with), strict = FALSE)  %>%
           hot_col(col = "Agenda", type = "autocomplete", source = clean_vector(vals$view_all_trips_people_meetings_venues$agenda), strict = FALSE) %>%
           hot_col(col = 'Delete', type = 'checkbox') %>%
-          hot_cols(manualColumnResize=TRUE, columnSorting = TRUE, colWidths = c(rep(50, ncol(df) - 1), 35), halign = 'htCenter')
+          hot_cols(manualColumnResize=TRUE, columnSorting = TRUE, colWidths = c(rep(50, ncol(df) - 1), 35), halign = 'htCenter',
+                   renderer = paste0('function(instance, td, row, col, prop, value, cellProperties) {
+   HTMLWidgets.widgets.filter(function(widget) {
+                                      return widget.name === "hot_trips"
+       })[0];
+     if (', js_code, ") td.style.background = 'lightblue';}
+ "))
+
       }
     }
   })

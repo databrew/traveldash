@@ -12,7 +12,7 @@ This dashboard is in the final stages of development. Everything is functional a
 - Fill out `R/upload_edited_people_data.R` so that the function appropriately passes data to the database.
 - Fill out `R/upload_edited_venue_events_data.R` so that the function appropriately passes data to the database.
 - Fill out `R/upload_edited_venues_data.R` so that the function appropriately passes data to the database.
-- <s>Amend pop-up in timeline with specific dates (from – to)  
+- <s>Amend pop-up in timeline with specific dates (from – to)</s> 
 - <s>Can we make a broader view for timeline?</s>
 - <s>Color for timeline, events (venues) and meetings  - to make it more intuitive.</s> 
 - Is it possible to highlight POTENTIAL duplications of data? For instance, if 80% of columns are the same – to make these rows yellow, a person verify and edit manually???

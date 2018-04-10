@@ -27,5 +27,20 @@ make_hot_trips <- function(data, filter){
   if(!is.null(filter)){
     df <- df %>% search_df(filter)
   }
+  # Look for duplicates
+  df <- df %>%
+    arrange(Person, City, Start, End)
+  df$dup <- FALSE
+  for(i in 2:nrow(df)){
+    same_person <- df$Person[i] == df$Person[i-1]
+    same_city <- df$City[i] == df$City[i-1]
+    overlapping_dates <- FALSE
+    if(same_person & same_city){
+      overlapping_dates <- df$Start[i] <= df$End[i-1]
+    }
+    if(overlapping_dates){
+      df$dup[i] <- TRUE
+    }
+  }
   return(df)
 }
