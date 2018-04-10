@@ -393,6 +393,7 @@ body <- dashboardBody(
             )
     )
     ),
+  fluidRow(textOutput('url_text')), # this is needed in order to get sessionData to be reactive
   tags$style(type="text/css", "#add_table th {font-weight:bold;}"),
   tags$style(type="text/css", "#hot_trips th {font-weight:bold;}"),
   tags$style(type="text/css", "#hot_trips td {font-size: 10px;}"),
@@ -422,13 +423,15 @@ server <- function(input, output, session) {
     url$url_pathname <- sc$url_pathname
     url$url_port <- sc$url_port
     url$url_search <- sc$url_search
-    return(paste(sep = "",
-                "protocol: ", url$url_protocol, "\n",
-                "hostname: ", url$url_hostname, "\n",
-                "pathname: ", url$url_pathname, "\n",
-                "port: ",     url$url_port,     "\n",
-                "search: ",   url$url_search,   "\n"
-    ))
+    # Returning nothing - just need the above to run so as to keep session reactive
+    return('')
+    # return(paste(sep = "",
+    #             "protocol: ", url$url_protocol, "\n",
+    #             "hostname: ", url$url_hostname, "\n",
+    #             "pathname: ", url$url_pathname, "\n",
+    #             "port: ",     url$url_port,     "\n",
+    #             "search: ",   url$url_search,   "\n"
+    # ))
   })
   
   # Reactive list of dataframes for user-specific data
@@ -2795,15 +2798,10 @@ server <- function(input, output, session) {
             br(),
             fluidPage(fluidRow(column(12, align = 'center', 
                                       helpText('Password to add/edit data:'),
-                                      textInput('pass_side',
-                                                'Password'),
-                                      br(),
-                                      actionButton('pass_side_submit',
-                                                   'Submit',
-                                                   icon = icon('check')),
-                                      textOutput('failed_log_in_text_side')))),
-            br(),
-            br(),
+                                      actionButton('want_pass_side',
+                                                   'Enter password',
+                                                   icon = icon('check'))))),
+
             br(), br(), br(),br(), br(), br(),br(), br(), 
             fluidPage(
               h4('Details', align = 'center', style = 'text-align: center;'),
@@ -2822,6 +2820,41 @@ server <- function(input, output, session) {
         
       }
     })
+  
+  # Observe the want pass side button and open a modeal
+  observeEvent(input$want_pass_side, {
+    showModal(modalDialog(
+      title = paste0("Enter a password as to be able to edit and upload data for user: ", user()),
+      fluidPage(
+        textInput('pass_side',
+                  'Password'),
+        br(),
+        action_modal_button('pass_side_submit',
+                     'Submit',
+                     icon = icon('check')),
+        textOutput('failed_log_in_text_side')
+      )
+    ))
+  })
+  
+  # Observe an incorrect password attempt and re-raise the log-in modal
+  observeEvent(input$pass_side_submit, {
+    au <- authenticated()
+    if(!au){
+      showModal(modalDialog(
+        title = paste0("Enter a password as to be able to edit and upload data for user: ", user()),
+        fluidPage(
+          textInput('pass_side',
+                    'Password'),
+          br(),
+          action_modal_button('pass_side_submit',
+                              'Submit',
+                              icon = icon('check')),
+          textOutput('failed_log_in_text_side')
+        )
+      ))
+    }
+  })
   
   # Expand the date range when one goes to the timeline tab
   old_date_range <- reactiveVal(c(Sys.Date() - 7,
