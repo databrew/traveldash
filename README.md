@@ -15,7 +15,7 @@ This dashboard is in the final stages of development. Everything is functional a
 - <s>Amend pop-up in timeline with specific dates (from – to)</s> 
 - <s>Can we make a broader view for timeline?</s>
 - <s>Color for timeline, events (venues) and meetings  - to make it more intuitive.</s> 
-- Is it possible to highlight POTENTIAL duplications of data? For instance, if 80% of columns are the same – to make these rows yellow, a person verify and edit manually???
+<s>- Is it possible to highlight POTENTIAL duplications of data? For instance, if 80% of columns are the same – to make these rows yellow, a person verify and edit manually???</s> _Mostly done_, but pending an improvement if this issue can be solved: https://stackoverflow.com/questions/49748007/rhandsontable-with-row-highlighting-and-checkbox-columns
 
 # Developer's instructions
 
