@@ -10,6 +10,13 @@ check_user_name_and_password <- function(user_name = '',
     message('Log-in attempted for an inexistant user: ', user_name)
     return(0)
   }
+  if(is.null(password)){
+    # No password, so we let them in as a non-admin user
+    message('No pas')
+    uid <- users$user_id
+    message('No password provided for ', user_name, '. Logging in without admin privileges as user id: ', uid)
+    return(uid)
+  }
   # See if password is correct
   password_correct <- users$user_password == password
   if(!password_correct){

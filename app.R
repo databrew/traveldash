@@ -28,7 +28,9 @@ header <- dashboardHeader(title="Travel dashboard",
                                   ),
                                   tags$li(class = 'dropdown',
                                           uiOutput('search_ui')),
-                                  # span(uiOutput('log_in_text'), class = "logo"),
+                                  # tags$li(uiOutput('log_in_text'), class = "dropdown"),
+                                  # tags$li(class = 'dropdown',
+                                  #         img(src='blue.png', align = "center", width = '160px', height = '10px')),
                                   tags$li(class = 'dropdown',
                                           uiOutput('log_out_ui')),
                                   tags$li(class = 'dropdown',
@@ -111,6 +113,18 @@ body <- dashboardBody(
   tabItems(
     tabItem(tabName = 'log_in',
             fluidPage(
+              fluidRow(column(12, align = 'center', h3('Select a display group'))),
+              fluidRow(column(12, align = 'center',
+                              selectInput('user',
+                                          'Display group',
+                                          choices = users$user_role[users$user_role != 'SYSTEM']))),
+              br(),
+              fluidRow(column(12, align = 'center',
+                              actionButton('user_submit',
+                                           'Submit'))),
+              br(), br(),
+              fluidRow(column(12, align = 'center', h1('-- OR --'))),
+              fluidRow(column(12, align = 'center', h3('Log in for administrative (editing) privileges'))),
               fluidRow(column(12, align = 'center',
                               textInput(inputId = 'user_name',
                                         value = 'MEL',
@@ -393,6 +407,30 @@ ui <- dashboardPage(header, sidebar, body)
 # Define server
 server <- function(input, output, session) {
   
+  # Get url
+  url <- reactiveValues()
+  searcher <- reactiveVal(value = '')
+  
+  output$url_text <- renderText({
+    sc <- session$clientData
+    x <-  parseQueryString(sc$url_search)
+    x <- x[names(x) == 'display']
+    searcher(x)
+    message('SEARCHER IS ', searcher())
+    url$url_protocol <- sc$url_protocol
+    url$url_hostname <- sc$url_hostname
+    url$url_pathname <- sc$url_pathname
+    url$url_port <- sc$url_port
+    url$url_search <- sc$url_search
+    return(paste(sep = "",
+                "protocol: ", url$url_protocol, "\n",
+                "hostname: ", url$url_hostname, "\n",
+                "pathname: ", url$url_pathname, "\n",
+                "port: ",     url$url_port,     "\n",
+                "search: ",   url$url_search,   "\n"
+    ))
+  })
+  
   # Reactive list of dataframes for user-specific data
   vals <- reactiveValues()
   
@@ -401,7 +439,34 @@ server <- function(input, output, session) {
   
   # Reactive value for whether logged in or not
   logged_in <- reactiveVal(value = FALSE)
+  authenticated <- reactiveVal(value = FALSE) # whether a correct password has been supplied
   user_id <- reactiveVal(value = 0)
+  user <- reactiveVal(value = '')
+  
+  # Observer the searcher() object (which has the display group)
+  # if its a valid user, log in
+  observeEvent(searcher(),{
+    s <- searcher()
+    if(!is.null(s)){
+      if(length(s) == 1){
+        if(nchar(s) > 0){
+          if(s %in% users$user_role){
+            log_in_result <- 
+              check_user_name_and_password(user_name = s,
+                                           password = NULL, # no password by default - just view privileges
+                                           users = users)
+            if(log_in_result > 0){
+              logged_in(TRUE)
+              user_id(log_in_result)
+              un <- users %>% filter(user_id == log_in_result) %>% .$user_role
+              user(un)
+            }
+          }
+        }
+      }
+    }
+    
+  })
   
   # Observe the submission and log in
   observeEvent(input$log_in_submit, {
@@ -412,6 +477,30 @@ server <- function(input, output, session) {
                                    users = users)
     if(log_in_result > 0){
       logged_in(TRUE)
+      authenticated(TRUE)
+      user_id(log_in_result)
+      # Update the "last_login" field
+      update_last_login_field(user_id = log_in_result)
+      # Update the user() object
+      un <- users %>% filter(user_id == log_in_result) %>% .$user_role
+      user(un)
+    } else {
+      # Failed log in
+      fli <- failed_log_in()
+      failed_log_in(fli + 1)
+    }
+  })
+  
+  # Observe the submission and log in from the side bar
+  observeEvent(input$pass_side_submit, {
+    # Check password and username
+    log_in_result <- 
+      check_user_name_and_password(user_name = user(),
+                                   password = input$pass_side,
+                                   users = users)
+    if(log_in_result > 0){
+      logged_in(TRUE)
+      authenticated(TRUE)
       user_id(log_in_result)
       # Update the "last_login" field
       update_last_login_field(user_id = log_in_result)
@@ -425,15 +514,19 @@ server <- function(input, output, session) {
   # Observe the log out button
   observeEvent(input$log_out, {
     logged_in(FALSE)
+    authenticated(FALSE)
     user_id(0)
     failed_log_in_text('')
     failed_log_in(0)
     any_data(FALSE)
+    user('')
   })
   
   # Observe changes to the user id and update the vals
   observeEvent(user_id(), {
     liui <- user_id()
+    un <- users %>% filter(user_id == liui) %>% .$user_role
+    user(un)
     new_vals <- load_user_data(return_list = TRUE, user_id = liui)
     tables <- get_table_names()
     for(i in 1:length(tables)){
@@ -450,14 +543,20 @@ server <- function(input, output, session) {
   # Log in text
   output$log_in_text <- renderText({
     l <- logged_in()
+    au <- authenticated()
     if(!l){
       return(NULL)
     }
-    u <- user_id()
-    out <- 'Not logged in'
+    u <- user()
+    out <- NULL
     if(!is.null(u)){
       if(u != ''){
-        out <- paste0('Logged in as ', u)
+        un <- u
+        if(au){
+          out <- paste0('Logged in as ', un, ' with editing privileges')
+        } else {
+          out <- paste0('Viewing data as ', un)
+        }
       }
     }
     return(out)
@@ -505,6 +604,22 @@ server <- function(input, output, session) {
       }
     })
   
+  output$failed_log_in_text_side <-
+    renderText({
+      ok <- FALSE
+      x <- failed_log_in_text()
+      if(!is.null(x)){
+        if(length(x) > 0){
+          if(x != ''){
+            ok <- TRUE
+          }
+        }
+      }
+      if(ok){
+        return(x)
+      }
+    })
+  
   date_range <- reactiveVal(c(Sys.Date() - 7,
                               Sys.Date() + 14 ))
   observeEvent(input$daterange12,{
@@ -533,14 +648,15 @@ server <- function(input, output, session) {
   output$reset_date_range_ui <- renderUI({
     li <- logged_in()
     the_tab <- input$tabs
-      if(!li){
-        return(NULL)
-      } else {
-        if(!the_tab %in% c('upload_data', 'edit_data', 'about')){
+    if(is.null(the_tab)){
+      return(NULL)
+    }
+    if(!li){
+      return(NULL)
+    } else
+      if(!the_tab %in% c('upload_data', 'edit_data', 'about')){
         actionButton('reset_date_range', 'Reset', icon = icon('undo'))
       }
-    }
-    
   })
   
   output$log_out_ui <- renderUI({
@@ -557,6 +673,9 @@ server <- function(input, output, session) {
   output$wbg_only_ui <- renderUI({
     li <- logged_in()
     the_tab <- input$tabs
+    if(is.null(the_tab)){
+      return(NULL)
+    }
     if(!li){
       return(NULL)
     } else {
@@ -575,6 +694,9 @@ server <- function(input, output, session) {
   
   output$search_ui <- renderUI({
     the_tab <- input$tabs
+    if(is.null(the_tab)){
+      return(NULL)
+    }
     li <- logged_in()
     if(!li){
       return(NULL)
@@ -1430,10 +1552,13 @@ server <- function(input, output, session) {
     x <- view_all_trips_people_meetings_venues_filtered()
     if(!is.null(x)){
       # Filter for wbg only if relevant
-      if(input$wbg_only == 'WBG only'){
-        x <- x %>% dplyr::filter(is_wbg == 1)
-      } else if(input$wbg_only == 'Non-WBG only'){
-        x <- x %>% dplyr::filter(is_wbg == 0)
+      wbgo <- input$wbg_only
+      if(!is.null(wbgo)){
+        if(wbgo == 'WBG only'){
+          x <- x %>% dplyr::filter(is_wbg == 1)
+        } else if(wbgo == 'Non-WBG only'){
+          x <- x %>% dplyr::filter(is_wbg == 0)
+        }
       }
       
       # Clean up
@@ -2569,6 +2694,7 @@ server <- function(input, output, session) {
       
       # Logged in or not?
       li <- logged_in()
+      au <- authenticated()
       
       if(!li){
         sidebarMenu(
@@ -2597,46 +2723,103 @@ server <- function(input, output, session) {
           )
         )
       } else {
-        sidebarMenu(
-          id="tabs",
-          menuItem(
-            text="Dashboard",
-            tabName="main",
-            icon=icon("eye")),
-          menuItem(
-            text="Network analysis",
-            tabName="network",
-            icon=icon("eye")),
-          menuItem(
-            text="Timeline",
-            tabName="timeline",
-            icon=icon("calendar")),
-          menuItem(
-            text="Upload trips",
-            tabName="upload_data",
-            icon=icon("upload")),
-          menuItem(
-            text="Edit data",
-            tabName="edit_data",
-            icon=icon("pencil")),
-          menuItem(
-            text = 'About',
-            tabName = 'about',
-            icon = icon("cog", lib = "glyphicon")),
-          br(), br(), br(),br(), br(), br(),br(), br(), 
-          fluidPage(
-            h4('Details', align = 'center', style = 'text-align: center;'),
-            h5('Built by:'),
-            helpText('FIG Africa Digital Financial Services unit'),
-            h5('With help from:'),
-            helpText('The Partnership for Financial Inclusion'),
-            helpText('The MasterCard Foundation'),
+        if(au){
+          sidebarMenu(
+            id="tabs",
+            menuItem(
+              text="Dashboard",
+              tabName="main",
+              icon=icon("eye")),
+            menuItem(
+              text="Network analysis",
+              tabName="network",
+              icon=icon("eye")),
+            menuItem(
+              text="Timeline",
+              tabName="timeline",
+              icon=icon("calendar")),
+            menuItem(
+              text="Upload trips",
+              tabName="upload_data",
+              icon=icon("upload")),
+            menuItem(
+              text="Edit data",
+              tabName="edit_data",
+              icon=icon("pencil")),
+            menuItem(
+              text = 'About',
+              tabName = 'about',
+              icon = icon("cog", lib = "glyphicon")),
             br(),
-            fluidRow(div(img(src='partnershiplogo.png', align = "center", width = '100px'), style="text-align: center;"),
-                     br()
+            fluidPage(fluidRow(column(12, align = 'center', helpText(textOutput('log_in_text'))))),
+            br(), 
+            br(),
+            br(), br(), br(),br(), br(), br(),br(), br(), 
+            fluidPage(
+              h4('Details', align = 'center', style = 'text-align: center;'),
+              h5('Built by:'),
+              helpText('FIG Africa Digital Financial Services unit'),
+              h5('With help from:'),
+              helpText('The Partnership for Financial Inclusion'),
+              helpText('The MasterCard Foundation'),
+              br(),
+              fluidRow(div(img(src='partnershiplogo.png', align = "center", width = '100px'), style="text-align: center;"),
+                       br()
+              )
             )
           )
-        )
+        } else {
+          # Not authenticated
+          sidebarMenu(
+            id="tabs",
+
+            menuItem(
+              text="Dashboard",
+              tabName="main",
+              icon=icon("eye")),
+            menuItem(
+              text="Network analysis",
+              tabName="network",
+              icon=icon("eye")),
+            menuItem(
+              text="Timeline",
+              tabName="timeline",
+              icon=icon("calendar")),
+            menuItem(
+              text = 'About',
+              tabName = 'about',
+              icon = icon("cog", lib = "glyphicon")),
+            br(),
+            fluidPage(fluidRow(column(12, align = 'center', p(textOutput('log_in_text'))))),
+            br(), 
+            br(),
+            fluidPage(fluidRow(column(12, align = 'center', 
+                                      helpText('Password to add/edit data:'),
+                                      textInput('pass_side',
+                                                'Password'),
+                                      br(),
+                                      actionButton('pass_side_submit',
+                                                   'Submit',
+                                                   icon = icon('check')),
+                                      textOutput('failed_log_in_text_side')))),
+            br(),
+            br(),
+            br(), br(), br(),br(), br(), br(),br(), br(), 
+            fluidPage(
+              h4('Details', align = 'center', style = 'text-align: center;'),
+              h5('Built by:'),
+              helpText('FIG Africa Digital Financial Services unit'),
+              h5('With help from:'),
+              helpText('The Partnership for Financial Inclusion'),
+              helpText('The MasterCard Foundation'),
+              br(),
+              fluidRow(div(img(src='partnershiplogo.png', align = "center", width = '100px'), style="text-align: center;"),
+                       br()
+              )
+            )
+          )
+        }
+        
       }
     })
   
@@ -2664,6 +2847,21 @@ server <- function(input, output, session) {
     selectInput('photo_person',
                 'Person',
                 choices = the_choices)
+  })
+  
+  # Observe the user submission, and flag as logged in
+  observeEvent(input$user_submit, {
+    log_in_result <- 
+      check_user_name_and_password(user_name = input$user,
+                                   password = NULL,
+                                   users = users)
+
+      logged_in(TRUE)
+      user_id(log_in_result)
+      un <- users %>% filter(user_id == log_in_result) %>% .$user_role
+      user(un)
+      # Update the "last_login" field
+      update_last_login_field(user_id = log_in_result)
   })
   
 }
