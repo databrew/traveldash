@@ -532,15 +532,20 @@ server <- function(input, output, session) {
   
   output$reset_date_range_ui <- renderUI({
     li <- logged_in()
-    if(!li){
-      return(NULL)
-    } else {
-      actionButton('reset_date_range', 'Reset', icon = icon('undo'))
+    the_tab <- input$tabs
+      if(!li){
+        return(NULL)
+      } else {
+        if(!the_tab %in% c('upload_data', 'edit_data', 'about')){
+        actionButton('reset_date_range', 'Reset', icon = icon('undo'))
+      }
     }
+    
   })
   
   output$log_out_ui <- renderUI({
     li <- logged_in()
+    
     if(li){
       tags$li(class = 'dropdown',
               actionButton('log_out', label = 'Log out', icon = icon('times')))
@@ -551,9 +556,12 @@ server <- function(input, output, session) {
   
   output$wbg_only_ui <- renderUI({
     li <- logged_in()
+    the_tab <- input$tabs
     if(!li){
       return(NULL)
     } else {
+      if(!the_tab %in% c('upload_data', 'edit_data', 'about')){
+        
       selectInput('wbg_only',
                   '',
                   choices = 
@@ -561,17 +569,22 @@ server <- function(input, output, session) {
                       'WBG only' = 'WBG only', 
                       'Non-WBG only' = 'Non-WBG only'),
                   width = '150px')
+      }
     }
   })
   
   output$search_ui <- renderUI({
+    the_tab <- input$tabs
     li <- logged_in()
     if(!li){
       return(NULL)
     } else {
+      if(!the_tab %in% c('upload_data', 'edit_data', 'about')){
+        
       textInput('search',
                 '',
                 placeholder = 'Search for people, places, events')
+      }
     }
   })
   
@@ -1598,7 +1611,7 @@ server <- function(input, output, session) {
     the_tab <- input$tabs
     message('the tab is ', the_tab)
     if(!is.null(the_tab)){
-      if(the_tab != 'main'){
+      if(!the_tab %in% c('main', 'upload_data', 'edit_data', 'about')){
         div(
           dateRangeInput('date_range_2',
                          '  ',
@@ -2604,6 +2617,23 @@ server <- function(input, output, session) {
         )
       }
     })
+  
+  # Expand the date range when one goes to the timeline tab
+  old_date_range <- reactiveVal(c(Sys.Date() - 7,
+                                  Sys.Date() + 14 ))
+  observeEvent(input$tabs,{
+    it <- input$tabs
+    dr <- date_range()
+    odr <- old_date_range()
+    if(it == 'timeline'){
+      if(as.numeric(diff(range(dr))) < 60)
+      message('---expanding the date range')
+      old_date_range(dr)
+      date_range(c(Sys.Date()-106, Sys.Date() + 14))
+    } else {
+      date_range(odr)
+    }
+  })
   
   # Reactive choices for people (ie, only those to whom the user has access)
   output$photo_person_ui <- renderUI({
