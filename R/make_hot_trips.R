@@ -40,6 +40,7 @@ make_hot_trips <- function(data, filter){
     }
     if(overlapping_dates){
       df$dup[i] <- TRUE
+      df$dup[i-1] <- TRUE
     }
   }
   return(df)

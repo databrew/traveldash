@@ -2135,6 +2135,8 @@ server <- function(input, output, session) {
         # Create js code for highlighting the dups
         js_code <- paste0("row==", which_dups_js, collapse = ' || ')
         # Remove the dup column
+        df <- df %>%
+          mutate(`Suspect duplicate` = dup)
         df$dup <- NULL
         
         # Update the hidden ids
@@ -2143,6 +2145,7 @@ server <- function(input, output, session) {
                       stretchH = 'all',
                       # width = 1000, height = 300,
                       rowHeaders = NULL) %>%
+          hot_cols(manualColumnResize=TRUE, columnSorting = TRUE, colWidths = c(rep(50, ncol(df) - 1), 35), halign = 'htCenter') %>%
           hot_col(col = "Person", type = "autocomplete", source = clean_vector(vals$view_all_trips_people_meetings_venues$short_name), strict = FALSE)  %>%
           hot_col(col = "Organization", type = "autocomplete", source = clean_vector(vals$view_all_trips_people_meetings_venues$organization), strict = FALSE)  %>%
           hot_col(col = "Title", type = "autocomplete", source = clean_vector(vals$view_all_trips_people_meetings_venues$title), strict = FALSE)  %>%
@@ -2151,15 +2154,17 @@ server <- function(input, output, session) {
           hot_col(col = "Trip Group", type = "autocomplete", source = clean_vector(vals$view_all_trips_people_meetings_venues$trip_group), strict = FALSE)  %>%
           hot_col(col = "Venue", type = "autocomplete", source = clean_vector(vals$view_all_trips_people_meetings_venues$venue_name), strict = FALSE)  %>%
           hot_col(col = "Meeting", type = "autocomplete", source = clean_vector(vals$view_all_trips_people_meetings_venues$meeting_with), strict = FALSE)  %>%
-          hot_col(col = "Agenda", type = "autocomplete", source = clean_vector(vals$view_all_trips_people_meetings_venues$agenda), strict = FALSE) %>%
+          hot_col(col = "Agenda", type = "autocomplete", source = clean_vector(vals$view_all_trips_people_meetings_venues$agenda), strict = FALSE)  %>%
           hot_col(col = 'Delete', type = 'checkbox') %>%
-          hot_cols(manualColumnResize=TRUE, columnSorting = TRUE, colWidths = c(rep(50, ncol(df) - 1), 35), halign = 'htCenter',
-                   renderer = paste0('function(instance, td, row, col, prop, value, cellProperties) {
-   HTMLWidgets.widgets.filter(function(widget) {
-                                      return widget.name === "hot_trips"
-       })[0];
-     if (', js_code, ") td.style.background = 'lightblue';}
- "))
+          hot_col(col = 'Suspect duplicate', type = 'checkbox', readOnly = TRUE) #%>%
+      #     hot_cols(renderer = "
+      #      function (instance, td, row, col, prop, value, cellProperties) {
+      #              Handsontable.renderers.TextRenderer.apply(this, arguments);
+      # 
+      #              if(instance.getData()[row][12]){
+      #              td.style.background = 'yellow';
+      #              }
+      # }")
 
       }
     }
@@ -2219,7 +2224,7 @@ server <- function(input, output, session) {
       last_save$hot_people <- make_hot_people(people = vals$people,
                                               person = sort(unique(vals$view_all_trips_people_meetings_venues$person_name))[1])
       last_save$hot_trips <- make_hot_trips(data = vals$view_all_trips_people_meetings_venues,
-                                            filter = NULL) %>% dplyr::select(-trip_uid) %>% mutate(Delete = FALSE)
+                                            filter = NULL) %>% dplyr::select(-trip_uid) %>% mutate(Delete = FALSE) %>% mutate(`Suspect duplicate` = dup) %>% dplyr::select(-dup)
       last_save$hot_venue_events <- make_hot_venue_events(data = vals$venue_events, cities = vals$cities) %>% dplyr::select(-venue_id)
       last_save$hot_venues <- make_hot_venues(data = vals$venue_events, cities = vals$cities) %>% dplyr::select(-venue_id)
       
