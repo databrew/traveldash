@@ -51,8 +51,11 @@ expand_trips <- function(view_all_trips_people_meetings_venues, venue_types, ven
                 end = dplyr::first(event_end_date),
                 title = dplyr::first(venue_name),
                 city_name = dplyr::first(city_name),
-                content = paste0(dplyr::first(venue_name), ' at ', 
-                                 dplyr::first(city_name))) %>%
+                content = paste0(dplyr::first(event_title), ' at ', 
+                                 dplyr::first(city_name),
+                                 ': ',
+                                 oleksiy_date(dplyr::first(event_start_date),
+                                              dplyr::last(event_end_date)))) %>%
       ungroup %>%
       mutate(group = 1,
              type = 'range',

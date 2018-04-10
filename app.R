@@ -87,6 +87,11 @@ sidebar <- dashboardSidebar(
 body <- dashboardBody(
   useShinyjs(),
   
+  # Z index of date range picker
+  tags$div(tags$style(HTML( ".dropdown-menu{z-index:10000 !important;}"))),
+  
+  
+  
   # jquery daterange picker: # Using https://longbill.github.io/jquery-date-range-picker/
   tags$head(tags$style(HTML('
                             

@@ -64,16 +64,6 @@ db_to_memory <- function(return_list = FALSE){
     }
   }
   db_release_connection(conn)
-  # Get the events view too (we do this separately since we modify its format)
-  if(return_list){
-    i <- length(tables) + 1
-    out_list[[i]] <- events
-    names(out_list)[i] <- 'events'
-  } else {
-    assign('events',
-           events,
-           envir = .GlobalEnv)
-  }
   if(return_list){
     return(out_list)
   }
