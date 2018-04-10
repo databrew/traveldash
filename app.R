@@ -2349,13 +2349,35 @@ server <- function(input, output, session) {
   observeEvent(input$tabs, {
     it <- input$tabs
     if(it == 'edit_data'){
+      # hot people
       last_save$hot_people <- make_hot_people(people = vals$people,
                                               person = sort(unique(vals$view_all_trips_people_meetings_venues$person_name))[1])
-      last_save$hot_trips <- make_hot_trips(data = vals$view_all_trips_people_meetings_venues,
-                                            filter = NULL) %>% dplyr::select(-trip_uid) %>% mutate(Delete = FALSE) %>% mutate(`Suspect duplicate` = dup) %>% dplyr::select(-dup)
-      last_save$hot_venue_events <- make_hot_venue_events(data = vals$venue_events, cities = vals$cities) %>% dplyr::select(-venue_id)
-      last_save$hot_venues <- make_hot_venues(data = vals$venue_events, cities = vals$cities) %>% dplyr::select(-venue_id)
       
+      # hot trips
+      x <- make_hot_trips(data = vals$view_all_trips_people_meetings_venues,
+                          filter = NULL)
+      if(!is.null(x)){
+        if(nrow(x) > 0){
+          last_save$hot_trips <-  x %>% dplyr::select(-trip_uid) %>% mutate(Delete = FALSE) %>% mutate(`Suspect duplicate` = dup) %>% dplyr::select(-dup)
+        }
+      }
+      
+      # hot venue events
+      x <- make_hot_venue_events(data = vals$venue_events, cities = vals$cities)
+      if(!is.null(x)){
+        if(nrow(x) > 0){
+          last_save$hot_venue_events <-  x %>% dplyr::select(-venue_id)
+        }
+      }
+      
+      
+      # hot venues
+      x <- make_hot_venues(data = vals$venue_events, cities = vals$cities)
+      if(!is.null(x)){
+        if(nrow(x) > 0){
+          last_save$hot_venues <-  x %>% dplyr::select(-venue_id)
+        }
+      }
     }
   })
   
