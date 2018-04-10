@@ -2630,9 +2630,7 @@ server <- function(input, output, session) {
       message('---expanding the date range')
       old_date_range(dr)
       date_range(c(Sys.Date()-106, Sys.Date() + 14))
-    } else {
-      date_range(odr)
-    }
+    } 
   })
   
   # Reactive choices for people (ie, only those to whom the user has access)
