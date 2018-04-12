@@ -2254,17 +2254,19 @@ server <- function(input, output, session) {
         
         hidden_ids$trip_uid <- df$trip_uid
         
-        # Get the indices of the suspected duplicate columns
-        which_dups <- which(df$dup)
-        # message('WHICH DUPS IS ')
-        # print(which_dups)
-        # Substract 1 to use javascript indexing
-        which_dups_js <- which_dups - 1
-        # Create js code for highlighting the dups
-        js_code <- paste0("row==", which_dups_js, collapse = ' || ')
+        # # Get the indices of the suspected duplicate columns
+        # which_dups <- which(df$dup)
+        # # message('WHICH DUPS IS ')
+        # # print(which_dups)
+        # # Substract 1 to use javascript indexing
+        # which_dups_js <- which_dups - 1
+        # # Create js code for highlighting the dups
+        # js_code <- paste0("row==", which_dups_js, collapse = ' || ')
+        # Make true false be ' '  and '  ', respectively
+        df$dup <- ifelse(df$dup, ' ', '  ')
         # Remove the dup column
         df <- df %>%
-          mutate(`Suspect duplicate` = dup)
+          mutate(`Potential duplicate` = dup)
         df$dup <- NULL
         
         # Update the hidden ids
@@ -2284,7 +2286,17 @@ server <- function(input, output, session) {
           hot_col(col = "Meeting", type = "autocomplete", source = clean_vector(vals$view_all_trips_people_meetings_venues$meeting_with), strict = FALSE)  %>%
           hot_col(col = "Agenda", type = "autocomplete", source = clean_vector(vals$view_all_trips_people_meetings_venues$agenda), strict = FALSE)  %>%
           hot_col(col = 'Delete', type = 'checkbox') %>%
-          hot_col(col = 'Suspect duplicate', type = 'checkbox', readOnly = TRUE) #%>%
+          hot_col(col = 'Potential duplicate', 
+                  # type = 'checkbox', 
+                  readOnly = TRUE,
+                  renderer= "function(instance, td, row, col, prop, value, cellProperties) {
+if (instance.getData()[row][12] === ' ') {
+td.style.background = '#FFFF50';
+} else {
+td.style.background = '#F0F0F0';
+};
+Handsontable.renderers.TextRenderer.apply(this, arguments);
+}")
       #     hot_cols(renderer = "
       #      function (instance, td, row, col, prop, value, cellProperties) {
       #              Handsontable.renderers.TextRenderer.apply(this, arguments);
@@ -2358,7 +2370,7 @@ server <- function(input, output, session) {
                           filter = NULL)
       if(!is.null(x)){
         if(nrow(x) > 0){
-          last_save$hot_trips <-  x %>% dplyr::select(-trip_uid) %>% mutate(Delete = FALSE) %>% mutate(`Suspect duplicate` = dup) %>% dplyr::select(-dup)
+          last_save$hot_trips <-  x %>% dplyr::select(-trip_uid) %>% mutate(Delete = FALSE) %>% mutate(dup = ifelse(dup, ' ', '  ')) %>% mutate(`Potential duplicate` = dup) %>% dplyr::select(-dup)
         }
       }
       
