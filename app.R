@@ -623,8 +623,10 @@ server <- function(input, output, session) {
       }
     })
   
-  date_range <- reactiveVal(c(Sys.Date() - 7,
-                              Sys.Date() + 14 ))
+  date_range <- reactiveVal(
+    # c(Sys.Date() - 7,Sys.Date() + 14 )
+    c(as.Date('2017-11-01'), Sys.Date())
+                            )
   observeEvent(input$daterange12,{
     date_input <- input$daterange12
     message('Dates changed. They are: ')
@@ -643,8 +645,9 @@ server <- function(input, output, session) {
   
   observeEvent(input$reset_date_range, {
     # reset
-    date_range(c(Sys.Date() - 7,
-                 Sys.Date() + 14))
+    c(as.Date('2017-11-01'), Sys.Date())
+    # date_range(c(Sys.Date() - 7,
+    #              Sys.Date() + 14))
   })
   
   
@@ -2891,8 +2894,10 @@ Handsontable.renderers.TextRenderer.apply(this, arguments);
   })
   
   # Expand the date range when one goes to the timeline tab
-  old_date_range <- reactiveVal(c(Sys.Date() - 7,
-                                  Sys.Date() + 14 ))
+  old_date_range <- reactiveVal(
+    # c(Sys.Date() - 7, Sys.Date() + 14 )
+    c(as.Date('2017-11-01'), Sys.Date())
+                                )
   observeEvent(input$tabs,{
     it <- input$tabs
     dr <- date_range()
@@ -2901,7 +2906,8 @@ Handsontable.renderers.TextRenderer.apply(this, arguments);
       if(as.numeric(diff(range(dr))) < 60)
       message('---expanding the date range')
       old_date_range(dr)
-      date_range(c(Sys.Date()-106, Sys.Date() + 14))
+      # date_range(c(Sys.Date()-106, Sys.Date() + 14))
+      date_range(c(as.Date('2017-11-01'), Sys.Date()))
     } 
   })
   
